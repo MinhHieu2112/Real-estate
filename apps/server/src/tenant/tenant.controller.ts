@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
@@ -49,6 +57,7 @@ export class TenantController {
   }
 
   // Update tenant
+  @Patch(':cognitoId')
   async update(
     @Param('cognitoId') cognitoId: string,
     @Body() updateTenantDto: UpdateTenantDto,
@@ -92,7 +101,7 @@ export class TenantController {
   }
 
   // Remove favorite property
-  @Post(':cognitoId/favorites/:propertyId/remove')
+  @Delete(':cognitoId/favorites/:propertyId/remove')
   @ApiOperation({ summary: 'Remove favorite property' })
   @ApiResponse({
     status: 200,
