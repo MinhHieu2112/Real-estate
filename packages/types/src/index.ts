@@ -4,6 +4,7 @@ export interface Tenant {
   name: string;
   email: string;
   phoneNumber: string;
+  image?: string;
   properties?: Property[];
   favorites?: Property[];
   applications?: Application[];
@@ -16,6 +17,7 @@ export interface Manager {
   name: string;
   email: string;
   phoneNumber: string;
+  image?: string;
   managedProperties?: Property[];
 }
 
@@ -104,7 +106,7 @@ export interface User {
     };
   };
   userInfo: Tenant | Manager;
-  userRole: string;
+  userRole: "manager" | "tenant";
 }
 
 // Enums matching Prisma schema
