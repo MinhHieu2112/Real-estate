@@ -22,7 +22,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "noEmit":false,
-    "types": ["node", "jest", "express"]
+    "types": ["node", "jest", "express", "multer"]
   },
   "include": ["src/**/*", "prisma/**/*", "prisma.config.ts", "test/**/*"],
   "exclude": ["node_modules", "dist"]

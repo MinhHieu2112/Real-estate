@@ -6,6 +6,7 @@ import { TenantModule } from './tenant/tenant.module';
 import { ManagerModule } from './manager/manager.module';
 import { LeaseModule } from './lease/lease.module';
 import { ApplicationModule } from './application/application.module';
+import { PropertyModule } from './property/property.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ApplicationModule } from './application/application.module';
     ManagerModule,
     LeaseModule,
     ApplicationModule,
+    PropertyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

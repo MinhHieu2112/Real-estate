@@ -36,7 +36,7 @@ const SettingsForm = ({
                     Manage your account preferences and personal information
                 </p>
             </div>
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl p-6 shadow-md">
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(handleSubmit)}

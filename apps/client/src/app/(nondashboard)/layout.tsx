@@ -27,15 +27,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }, [authUser, shouldRedirect, router]);
 
   if (authLoading) return <>Loading...</>;
-  if (!authUser?.userRole) return null;
-
-  // Đang redirect thì giữ màn hình loading
-  if (shouldRedirect) return <>Loading...</>;
   
   return (
     <div className="h-full w-full">
         <Navbar />
-        navbar
         <main className={`h-full flex w-full flex-col`}
         style={{ paddingTop: `${NAVBAR_HEIGHT}px`}}>
             {children}
