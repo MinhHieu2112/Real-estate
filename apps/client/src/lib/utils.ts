@@ -39,7 +39,6 @@ export const withToast = async <T>(
     return result;
   } catch (err) {
     if (error) toast.error(error);
-    throw err;
   }
 }
 
@@ -60,7 +59,7 @@ export const createNewUserInDatabase = async (
   fetchWithBQ: any
 ) => {
   const createEndpoint =
-    userRole?.toLowerCase() === "manager" ? "/manager" : "/tenant";
+    userRole?.toLowerCase() === "manager" ? "/managers" : "/tenants";
 
   const createUserResponse = await fetchWithBQ({
     url: createEndpoint,

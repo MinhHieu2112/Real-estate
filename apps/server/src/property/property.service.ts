@@ -10,23 +10,26 @@ import { GetPropertyDto } from './dto/get-property.dto';
 import pLimit from 'p-limit';
 import axios from 'axios';
 
-const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-
-if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-  throw new Error('Missing AWS environment variables');
-}
-
-const s3Client = new S3Client({
-  region: AWS_REGION,
-  credentials: {
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  },
-});
-
 @Injectable()
 export class PropertyService {
-  constructor(private prisma: PrismaService) {}
+  private s3Client: S3Client;
+
+  constructor(private prisma: PrismaService) {
+    const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } =
+      process.env;
+
+    if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
+      throw new Error('Missing AWS environment variables');
+    }
+
+    this.s3Client = new S3Client({
+      region: AWS_REGION,
+      credentials: {
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      },
+    });
+  }
 
   async getProperties(favoriteIds: number[], dto: GetPropertyDto) {
     const builder = new PropertyQueryBuilder(dto, favoriteIds);
@@ -35,7 +38,16 @@ export class PropertyService {
       SELECT
         p.*,
         json_build_object(
-        ...
+          'id', l.id,
+          'address', l.address,
+          'city', l.city,
+          'state', l.state,
+          'country', l.country,
+          'postalCode', l."postalCode",
+          'coordinates', json_build_object(
+            'latitude', ST_Y(l.coordinates::geometry),
+            'longitude', ST_X(l.coordinates::geometry)
+          )
         ) as location
       FROM "Property" p
       JOIN "Location" l 
@@ -111,7 +123,7 @@ export class PropertyService {
           };
 
           const uploadResult = await new Upload({
-            client: s3Client,
+            client: this.s3Client,
             params: uploadParams,
           }).done();
 

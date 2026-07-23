@@ -1,50 +1,74 @@
-import { IsDate, IsEnum, IsNumber, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { PropertyType } from '../../generated/prisma/enums';
 
 export class GetPropertyDto {
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  @Type(() => Number)
+  favoriteIds?: number[];
+
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  favoriteIds!: number[];
+  priceMin?: number;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  priceMin!: number;
+  priceMax?: number;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  priceMax!: number;
+  beds?: number;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  beds!: number;
+  baths?: number;
 
-  @IsNumber()
-  @Type(() => Number)
-  baths!: number;
-
+  @IsOptional()
   @IsEnum(PropertyType)
-  propertyType!: PropertyType;
+  propertyType?: PropertyType;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  squareFeetMin!: number;
+  squareFeetMin?: number;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  squareFeetMax!: number;
+  squareFeetMax?: number;
 
-  @IsString()
-  amenities!: string[];
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  amenities?: string[];
 
+  @IsOptional()
+  @Type(() => Date)
   @IsDate()
-  availableFrom!: Date;
+  availableFrom?: Date;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  latitude!: number;
+  latitude?: number;
 
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  longitude!: number;
+  longitude?: number;
 }

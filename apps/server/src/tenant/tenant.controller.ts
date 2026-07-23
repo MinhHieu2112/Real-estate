@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
@@ -14,7 +15,7 @@ import { TenantResponseDto } from './dto/tenant-response.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PropertyResponseDto } from './dto/property-response.dto';
 
-@Controller('tenant')
+@Controller('tenants')
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
@@ -66,7 +67,7 @@ export class TenantController {
   }
 
   // Get current residences
-  @Get()
+  @Get(':cognitoId/residences')
   @ApiOperation({ summary: 'Get current residences' })
   @ApiResponse({
     status: 200,
@@ -95,13 +96,13 @@ export class TenantController {
   })
   async addFavoriteProperty(
     @Param('cognitoId') cognitoId: string,
-    @Param('propertyId') propertyId: number,
+    @Param('propertyId', ParseIntPipe) propertyId: number,
   ) {
     return await this.tenantService.addFavorite(cognitoId, propertyId);
   }
 
   // Remove favorite property
-  @Delete(':cognitoId/favorites/:propertyId/remove')
+  @Delete(':cognitoId/favorites/:propertyId')
   @ApiOperation({ summary: 'Remove favorite property' })
   @ApiResponse({
     status: 200,
@@ -113,7 +114,7 @@ export class TenantController {
   })
   async removeFavoriteProperty(
     @Param('cognitoId') cognitoId: string,
-    @Param('propertyId') propertyId: number,
+    @Param('propertyId', ParseIntPipe) propertyId: number,
   ) {
     return await this.tenantService.removeFavorite(cognitoId, propertyId);
   }

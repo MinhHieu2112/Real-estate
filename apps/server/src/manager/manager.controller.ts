@@ -5,7 +5,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ManagerResponseDto } from './dto/manager-response.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
 
-@Controller('manager')
+@Controller('managers')
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) {}
 

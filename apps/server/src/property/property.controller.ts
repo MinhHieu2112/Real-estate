@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseArrayPipe,
+  ParseIntPipe,
   Post,
   Query,
   UploadedFiles,
@@ -15,33 +16,34 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreatePropertyDto } from './dto/create-property.dto';
 
-@Controller('property')
+@Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 
-  @Get('favoritesIds')
+  @Get()
   @ApiOperation({
-    summary: 'Get favorite properties ids',
+    summary: 'Get properties',
   })
   @ApiResponse({
     status: 200,
-    description: 'Get favorite properties ids successfully',
+    description: 'Get properties successfully',
   })
   @ApiResponse({
     status: 400,
     description: 'Bad request',
   })
   async getProperties(
-    @Query('favoriteIds', ParseArrayPipe) favoritesIds: number[],
     @Query() getPropertyDto: GetPropertyDto,
+    @Query('favoriteIds', new ParseArrayPipe({ items: Number, optional: true }))
+    favoritesIds?: number[],
   ) {
     return await this.propertyService.getProperties(
-      favoritesIds,
+      favoritesIds || [],
       getPropertyDto,
     );
   }
 
-  @Get('id')
+  @Get(':id')
   @ApiOperation({
     summary: 'Get property by id',
   })
@@ -53,7 +55,7 @@ export class PropertyController {
     status: 400,
     description: 'Bad request',
   })
-  async getPropertyById(@Param('id') id: number) {
+  async getPropertyById(@Param('id', ParseIntPipe) id: number) {
     return await this.propertyService.getPropertyById(id);
   }
 

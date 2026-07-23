@@ -25,6 +25,7 @@ const PropertyCard = ({
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           onError={() => setImgSrc("/placeholder.jpg")}
+          unoptimized={imgSrc.includes("example.com")}
         />
         {/* Badges */}
         <div className="absolute bottom-2 left-2 flex gap-1 flex-col">

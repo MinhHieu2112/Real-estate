@@ -10,7 +10,7 @@ export class PropertyQueryBuilder {
 
   // Define a private to add favorite ids
   private addFavoriteIds() {
-    if (!this.favoriteIds.length) return;
+    if (!this.favoriteIds || !this.favoriteIds.length) return;
 
     this.conditions.push(
       Prisma.sql`
@@ -103,7 +103,12 @@ export class PropertyQueryBuilder {
   // Define a private to add location
   private addLocation() {
     const { latitude, longitude } = this.filters;
-    if (!latitude || !longitude) return;
+    if (
+      latitude === undefined ||
+      longitude === undefined ||
+      (latitude === 0 && longitude === 0)
+    )
+      return;
     else {
       const radiusInKilomters = 1000.0;
       const degrees = radiusInKilomters / 111.0;

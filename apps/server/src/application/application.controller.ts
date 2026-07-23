@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Body,
+  Param,
+  Patch,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ApplicationService } from './application.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -6,7 +14,7 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 import { ListApplicationDto } from './dto/list-application.dto';
 import { Post } from '@nestjs/common';
 
-@Controller('application')
+@Controller('applications')
 export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
 
@@ -46,7 +54,7 @@ export class ApplicationController {
     return await this.applicationService.createApplication(createApplication);
   }
 
-  @Patch()
+  @Patch(':applicationId')
   @ApiOperation({
     summary: 'Update application',
   })
@@ -63,7 +71,7 @@ export class ApplicationController {
     description: 'Internal server error',
   })
   async updateApplication(
-    @Param('applicationId') applicationId: number,
+    @Param('applicationId', ParseIntPipe) applicationId: number,
     @Body() updateApplication: UpdateApplicationDto,
   ) {
     return await this.applicationService.updateApplicationStatus(
