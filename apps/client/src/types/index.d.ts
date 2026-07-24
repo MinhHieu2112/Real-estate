@@ -59,10 +59,6 @@ declare global {
     label: string;
   }
 
-  interface PropertyOverviewProps {
-    propertyId: number;
-  }
-
   interface ApplicationModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -109,6 +105,7 @@ declare global {
     onFavoriteToggle: () => void;
     showFavoriteButton?: boolean;
     propertyLink?: string;
+    className?: string;
   }
 
   interface HeaderProps {

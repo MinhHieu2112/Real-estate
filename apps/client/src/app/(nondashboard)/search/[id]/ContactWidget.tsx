@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useGetAuthUserQuery } from '@/state/api'
 import { Phone } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import React from 'react'
 
 const ContactWidget = ({ onOpenModal }: ContactWidgetProps) => {

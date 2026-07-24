@@ -69,6 +69,7 @@ export interface Application {
   leaseId?: number | null;
   property?: Property;
   tenant?: Tenant;
+  manager?: Manager;
   lease?: Lease | null;
 }
 
@@ -76,6 +77,7 @@ export interface Lease {
   id: number;
   startDate: string | Date;
   endDate: string | Date;
+  nextPaymentDate?: string | Date;
   rent: number;
   deposit: number;
   propertyId: number;

@@ -1,3 +1,5 @@
+"use client";
+
 import { useGetPropertyQuery } from "@/state/api";
 import { Compass, MapPin } from "lucide-react";
 import React, { useEffect, useRef } from "react";

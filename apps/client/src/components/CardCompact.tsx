@@ -9,13 +9,14 @@ const CardCompact = ({
   onFavoriteToggle,
   showFavoriteButton = true,
   propertyLink,
+  className = "",
 }: CardCompactProps) => {
   const [imgSrc, setImgSrc] = useState(
     property.photoUrls?.[0] || "/placeholder.jpg"
   );
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-lg w-full flex h-40 mb-5">
+    <div className={`bg-white rounded-xl overflow-hidden shadow-lg w-full flex h-40 mb-5 ${className}`}>
       <div className="relative w-1/3">
         <Image
           src={imgSrc}

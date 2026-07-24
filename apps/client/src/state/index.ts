@@ -28,7 +28,7 @@ export const initialState: InitialStateTypes = {
     availableFrom: "",
     priceRange: [null, null],
     squareFeet: [null, null],
-    coordinates: [0, 0],
+    coordinates: [-118.25, 34.05],
   },
   isFiltersFullOpen: false,
   viewMode: "grid",
