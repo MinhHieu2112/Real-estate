@@ -67,7 +67,7 @@ export class TenantController {
   }
 
   // Get current residences
-  @Get(':cognitoId/residences')
+  @Get(':cognitoId/current-residences')
   @ApiOperation({ summary: 'Get current residences' })
   @ApiResponse({
     status: 200,

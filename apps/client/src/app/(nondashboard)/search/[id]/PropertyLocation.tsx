@@ -5,81 +5,45 @@ import { Compass, MapPin } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import {
-  withIdentityPoolId,
-  withCredentialProvider,
-} from "@aws/amazon-location-utilities-auth-helper";
-import { fetchAuthSession } from "aws-amplify/auth";
 
 const AWS_REGION = process.env.NEXT_PUBLIC_AWS_REGION || "us-east-1";
-const MAP_NAME = process.env.NEXT_PUBLIC_AWS_LOCATION_MAP_NAME || "";
-const IDENTITY_POOL_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_IDENTITY_POOL_ID!;
-const USER_POOL_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID!;
-const MAP_STYLE_URL = MAP_NAME
-  ? `https://maps.geo.${AWS_REGION}.amazonaws.com/maps/v0/maps/${MAP_NAME}/style-descriptor`
+const API_KEY = process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY || "";
+const MAP_STYLE = "Standard";
+
+// Ghép API Key trực tiếp vào URL style descriptor
+const MAP_STYLE_URL = API_KEY
+  ? `https://maps.geo.${AWS_REGION}.amazonaws.com/v2/styles/${MAP_STYLE}/descriptor?key=${API_KEY}`
   : "";
 
 const PropertyLocation = ({ propertyId }: PropertyDetailsProps) => {
-    const {
-        data: property,
-        isError,
-        isLoading,
-    } = useGetPropertyQuery(propertyId);
-    const mapContainerRef = useRef(null);
+  const {
+    data: property,
+    isError,
+    isLoading,
+  } = useGetPropertyQuery(propertyId);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-    if (!MAP_NAME || !property) return;
-    let map: maplibregl.Map;
+  useEffect(() => {
+    if (!MAP_STYLE_URL || !property || !mapContainerRef.current) return;
 
-    const initMap = async () => {
-        let authHelper;
-        try {
-            const session = await fetchAuthSession();
-            const idToken = session.tokens?.idToken?.toString();
+    const coordinates = property?.location?.coordinates;
+    if (!coordinates?.longitude || !coordinates?.latitude) return;
 
-            if (session.credentials) {
-                authHelper = await withCredentialProvider(
-                    async () => session.credentials!,
-                    AWS_REGION
-                );
-            } else if (idToken && USER_POOL_ID) {
-                authHelper = await withIdentityPoolId(IDENTITY_POOL_ID, {
-                    logins: {
-                        [`cognito-idp.${AWS_REGION}.amazonaws.com/${USER_POOL_ID}`]: idToken,
-                    },
-                });
-            } else {
-                authHelper = await withIdentityPoolId(IDENTITY_POOL_ID);
-            }
-        } catch (err) {
-            console.warn("[PropertyLocation] Falling back to guest identity pool auth:", err);
-            authHelper = await withIdentityPoolId(IDENTITY_POOL_ID);
-        }
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: MAP_STYLE_URL,
+      center: [coordinates.longitude, coordinates.latitude],
+      zoom: 14,
+    });
 
-        map = new maplibregl.Map({
-            container: mapContainerRef.current!,
-            style: MAP_STYLE_URL,
-            center: [
-                property?.location?.coordinates.longitude,
-                property?.location?.coordinates.latitude,
-            ],
-            zoom: 14,
-            ...authHelper.getMapAuthenticationOptions(),
-        });
-
-        new maplibregl.Marker().setLngLat([
-            property?.location?.coordinates.longitude,
-            property?.location?.coordinates.latitude,
-        ])
-        .addTo(map);
-    };
-
-    initMap();
+    new maplibregl.Marker()
+      .setLngLat([coordinates.longitude, coordinates.latitude])
+      .addTo(map);
 
     return () => {
-        map?.remove();
+      map.remove();
     };
-}, [property]);
+  }, [property]);
 
   if (isLoading) return <>Loading...</>;
   if (isError || !property) {

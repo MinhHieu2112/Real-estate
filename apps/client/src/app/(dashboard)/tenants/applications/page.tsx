@@ -22,7 +22,7 @@ const Applications = () => {
   if (isError || !applications) return <div>Error fetching applications</div>;
 
   return (
-    <div>
+    <div className="dashboard-container">
         <Header 
             title="Applications"
             subtitle="Track and manage your property rental applications"
@@ -40,7 +40,7 @@ const Applications = () => {
                             <CircleCheckBig className="w-5 h-5 mr-2" />
                             The property is being rented by you until{" "}
                             {application.lease?.endDate
-                                ? new Date(application.lease.endDate).toLocaleDateString()
+                                ? new Date(application.lease.endDate).toLocaleString('vi-VN')
                                 : "N/A"}
                         </div>
                     ) : application.status === "Pending" ? (

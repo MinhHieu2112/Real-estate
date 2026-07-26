@@ -1,3 +1,5 @@
+"use client";
+
 import { CustomFormField } from '@/components/FormField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -37,7 +39,7 @@ const ApplicationModal = ({
   
   await createApplication({
     ...data,
-    applicationDate: new Date().toLocaleString("vi-VN"),
+    applicationDate: new Date().toISOString(),
     status: ApplicationStatus.Pending,
     propertyId: propertyId,
     tenantCognitoId: authUser.cognitoInfo.userId,
@@ -54,7 +56,7 @@ const ApplicationModal = ({
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <CustomFormField 
-                        name="email"
+                        name="name"
                         label="Name"
                         type="text"
                         placeholder="Enter your name"

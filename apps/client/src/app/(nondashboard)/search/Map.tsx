@@ -3,23 +3,18 @@
 import { useGetPropertiesQuery } from "@/state/api";
 import { useAppSelector } from "@/state/redux";
 import { Property } from "@shared/types";
-import {
-  withIdentityPoolId,
-  withCredentialProvider,
-} from "@aws/amazon-location-utilities-auth-helper";
-import { fetchAuthSession } from "aws-amplify/auth";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import React, { useEffect, useRef } from "react";
 
 const AWS_REGION = process.env.NEXT_PUBLIC_AWS_REGION || "us-east-1";
-const IDENTITY_POOL_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_IDENTITY_POOL_ID!;
-const USER_POOL_ID = process.env.NEXT_PUBLIC_AWS_COGNITO_USER_POOL_ID!;
 const MAP_NAME = process.env.NEXT_PUBLIC_AWS_LOCATION_MAP_NAME || "";
+const API_KEY = process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY || "";
+const MAP_STYLE = "Standard";
 
-// Amazon Location Service style descriptor endpoint
-const MAP_STYLE_URL = MAP_NAME
-  ? `https://maps.geo.${AWS_REGION}.amazonaws.com/maps/v0/maps/${MAP_NAME}/style-descriptor`
+// Ghép API Key trực tiếp vào URL style descriptor
+const MAP_STYLE_URL = API_KEY
+  ? `https://maps.geo.${AWS_REGION}.amazonaws.com/v2/styles/${MAP_STYLE}/descriptor?key=${API_KEY}`
   : "";
 
 const Map = () => {
@@ -33,70 +28,39 @@ const Map = () => {
   } = useGetPropertiesQuery(filters);
 
   useEffect(() => {
-    if (isLoading || isError || !properties || !mapContainerRef.current || !MAP_NAME) return;
+    if (isLoading || isError || !properties || !mapContainerRef.current || !MAP_STYLE_URL) return;
 
-    let map: maplibregl.Map;
-
-    const initMap = async () => {
-      let authHelper;
-      try {
-        const session = await fetchAuthSession();
-        const idToken = session.tokens?.idToken?.toString();
-
-        if (session.credentials) {
-          authHelper = await withCredentialProvider(
-            async () => session.credentials!,
-            AWS_REGION
-          );
-        } else if (idToken && USER_POOL_ID) {
-          authHelper = await withIdentityPoolId(IDENTITY_POOL_ID, {
-            logins: {
-              [`cognito-idp.${AWS_REGION}.amazonaws.com/${USER_POOL_ID}`]: idToken,
-            },
-          });
-        } else {
-          authHelper = await withIdentityPoolId(IDENTITY_POOL_ID);
-        }
-      } catch (err) {
-        console.warn("[Map] Falling back to guest identity pool auth:", err);
-        authHelper = await withIdentityPoolId(IDENTITY_POOL_ID);
-      }
-
-      map = new maplibregl.Map({
-        container: mapContainerRef.current!,
-        style: MAP_STYLE_URL,
-        center: filters.coordinates
-          ? [filters.coordinates[0], filters.coordinates[1]]
-          : [-74.5, 40],
-        zoom: 9,
-        ...authHelper.getMapAuthenticationOptions(),
-      });
-
-      map.addControl(new maplibregl.NavigationControl(), "top-right");
-
-      map.on("load", () => {
-        properties.forEach((property) => {
-          addPropertyMarker(property, map);
-        });
-      });
-
-      setTimeout(() => map.resize(), 700);
-    };
-
-    initMap().catch((err) => {
-      console.error("[Map] Failed to initialize Amazon Location map:", err);
+    // Khởi tạo trực tiếp không qua async Cognito auth
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: MAP_STYLE_URL,
+      center: filters.coordinates
+        ? [filters.coordinates[0], filters.coordinates[1]]
+        : [106.6297, 10.8231],
+      zoom: 11,
     });
 
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    map.on("load", () => {
+      properties.forEach((property) => {
+        addPropertyMarker(property, map);
+      });
+    });
+
+    const timer = setTimeout(() => map.resize(), 700);
+
     return () => {
-      if (map) map.remove();
+      clearTimeout(timer);
+      map.remove();
     };
   }, [isLoading, isError, properties, filters.coordinates]);
 
-  if (!MAP_NAME) {
+  if (!MAP_NAME || !API_KEY) {
     return (
       <div className="basis-5/12 grow relative rounded-xl flex flex-col items-center justify-center bg-amber-50 border border-amber-200 p-4 text-center">
-        <p className="text-amber-700 font-semibold text-sm">Chưa cấu hình tên Bản đồ (MAP_NAME)</p>
-        <p className="text-amber-600 text-xs mt-1">Vui lòng điền NEXT_PUBLIC_AWS_LOCATION_MAP_NAME trong file apps/client/.env</p>
+        <p className="text-amber-700 font-semibold text-sm">Chưa cấu hình Bản đồ (MAP_NAME / API_KEY)</p>
+        <p className="text-amber-600 text-xs mt-1">Vui lòng kiểm tra file apps/client/.env</p>
       </div>
     );
   }
@@ -118,7 +82,7 @@ const Map = () => {
   }
 
   return (
-    <div className="basis-5/12 grow relative rounded-xl overflow-hidden">
+    <div className="basis-5/12 grow h-full relative rounded-xl overflow-hidden">
       <div
         ref={mapContainerRef}
         className="map-container rounded-xl"

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Location, Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -68,30 +72,44 @@ export class PropertyService {
       },
     });
 
-    if (property) {
-      const coordinates: { coordinates: string }[] = await this.prisma
-        .$queryRaw`
-          SELECT ST_asText(coordinates)
-          FROM "Location"
-          WHERE id = ${property.locationId}`;
-
-      const geoJSON: any = wktToGeoJSON(coordinates[0].coordinates || '');
-      const longitude = geoJSON.coordinates[0];
-      const latitude = geoJSON.coordinates[1];
-
-      const propertyWithCoordinates = {
-        ...property,
-        location: {
-          ...property.location,
-          coordinates: {
-            latitude,
-            longitude,
-          },
-        },
-      };
-
-      return propertyWithCoordinates;
+    if (!property) {
+      throw new NotFoundException('Property not found');
     }
+
+    const coordinates: { coordinates: string }[] = await this.prisma.$queryRaw`
+        SELECT ST_AsText(coordinates) AS coordinates
+        FROM "Location"
+        WHERE id = ${property.locationId}`;
+
+    let latitude = 0;
+    let longitude = 0;
+
+    if (coordinates && coordinates.length > 0 && coordinates[0].coordinates) {
+      try {
+        const geoJSON: any = wktToGeoJSON(coordinates[0].coordinates);
+        if (
+          geoJSON &&
+          geoJSON.type === 'Point' &&
+          Array.isArray(geoJSON.coordinates)
+        ) {
+          longitude = geoJSON.coordinates[0];
+          latitude = geoJSON.coordinates[1];
+        }
+      } catch (err) {
+        console.error('Failed to parse WKT coordinates:', err);
+      }
+    }
+
+    return {
+      ...property,
+      location: {
+        ...property.location,
+        coordinates: {
+          latitude,
+          longitude,
+        },
+      },
+    };
   }
 
   async createProperty(
@@ -105,8 +123,21 @@ export class PropertyService {
       country,
       postalCode,
       managerCognitoId,
+      name,
       ...propertyData
     } = createPropertyDto;
+
+    // Check if property with same name already exists for this manager
+    const existingProperty = await this.prisma.property.findFirst({
+      where: {
+        name,
+        managerCognitoId,
+      },
+    });
+
+    if (existingProperty) {
+      throw new ConflictException('A property with this name already exists.');
+    }
 
     // Limit the number of concurrent uploads
     const limit = pLimit(10);
@@ -169,6 +200,7 @@ export class PropertyService {
     return await this.prisma.property.create({
       data: {
         ...propertyData,
+        name,
         photoUrls,
         locationId: location.id,
         managerCognitoId,

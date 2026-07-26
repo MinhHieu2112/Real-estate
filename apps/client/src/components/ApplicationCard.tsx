@@ -11,121 +11,119 @@ const ApplicationCard = ({
     application.property?.photoUrls?.[0] || "/placeholder.jpg"
   );
 
-  const statusColor =
+  const statusBadge =
     application.status === "Approved"
-      ? "bg-green-500"
+      ? "bg-green-100 text-green-700 border-green-200"
       : application.status === "Denied"
-      ? "bg-red-500"
-      : "bg-yellow-500";
+      ? "bg-red-100 text-red-700 border-red-200"
+      : "bg-amber-100 text-amber-700 border-amber-200";
 
   const contactPerson =
     userType === "manager" ? application.tenant : application.manager;
 
   return (
-    <div className="border rounded-xl overflow-hidden shadow-sm bg-white mb-4">
-      <div className="flex flex-col lg:flex-row  items-start lg:items-center justify-between px-6 md:px-4 py-6 gap-6 lg:gap-4">
+    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white mb-5 transition-all hover:shadow-md">
+      <div className="grid grid-cols-1 lg:grid-cols-12 p-5 gap-6 items-stretch">
         {/* Property Info Section */}
-        <div className="flex flex-col lg:flex-row gap-5 w-full lg:w-auto">
-          <Image
-            src={imgSrc}
-            alt={application.property?.name || "Property Image"}
-            width={200}
-            height={150}
-            className="rounded-xl object-cover w-full lg:w-[200px] h-[150px]"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onError={() => setImgSrc("/placeholder.jpg")}
-          />
-          <div className="flex flex-col justify-between">
+        <div className="lg:col-span-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="relative w-full sm:w-[180px] h-[120px] rounded-xl overflow-hidden shrink-0 bg-gray-100">
+            <Image
+              src={imgSrc}
+              alt={application.property?.name || "Property Image"}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 180px"
+              onError={() => setImgSrc("/placeholder.jpg")}
+            />
+          </div>
+          <div className="flex flex-col justify-between py-1 min-w-0">
             <div>
-              <h2 className="text-xl font-bold my-2">
-                {application.property?.name}
+              <h2 className="text-lg font-bold text-gray-900 truncate my-1">
+                {application.property?.name || "Property"}
               </h2>
-              <div className="flex items-center mb-2">
-                <MapPin className="w-5 h-5 mr-1" />
-                <span>{`${application.property?.location?.city}, ${application.property?.location?.country}`}</span>
+              <div className="flex items-center text-gray-500 text-sm mb-2">
+                <MapPin className="w-4 h-4 mr-1 text-gray-400 shrink-0" />
+                <span className="truncate">
+                  {application.property?.location?.city ? `${application.property.location.city}, ${application.property.location.country}` : "Address unavailable"}
+                </span>
               </div>
             </div>
-            <div className="text-xl font-semibold">
-              ${application.property?.pricePerMonth}{" "}
-              <span className="text-sm font-normal">/ month</span>
+            <div className="text-base font-bold text-primary-700">
+              ${application.property?.pricePerMonth?.toLocaleString()}{" "}
+              <span className="text-xs font-normal text-gray-500">/ month</span>
             </div>
           </div>
         </div>
 
-        {/* Divider - visible only on desktop */}
-        <div className="hidden lg:block border-[0.5px] border-primary-200 h-48" />
-
-        {/* Status Section */}
-        <div className="flex flex-col justify-between w-full lg:basis-2/12 lg:h-48 py-2 gap-3 lg:gap-0">
-          <div>
+        {/* Status & Dates Section */}
+        <div className="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status:</span>
+            <span className={`px-2.5 py-0.5 border rounded-full text-xs font-semibold ${statusBadge}`}>
+              {application.status}
+            </span>
+          </div>
+          <div className="space-y-1.5 text-xs text-gray-600 mt-2">
             <div className="flex justify-between items-center">
-              <span className="text-gray-500">Status:</span>
-              <span
-                className={`px-2 py-1 ${statusColor} text-white rounded-full text-sm`}
-              >
-                {application.status}
+              <span className="text-gray-500">Start Date:</span>
+              <span className="font-medium text-gray-800">
+                {application.lease?.startDate
+                  ? new Date(application.lease.startDate).toLocaleDateString('vi-VN')
+                  : "N/A"}
               </span>
             </div>
-            <hr className="mt-3" />
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Start Date:</span>{" "}
-            {application.lease?.startDate ? 
-              new Date(application.lease.startDate).toLocaleDateString()
-              : "N/A"}
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">End Date:</span>{" "}
-            {application.lease?.endDate ? 
-              new Date(application.lease.endDate).toLocaleDateString()
-              : "N/A"}
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Next Payment:</span>{" "}
-            {application.lease?.nextPaymentDate ? 
-              new Date(application.lease.nextPaymentDate).toLocaleDateString()
-              : "N/A"}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">End Date:</span>
+              <span className="font-medium text-gray-800">
+                {application.lease?.endDate
+                  ? new Date(application.lease.endDate).toLocaleDateString('vi-VN')
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Next Payment:</span>
+              <span className="font-medium text-gray-800">
+                {application.lease?.nextPaymentDate
+                  ? new Date(application.lease.nextPaymentDate).toLocaleDateString('vi-VN')
+                  : "N/A"}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Divider - visible only on desktop */}
-        <div className="hidden lg:block border-[0.5px] border-primary-200 h-48" />
-
         {/* Contact Person Section */}
-        <div className="flex flex-col justify-start gap-5 w-full lg:basis-3/12 lg:h-48 py-2">
-          <div>
-            <div className="text-lg font-semibold">
-              {userType === "manager" ? "Tenant" : "Manager"}
-            </div>
-            <hr className="mt-3" />
+        <div className="lg:col-span-3 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+            {userType === "manager" ? "Tenant" : "Manager"}
           </div>
-          <div className="flex gap-4">
-            <div>
-              <Image
-                src="/landing-i1.png"
-                alt={contactPerson?.name || "Contact Person"}
-                width={40}
-                height={40}
-                className="rounded-full mr-2 min-w-[40px] min-h-[40px]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="font-semibold">{contactPerson?.name}</div>
-              <div className="text-sm flex items-center text-primary-600">
-                <PhoneCall className="w-5 h-5 mr-2" />
-                {contactPerson?.phoneNumber}
+          <div className="flex items-center gap-3">
+            <Image
+              src="/landing-i1.png"
+              alt={contactPerson?.name || "Contact Person"}
+              width={38}
+              height={38}
+              className="rounded-full shrink-0 border border-gray-200"
+            />
+            <div className="min-w-0 text-xs space-y-0.5">
+              <div className="font-bold text-gray-900 truncate">{contactPerson?.name || "N/A"}</div>
+              <div className="flex items-center text-gray-500 truncate">
+                <PhoneCall className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
+                <span className="truncate">{contactPerson?.phoneNumber || "N/A"}</span>
               </div>
-              <div className="text-sm flex items-center text-primary-600">
-                <Mail className="w-5 h-5 mr-2" />
-                {contactPerson?.email}
+              <div className="flex items-center text-gray-500 truncate">
+                <Mail className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
+                <span className="truncate">{contactPerson?.email || "N/A"}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <hr className="my-4" />
-      {children}
+      {children && (
+        <div className="border-t border-gray-100 bg-gray-50/50 p-4">
+          {children}
+        </div>
+      )}
     </div>
   );
 };

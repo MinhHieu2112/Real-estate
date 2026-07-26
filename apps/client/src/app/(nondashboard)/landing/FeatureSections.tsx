@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from 'next/dist/client/link';
+import Link from 'next/link';
 
 const containerVariants = {
     hidden: { opacity: 0, y: 50},

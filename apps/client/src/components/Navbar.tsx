@@ -2,7 +2,7 @@
 
 import { NAVBAR_HEIGHT } from '@/lib/constants';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/dist/client/link';
+import Link from 'next/link';
 import Image from "next/image";
 import { Button } from './ui/button';
 import { useGetAuthUserQuery } from '@/state/api';

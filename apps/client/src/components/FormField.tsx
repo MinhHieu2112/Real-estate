@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   ControllerRenderProps,
@@ -92,8 +94,7 @@ export const CustomFormField: React.FC<FormFieldProps> = ({
       case "select":
         return (
           <Select
-            value={field.value || (initialValue as string)}
-            defaultValue={field.value || (initialValue as string)}
+            value={field.value || (initialValue as string) || ""}
             onValueChange={field.onChange}
           >
             <SelectTrigger
@@ -118,7 +119,7 @@ export const CustomFormField: React.FC<FormFieldProps> = ({
         return (
           <div className="flex items-center space-x-2">
             <Switch
-              checked={field.value}
+              checked={Boolean(field.value)}
               onCheckedChange={field.onChange}
               id={name}
               className={`text-customgreys-dirtyGrey ${inputClassName}`}
@@ -201,7 +202,7 @@ export const CustomFormField: React.FC<FormFieldProps> = ({
           <FormControl>
             {renderFormControl({
               ...field,
-              value: field.value !== undefined ? field.value : initialValue,
+              value: field.value !== undefined ? field.value : (initialValue !== undefined ? initialValue : ""),
             })}
           </FormControl>
           <FormMessage className="text-red-400" />

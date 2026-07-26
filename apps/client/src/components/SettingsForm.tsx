@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { SettingsFormData, settingsSchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +16,11 @@ const SettingsForm = ({
         resolver: zodResolver(settingsSchema),
         defaultValues: initialData
     })
+
+    useEffect(() => {
+        form.reset(initialData);
+    }, [initialData, form]);
+
     const toggleEditMode = () => {
         setEditMode(!editMode);
         if (editMode) {

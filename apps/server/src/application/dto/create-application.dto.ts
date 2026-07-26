@@ -3,11 +3,14 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApplicationStatus } from '../../generated/prisma/enums';
 
 export class CreateApplicationDto {
+  @Type(() => Date)
   @IsDate()
   applicationDate!: Date;
 
@@ -30,6 +33,7 @@ export class CreateApplicationDto {
   @IsString()
   phoneNumber!: string;
 
+  @IsOptional()
   @IsString()
   message?: string | null;
 }

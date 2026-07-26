@@ -5,14 +5,15 @@ import {
   Body,
   Param,
   Patch,
+  Put,
   ParseIntPipe,
+  Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ApplicationService } from './application.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { ListApplicationDto } from './dto/list-application.dto';
-import { Post } from '@nestjs/common';
 
 @Controller('applications')
 export class ApplicationController {
@@ -54,13 +55,14 @@ export class ApplicationController {
     return await this.applicationService.createApplication(createApplication);
   }
 
+  @Put(':applicationId/status')
   @Patch(':applicationId')
   @ApiOperation({
-    summary: 'Update application',
+    summary: 'Update application status',
   })
   @ApiResponse({
     status: 200,
-    description: 'Update application successfully',
+    description: 'Update application status successfully',
   })
   @ApiResponse({
     status: 404,

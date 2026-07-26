@@ -89,20 +89,42 @@ export class CreatePropertyDto {
   @IsOptional()
   isParkingIncluded?: boolean = false;
 
-  @Transform(({ value }) =>
-    typeof value === 'string'
-      ? (value.split(',') as Amenity[])
-      : (value as Amenity[] | undefined),
-  )
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      if (!value.trim()) return [];
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // Ignore JSON parse errors and fall back to comma-separated string
+      }
+      return value
+        .split(',')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+    }
+    return value;
+  })
   @IsArray()
   @IsOptional()
   amenities?: Amenity[];
 
-  @Transform(({ value }) =>
-    typeof value === 'string'
-      ? (value.split(',') as Highlight[])
-      : (value as Highlight[] | undefined),
-  )
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      if (!value.trim()) return [];
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // Ignore JSON parse errors and fall back to comma-separated string
+      }
+      return value
+        .split(',')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+    }
+    return value;
+  })
   @IsArray()
   @IsOptional()
   highlights?: Highlight[];

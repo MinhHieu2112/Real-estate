@@ -14,8 +14,14 @@ export class ApplicationService {
     if (listApplicationDto.userId && listApplicationDto.userType) {
       if (listApplicationDto.userType === 'tenant') {
         whereClause = {
+          tenant: {
+            cognitoId: String(listApplicationDto.userId),
+          },
+        };
+      } else if (listApplicationDto.userType === 'manager') {
+        whereClause = {
           property: {
-            tenantCognitoId: String(listApplicationDto.userId),
+            managerCognitoId: String(listApplicationDto.userId),
           },
         };
       }
@@ -114,56 +120,32 @@ export class ApplicationService {
     });
 
     if (!property) {
-      throw new Error('Property not found');
+      throw new NotFoundException('Property not found');
     }
 
-    const newApplication = await this.prisma.$transaction(async (prisma) => {
-      // Create lease first
-      const lease = await prisma.lease.create({
-        data: {
-          startDate: new Date(),
-          endDate: new Date(
-            new Date().setFullYear(new Date().getFullYear() + 1),
-          ),
-          rent: property.pricePerMonth,
-          deposit: property.securityDeposit,
-          property: {
-            connect: { id: propertyId },
-          },
-          tenant: {
-            connect: { cognitoId: tenantCognitoId },
-          },
+    const application = await this.prisma.application.create({
+      data: {
+        applicationDate: new Date(applicationDate),
+        status: status || 'Pending',
+        name,
+        email,
+        phoneNumber,
+        message,
+        property: {
+          connect: { id: propertyId },
         },
-      });
-
-      // Then create application with lease connection
-      const application = await this.prisma.application.create({
-        data: {
-          applicationDate: new Date(applicationDate),
-          status,
-          name,
-          email,
-          phoneNumber,
-          message,
-          property: {
-            connect: { id: propertyId },
-          },
-          tenant: {
-            connect: { cognitoId: tenantCognitoId },
-          },
-          lease: {
-            connect: { id: lease.id },
-          },
+        tenant: {
+          connect: { cognitoId: tenantCognitoId },
         },
-        include: {
-          property: true,
-          tenant: true,
-          lease: true,
-        },
-      });
-      return application;
+      },
+      include: {
+        property: true,
+        tenant: true,
+        lease: true,
+      },
     });
-    return newApplication;
+
+    return application;
   }
 
   // Update application

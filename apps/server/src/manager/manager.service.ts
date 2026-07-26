@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
 import { ManagerResponseDto } from './dto/manager-response.dto';
@@ -25,9 +25,12 @@ export class ManagerService {
 
   // Get manager
   async getManager(cognitoId: string): Promise<ManagerResponseDto> {
-    const manager = await this.prisma.manager.findUniqueOrThrow({
+    const manager = await this.prisma.manager.findUnique({
       where: { cognitoId },
     });
+    if (!manager) {
+      throw new NotFoundException('Manager not found');
+    }
     return manager;
   }
 
@@ -52,6 +55,10 @@ export class ManagerService {
       },
     });
 
+    if (!properties || properties.length === 0) {
+      return [];
+    }
+
     // Get locationID
     const locationIds = properties.map((p) => p.location.id);
     const locations = await this.prisma.$queryRaw<
@@ -61,7 +68,7 @@ export class ManagerService {
       }[]
     >`
       SELECT id, ST_AsText(coordinates) AS coordinates
-      FROM Location
+      FROM "Location"
       WHERE id IN (${Prisma.join(locationIds)});`;
 
     const locationMap = new Map(
@@ -70,23 +77,29 @@ export class ManagerService {
 
     const propertiesWithFormattedLocation = properties.map((property) => {
       const point = locationMap.get(property.location.id);
-      const geoJSON = wktToGeoJSON(point || '');
+      const geoJSON: any = wktToGeoJSON(point || '');
 
-      if (geoJSON.type === 'Point') {
-        const longitude = geoJSON.coordinates[0];
-        const latitude = geoJSON.coordinates[1];
-        return {
-          ...property,
-          location: {
-            ...property.location,
-            coordinates: {
-              longitude,
-              latitude,
-            },
-          },
+      let coordinates = { longitude: 0, latitude: 0 };
+      if (
+        geoJSON &&
+        geoJSON.type === 'Point' &&
+        Array.isArray(geoJSON.coordinates)
+      ) {
+        coordinates = {
+          longitude: geoJSON.coordinates[0],
+          latitude: geoJSON.coordinates[1],
         };
       }
-      return propertiesWithFormattedLocation;
+
+      return {
+        ...property,
+        location: {
+          ...property.location,
+          coordinates,
+        },
+      };
     });
+
+    return propertiesWithFormattedLocation;
   }
 }

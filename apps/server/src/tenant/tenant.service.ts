@@ -71,7 +71,7 @@ export class TenantService {
       },
     });
     if (!properties || properties.length === 0) {
-      throw new NotFoundException('No residences found for this tenant');
+      return [] as unknown as PropertyResponseDto;
     }
 
     const locationIds = properties.map((property) => property.locationId);
