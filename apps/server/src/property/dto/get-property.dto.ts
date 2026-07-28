@@ -11,8 +11,16 @@ import { PropertyType } from '../../generated/prisma/enums';
 
 export class GetPropertyDto {
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.split(',').map(Number);
+    }
+    if (Array.isArray(value)) {
+      return value.map(Number);
+    }
+    return value;
+  })
   @IsNumber({}, { each: true })
-  @Type(() => Number)
   favoriteIds?: number[];
 
   @IsOptional()

@@ -10,113 +10,134 @@ import React from 'react'
 
 const PaymentMethod = () => {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mt-10 md:mt-0 flex-1">
-        <h2 className="text-2xl font-bold mb-4">Payment method</h2>
-        <p className="mb-4">Change how you pay for plan.</p>
-        <div>
-            {/* Card Info */}
-            <div className="flex gap-10">
-                <div className="w-36 h-20 bg-blue-600 flex items-center justify-center rounded-md">
-                    <span className="text-white text-2xl "></span>
-                </div>
-                <div className="flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-start gap-5">
-                            <h3 className="text-lg font-semibold">Visa ending in 2026</h3>
-                            <span className="text-sm font-medium border border-primary-700 text-primary-700 px-3 py-1 rounded-full">
-                                Default
-                            </span>
-                        </div>
-                        <div className="text-sm text-gray-500 flex items-center">
-                            <CreditCard className="w-4 h-4 mr-1" />
-                            <span>Expiry date: 12/2026</span>
-                        </div>
-                    </div>
-                    <div className="text-sm text-gray-500 flex items-center">
-                        <Mail className="w-4 h-4 mr-1" />
-                        <span>billing@baseclup.com</span>
-                    </div>
-                </div>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mt-10 md:mt-0 flex-1 flex flex-col justify-between">
+      <div>
+        <h2 className="text-2xl font-bold mb-1">Payment method</h2>
+        <p className="text-sm text-gray-500 mb-6">Change how you pay for plan.</p>
+        
+        {/* Card Info */}
+        <div className="flex gap-6 items-center">
+          <div className="w-32 h-20 bg-blue-600 flex items-center justify-center rounded-xl shadow-sm text-white font-bold text-xl tracking-wider">
+            VISA
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-semibold">Visa ending in 2026</h3>
+              <span className="text-xs font-medium border border-primary-700 text-primary-700 px-2.5 py-0.5 rounded-full">
+                Default
+              </span>
             </div>
-
-            <hr className="my-4"/>
-            <div className="flex justify-end">
-                <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50">
-                    <Edit className="w-5 h-5 mr-2" />
-                    <span>Edit</span>
-                </button>
+            <div className="text-sm text-gray-500 flex items-center gap-1.5">
+              <CreditCard className="w-4 h-4" />
+              <span>Expiry date: 12/2026</span>
             </div>
+            <div className="text-sm text-gray-500 flex items-center gap-1.5">
+              <Mail className="w-4 h-4" />
+              <span>billing@baseclup.com</span>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div>
+        <hr className="my-4 border-gray-200" />
+        <div className="flex justify-end">
+          <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
+            <Edit className="w-4 h-4 mr-2" />
+            <span>Edit</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
 const ResidenceCard = ({
-    property,
-    currentLease,
+  property,
+  currentLease,
 }: {
-    property: Property;
-    currentLease: Lease;
+  property: Property;
+  currentLease: Lease;
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 flex-1 flex flex-col justify-between">
-        {/* Header */}
-        <div className="flex gap-5">
-            <div className="w-64 h-32 object-cover bg-slate-500 rounded-xl"></div>
+      {/* Header */}
+      <div className="flex gap-5">
+        {property.photoUrls?.[0] ? (
+          <img
+            src={property.photoUrls[0]}
+            alt={property.name}
+            className="w-64 h-36 object-cover rounded-xl shrink-0"
+          />
+        ) : (
+          <div className="w-64 h-36 bg-slate-200 rounded-xl flex items-center justify-center text-gray-400 font-medium shrink-0">
+            No Image
+          </div>
+        )}
 
-            <div className="flex flex-col justify-between">
-                <div>
-                    <div className="bg-green-500 w-fit text-white px-4 py-1 rounded-full text-sm font-semibold">
-                        Active Leases
-                    </div>
-
-                    <h2 className="text-2xl font-bold my-2">{property.name}</h2>
-                    <div className="flex items-center mb-2">
-                        <MapPin className="w-5 h-5 mr-1" />
-                        <span>
-                            {property.location?.city}, {property.location?.country}
-                        </span>
-                    </div>
-                </div>
-                <div className="text-xl font-bold">
-                    ${currentLease.rent}{" "}
-                    <span className="text-gray-500 text-sm font-normal">/ night</span>
-                </div>
+        <div className="flex flex-col justify-between py-1">
+          <div>
+            <div className="bg-green-500 w-fit text-white px-3 py-1 rounded-full text-xs font-semibold mb-2">
+              Active Lease
             </div>
+
+            <h2 className="text-2xl font-bold my-1">{property.name}</h2>
+            <div className="flex items-center text-gray-600 text-sm mb-2">
+              <MapPin className="w-4 h-4 mr-1 shrink-0" />
+              <span>
+                {property.location?.address ? `${property.location.address}, ` : ''}
+                {property.location?.city}, {property.location?.country}
+              </span>
+            </div>
+          </div>
+          <div className="text-xl font-bold text-primary-700">
+            ${currentLease.rent}{" "}
+            <span className="text-gray-500 text-sm font-normal">/ month</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dates & Action Buttons */}
+      <div className="mt-6">
+        <hr className="my-4 border-gray-200" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500">Start Date:</span>
+            <span className="font-semibold text-gray-800">
+              {new Date(currentLease.startDate).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+          <div className="hidden sm:block border-l border-gray-300 h-4" />
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500">Next Payment:</span>
+            <span className="font-semibold text-gray-800">
+              {new Date(currentLease.endDate).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
         </div>
 
-        {/* Dates */}
-        <div>
-            <hr className="my-4" />
-            <div className="flex justify-between items-center">
-                <div className="xl:flex">
-                    <div className="tẽt-gray-500 mr-2">Start Date: </div>
-                    <div className="font-semibold">
-                        {new Date(currentLease.startDate).toLocaleString('vi-VN')}
-                    </div>
-                </div>
-                <div className="border-[0.5px] border-primary-300 h-4">
-                    <div className="xl:flex">
-                        <div className="text-gray-500 mr-2">Next Payment: </div>
-                        <div className="font-semibold">
-                            {new Date(currentLease.endDate).toLocaleString('vi-VN')}
-                        </div>
-                    </div>
-                </div>
-                <hr className="my-4" />
-            </div>
-            {/* Button */}
-            <div className="flex justify-end gap-2 w-full">
-                <button className="bg-white border border-gray-300 00 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50">
-                    <User className="w-5 h-5 mr-2" />
-                    Manager
-                </button>
-                <button className="bg-white border border-gray-300 00 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50">
-                    <Download className="w-5 h-5 mr-2" />
-                    Download Agreement
-                </button>
-            </div>
+        <hr className="my-4 border-gray-200" />
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 w-full">
+          <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
+            <User className="w-4 h-4 mr-2" />
+            Manager
+          </button>
+          <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
+            <Download className="w-4 h-4 mr-2" />
+            Download Agreement
+          </button>
         </div>
+      </div>
     </div>
   );
 };

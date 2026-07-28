@@ -16,7 +16,6 @@ const FiltersFull = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
-  const filters = useAppSelector((state) => state.global.filters);
   const [localFilters, setLocalFilters] = useState(initialState.filters);
   const isFiltersFullOpen = useAppSelector(
     (state) => state.global.isFiltersFullOpen
@@ -58,24 +57,43 @@ const FiltersFull = () => {
   const handleLocationSearch = async () => {
     try {
         const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-                localFilters.location
-            )}.json?access_token=${
-                process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-            }&fuzzyMatch=true`
+            `https://places.geo.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/v2/search-text?key=${process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    QueryText: localFilters.location,
+                    MaxResults: 1,
+                    Language: "vi",
+                    BiasPosition: [106.6297, 10.8231], // Ho Chi Minh City center
+                    Filter: {
+                        IncludeCountries: ["VNM"],
+                    },
+                }),
+            }
         );
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
         const data = await response.json();
-        if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
+        const place = data.ResultItems?.[0];
+
+        if (place?.Position) {
+            const [lng, lat] = place.Position;
             setLocalFilters((prev) => ({
                 ...prev,
+                location: localFilters.location,
                 coordinates: [lng, lat],
             }));
         }
-    } catch (err) {
-        console.error("Error search location:", err);
+    } catch (error) {
+        console.error("Error fetching location:", error);
     }
-  };
+  }
 
   if (!isFiltersFullOpen) {
     return null;
@@ -90,13 +108,14 @@ const FiltersFull = () => {
                 <div className="flex items-center">
                     <Input 
                         placeholder="Enter location"
-                        value={filters.location}
+                        value={localFilters.location}
                         onChange={(e) => 
                             setLocalFilters((prev) => ({
                                 ...prev,
                                 location: e.target.value
                             }))
                         }
+                        onKeyDown={(e) => e.key === 'Enter' && handleLocationSearch()}
                         className="rounded-l-xl rounded-r-none border-r-0"
                     />
                     <Button 

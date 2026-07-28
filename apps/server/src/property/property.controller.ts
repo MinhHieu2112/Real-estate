@@ -2,8 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Param,
-  ParseArrayPipe,
   ParseIntPipe,
   Post,
   Query,
@@ -15,6 +15,7 @@ import { GetPropertyDto } from './dto/get-property.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreatePropertyDto } from './dto/create-property.dto';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Controller('properties')
 export class PropertyController {
@@ -32,13 +33,9 @@ export class PropertyController {
     status: 400,
     description: 'Bad request',
   })
-  async getProperties(
-    @Query() getPropertyDto: GetPropertyDto,
-    @Query('favoriteIds', new ParseArrayPipe({ items: Number, optional: true }))
-    favoritesIds?: number[],
-  ) {
+  async getProperties(@Query() getPropertyDto: GetPropertyDto) {
     return await this.propertyService.getProperties(
-      favoritesIds || [],
+      getPropertyDto.favoriteIds || [],
       getPropertyDto,
     );
   }
@@ -59,13 +56,29 @@ export class PropertyController {
     return await this.propertyService.getPropertyById(id);
   }
 
+  @Get(':id/leases')
+  @ApiOperation({
+    summary: 'Get property leases',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Get property leases successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  async getPropertyLeases(@Param('id', ParseIntPipe) id: number) {
+    return await this.propertyService.getPropertyLeases(id);
+  }
+
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
   @ApiOperation({
     summary: 'Create property',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Upload property successfully',
   })
   @ApiResponse({
@@ -77,5 +90,30 @@ export class PropertyController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     return await this.propertyService.createProperty(createPropertyDto, files);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FilesInterceptor('files'))
+  @ApiOperation({
+    summary: 'Update property',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Update property successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  async updateProperty(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePropertyDto: UpdatePropertyDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    return await this.propertyService.updateProperty(
+      id,
+      updatePropertyDto,
+      files,
+    );
   }
 }

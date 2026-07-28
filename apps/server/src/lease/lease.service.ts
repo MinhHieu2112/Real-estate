@@ -20,11 +20,11 @@ export class LeaseService {
     return leases;
   }
 
-  // Get lease payment
-  async getLeasePayment(leaseId: number) {
-    const payments = await this.prisma.lease.findUniqueOrThrow({
+  // Get lease payments
+  async getLeasePayments(leaseId: number) {
+    const payments = await this.prisma.payment.findMany({
       where: {
-        id: leaseId,
+        leaseId,
       },
     });
     return payments;

@@ -1,8 +1,8 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { LeaseService } from './lease.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@Controller('lease')
+@Controller('leases')
 export class LeaseController {
   constructor(private readonly leaseService: LeaseService) {}
 
@@ -22,9 +22,9 @@ export class LeaseController {
     return await this.leaseService.findAll();
   }
 
-  @Get()
+  @Get(':id/payments')
   @ApiOperation({
-    summary: 'Get payment by id',
+    summary: 'Get lease payments',
   })
   @ApiResponse({
     status: 200,
@@ -34,7 +34,7 @@ export class LeaseController {
     status: 500,
     description: 'Internal server error',
   })
-  async getLeasePayment(@Param() leaseId: number) {
-    return await this.leaseService.getLeasePayment(leaseId);
+  async getLeasePayments(@Param('id', ParseIntPipe) leaseId: number) {
+    return await this.leaseService.getLeasePayments(leaseId);
   }
 }

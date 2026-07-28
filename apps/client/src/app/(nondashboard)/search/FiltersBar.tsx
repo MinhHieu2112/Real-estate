@@ -60,6 +60,48 @@ const FiltersBar = () => {
     updateURL(newFilters);
   };
 
+  const handleLocationSearch = async () => {
+    if (!searchInput.trim()) return;
+    try {
+        const response = await fetch(
+            `https://places.geo.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/v2/search-text?key=${process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    QueryText: searchInput,
+                    MaxResults: 1,
+                    Language: "vi",
+                    BiasPosition: [106.6297, 10.8231], // Ho Chi Minh City center
+                    Filter: {
+                        IncludeCountries: ["VNM"],
+                    },
+                }),
+            }
+        );
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+        const data = await response.json();
+        const place = data.ResultItems?.[0];
+
+        if (place?.Position) {
+            const [lng, lat] = place.Position as [number, number];
+            const newFilters = {
+                ...filters,
+                location: searchInput,
+                coordinates: [lng, lat] as [number, number],
+            };
+            dispatch(setFilters(newFilters));
+            updateURL(newFilters);
+        }
+    } catch (err) {
+        console.error("Failed to fetch location: ", err);
+    }
+  }
+
   return (
     <div className="flex justify-between items-center w-full py-5">
         {/* FiltersBar */}
@@ -79,13 +121,14 @@ const FiltersBar = () => {
             {/* Search Location */}
             <div className="flex items-center">
                 <Input 
-                    placeholder="Search"
+                    placeholder="Search location"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLocationSearch()}
                     className="w-40 rounded-l-xl rounded-r-none border-primary-400 border-r-0"
                     />
                 <Button
-                    // onClick={handleLocationSearch}
+                    onClick={handleLocationSearch}
                     className={`rounded-r-xl rounded-l-none border-l-none border-primary-400 shadow-none 
                                 border hover:bg-primary-700 hover:text-primary-50`}>
                         <Search className="w-4 h-4" />

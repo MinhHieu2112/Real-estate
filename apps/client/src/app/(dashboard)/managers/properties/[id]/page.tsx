@@ -15,7 +15,7 @@ import {
   useGetPropertyLeasesQuery,
   useGetPropertyQuery,
 } from "@/state/api";
-import { ArrowDownToLine, ArrowLeft, Check, Download } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, Check, Download, Edit } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -57,10 +57,19 @@ const PropertyTenants = () => {
         <span>Back to Properties</span>
       </Link>
 
-      <Header
-        title={property?.name || "My Property"}
-        subtitle="Manage tenants and leases for this property"
-      />
+      <div className="flex justify-between items-center mb-6">
+        <Header
+          title={property?.name || "My Property"}
+          subtitle="Manage tenants and leases for this property"
+        />
+        <Link
+          href={`/managers/properties/${propertyId}/edit`}
+          className="bg-primary-700 hover:bg-primary-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center shadow transition-all"
+        >
+          <Edit className="w-4 h-4 mr-2" />
+          <span>Edit Property</span>
+        </Link>
+      </div>
 
       <div className="w-full space-y-6">
         <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden p-6">

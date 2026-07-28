@@ -6,6 +6,7 @@ import Loading from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetApplicationsQuery, useGetAuthUserQuery, useUpdateApplicationStatusMutation } from '@/state/api'
 import { CircleCheckBig, Download, File, Hospital } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react'
 
@@ -157,6 +158,19 @@ const Applications = () => {
                 </TabsContent>
             ))}
         </Tabs>
+        {(!filteredApplications || filteredApplications.length === 0) && (
+            <div className="flex flex-col items-center">
+                <Image
+                    src="/not-found.png"
+                    alt="Not Found"
+                    width={500}
+                    height={500}
+                />
+                <p className="text-gray-500 text-xl mt-8">
+                    You don&apos;t have any applications yet
+                </p>
+            </div>
+        )}
     </div>
   )
 }

@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Edit, X, Plus } from "lucide-react";
+import { Edit, X, Plus, ChevronDown, Check } from "lucide-react";
 import { registerPlugin } from "filepond";
 import { FilePond } from "react-filepond";
 import "filepond/dist/filepond.min.css";
@@ -44,6 +44,7 @@ interface FormFieldProps {
     | "textarea"
     | "number"
     | "select"
+    | "multi-select"
     | "switch"
     | "password"
     | "file"
@@ -114,6 +115,16 @@ export const CustomFormField: React.FC<FormFieldProps> = ({
               ))}
             </SelectContent>
           </Select>
+        );
+      case "multi-select":
+        return (
+          <MultiSelectField
+            options={options}
+            value={field.value}
+            onChange={field.onChange}
+            placeholder={placeholder || `Select ${label.toLowerCase()}...`}
+            inputClassName={inputClassName}
+          />
         );
       case "switch":
         return (
@@ -267,6 +278,124 @@ const MultiInputField: React.FC<MultiInputFieldProps> = ({
         <Plus className="w-4 h-4 mr-2" />
         Add Item
       </Button>
+    </div>
+  );
+};
+
+interface MultiSelectFieldProps {
+  options?: { value: string; label: string }[];
+  value: string | string[];
+  onChange: (value: string[]) => void;
+  placeholder?: string;
+  inputClassName?: string;
+}
+
+const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
+  options = [],
+  value,
+  onChange,
+  placeholder = "Select options...",
+  inputClassName = "",
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  const selectedValues: string[] = Array.isArray(value)
+    ? value
+    : typeof value === "string" && value.length > 0
+    ? value.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const handleToggleOption = (optionValue: string) => {
+    const isSelected = selectedValues.includes(optionValue);
+    const updated = isSelected
+      ? selectedValues.filter((val) => val !== optionValue)
+      : [...selectedValues, optionValue];
+    onChange(updated);
+  };
+
+  const handleRemove = (e: React.MouseEvent, optionValue: string) => {
+    e.stopPropagation();
+    const updated = selectedValues.filter((val) => val !== optionValue);
+    onChange(updated);
+  };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full min-h-[48px] border border-gray-200 rounded-md p-2 flex items-center justify-between cursor-pointer bg-white ${inputClassName}`}
+      >
+        <div className="flex flex-wrap gap-1.5 flex-1 pr-2">
+          {selectedValues.length > 0 ? (
+            selectedValues.map((val) => {
+              const label =
+                options.find((opt) => opt.value === val)?.label || val;
+              return (
+                <span
+                  key={val}
+                  className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200"
+                >
+                  {label}
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemove(e, val)}
+                    className="hover:text-red-500 focus:outline-none ml-0.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-gray-400 text-sm">{placeholder}</span>
+          )}
+        </div>
+        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg py-1">
+          {options.map((option) => {
+            const isSelected = selectedValues.includes(option.value);
+            return (
+              <div
+                key={option.value}
+                onClick={() => handleToggleOption(option.value)}
+                className={`flex items-center px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                  isSelected
+                    ? "bg-primary-50 font-medium text-primary-900"
+                    : "text-gray-700"
+                }`}
+              >
+                <div
+                  className={`mr-2.5 flex h-4 w-4 items-center justify-center rounded border ${
+                    isSelected
+                      ? "bg-primary-700 border-primary-700 text-white"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {isSelected && <Check className="h-3 w-3" />}
+                </div>
+                <span>{option.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

@@ -10,7 +10,8 @@ const { PrismaClient, Prisma } = require('../src/generated/prisma/client');
 
 // 1. Khởi tạo pool kết nối từ thư viện pg
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL 
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 // 2. Bọc pool vào PrismaPg adapter

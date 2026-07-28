@@ -12,8 +12,14 @@ export const propertySchema = z.object({
   photoUrls: z
     .array(z.instanceof(File))
     .min(1, "At least one photo is required"),
-  amenities: z.string().min(1, "Amenities are required"),
-  highlights: z.string().min(1, "Highlights are required"),
+  amenities: z.union([
+    z.array(z.string()).min(1, "Amenities are required"),
+    z.string().min(1, "Amenities are required"),
+  ]),
+  highlights: z.union([
+    z.array(z.string()).min(1, "Highlights are required"),
+    z.string().min(1, "Highlights are required"),
+  ]),
   beds: z.coerce.number().positive().min(0).max(10).int(),
   baths: z.coerce.number().positive().min(0).max(10).int(),
   squareFeet: z.coerce.number().int().positive(),
@@ -26,6 +32,14 @@ export const propertySchema = z.object({
 });
 
 export type PropertyFormData = z.infer<typeof propertySchema>;
+
+export const editPropertySchema = propertySchema.extend({
+  photoUrls: z
+    .array(z.union([z.instanceof(File), z.string()]))
+    .optional(),
+});
+
+export type EditPropertyFormData = z.infer<typeof editPropertySchema>;
 
 export const applicationSchema = z.object({
   name: z.string().min(1, "Name is required"),

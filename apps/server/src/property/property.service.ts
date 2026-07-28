@@ -13,6 +13,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { GetPropertyDto } from './dto/get-property.dto';
 import pLimit from 'p-limit';
 import axios from 'axios';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertyService {
@@ -58,7 +59,7 @@ export class PropertyService {
         ON p."locationId" = l.id
       ${
         whereConditions.length > 0
-          ? Prisma.sql`WHERE ${Prisma.join(whereConditions, 'AND')}`
+          ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
           : Prisma.empty
       }`;
     return await this.prisma.$queryRaw(query);
@@ -167,29 +168,54 @@ export class PropertyService {
       ),
     );
 
-    // Geocode the address
-    const geocodingUrl = `https://nominatim.openstreetmap.org/search?${new URLSearchParams(
-      {
-        street: address,
-        city,
-        country,
-        postalcode: postalCode || '',
-        format: 'json',
-        limit: '1',
-      },
-    ).toString()}`;
+    // Geocode the address with multi-step fallback
+    let longitude = 106.6297; // Default fallback to Ho Chi Minh City coordinates
+    let latitude = 10.8231;
 
-    // Get lat, lng from geocoding
-    const geocodingResponse = await axios.get(geocodingUrl, {
-      headers: {
-        'User-Agent': 'RealEstateApp (justsomedummyemail@gmail.com)',
-      },
-    });
+    try {
+      // Step 1: Freeform query with full address
+      const fullQuery = `${address}, ${city}, ${country}`;
+      const geocodingUrl = `https://nominatim.openstreetmap.org/search?${new URLSearchParams(
+        {
+          q: fullQuery,
+          format: 'json',
+          limit: '1',
+        },
+      ).toString()}`;
 
-    const [longitude, latitude] =
-      geocodingResponse.data[0]?.lon && geocodingResponse.data[0]?.lat
-        ? [geocodingResponse.data[0].lon, geocodingResponse.data[0].lat]
-        : [0, 0];
+      let geocodingResponse = await axios.get(geocodingUrl, {
+        headers: {
+          'User-Agent': 'RealEstateApp (justsomedummyemail@gmail.com)',
+        },
+      });
+
+      // Step 2: Fallback to city and country if full address is not found
+      if (!geocodingResponse.data || geocodingResponse.data.length === 0) {
+        const cityUrl = `https://nominatim.openstreetmap.org/search?${new URLSearchParams(
+          {
+            q: `${city}, ${country}`,
+            format: 'json',
+            limit: '1',
+          },
+        ).toString()}`;
+        geocodingResponse = await axios.get(cityUrl, {
+          headers: {
+            'User-Agent': 'RealEstateApp (justsomedummyemail@gmail.com)',
+          },
+        });
+      }
+
+      if (
+        geocodingResponse.data &&
+        geocodingResponse.data[0]?.lon &&
+        geocodingResponse.data[0]?.lat
+      ) {
+        longitude = parseFloat(geocodingResponse.data[0].lon);
+        latitude = parseFloat(geocodingResponse.data[0].lat);
+      }
+    } catch (err) {
+      console.error('Geocoding failed, using fallback coordinates:', err);
+    }
 
     const [location] = await this.prisma.$queryRaw<Location[]>`
       INSERT INTO "Location" (address, city, state, country, "postalCode", coordinates)
@@ -204,6 +230,90 @@ export class PropertyService {
         photoUrls,
         locationId: location.id,
         managerCognitoId,
+      },
+      include: {
+        location: true,
+        manager: true,
+      },
+    });
+  }
+
+  async getPropertyLeases(propertyId: number) {
+    return await this.prisma.lease.findMany({
+      where: { propertyId },
+      include: {
+        tenant: true,
+      },
+    });
+  }
+
+  async updateProperty(
+    id: number,
+    updatePropertyDto: UpdatePropertyDto,
+    files?: Express.Multer.File[],
+  ) {
+    const existingProperty = await this.prisma.property.findUnique({
+      where: { id },
+      include: { location: true },
+    });
+
+    if (!existingProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const { address, city, state, country, postalCode, ...propertyData } =
+      updatePropertyDto;
+    delete (propertyData as any).managerCognitoId;
+
+    // Upload new photos if provided
+    let photoUrls = existingProperty.photoUrls;
+    if (files && files.length > 0) {
+      const limit = pLimit(10);
+      const newPhotoUrls = await Promise.all(
+        files.map((file) =>
+          limit(async () => {
+            const uploadParams = {
+              Bucket: process.env.S3_BUCKET_NAME,
+              Key: `properties/${Date.now()}-${file.originalname}`,
+              Body: file.buffer,
+              ContentType: file.mimetype,
+            };
+
+            const uploadResult = await new Upload({
+              client: this.s3Client,
+              params: uploadParams,
+            }).done();
+
+            if (!uploadResult.Location) {
+              throw new Error('S3 upload failed: Location is missing');
+            }
+
+            return uploadResult.Location;
+          }),
+        ),
+      );
+      photoUrls = [...photoUrls, ...newPhotoUrls];
+    }
+
+    // Update location if address data is present
+    if (address || city || state || country || postalCode) {
+      await this.prisma.location.update({
+        where: { id: existingProperty.locationId },
+        data: {
+          ...(address && { address }),
+          ...(city && { city }),
+          ...(state !== undefined && { state }),
+          ...(country && { country }),
+          ...(postalCode !== undefined && { postalCode }),
+        },
+      });
+    }
+
+    return await this.prisma.property.update({
+      where: { id },
+      data: {
+        ...propertyData,
+        photoUrls,
       },
       include: {
         location: true,

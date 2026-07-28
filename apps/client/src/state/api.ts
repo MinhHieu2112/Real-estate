@@ -305,6 +305,28 @@ export const api = createApi({
           });
         },
       }),
+
+      updateProperty: build.mutation<
+        Property,
+        { id: number; formData: FormData }
+      >({
+        query: ({ id, formData }) => ({
+          url: `properties/${id}`,
+          method: "PATCH",
+          body: formData,
+        }),
+        invalidatesTags: (result, error, { id }) => [
+          { type: "Properties", id },
+          { type: "Properties", id: "LIST" },
+          { type: "PropertyDetails", id },
+        ],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Property updated successfully!",
+            error: "Failed to update property.",
+          });
+        },
+      }),
     }),
   });
 
@@ -324,6 +346,7 @@ export const {
   useAddFavoritePropertyMutation,
   useRemoveFavoritePropertyMutation,
   useCreatePropertyMutation,
+  useUpdatePropertyMutation,
   useCreateApplicationMutation,
   useUpdateApplicationStatusMutation
 } = api;

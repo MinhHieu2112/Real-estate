@@ -93,8 +93,8 @@ export class PropertyQueryBuilder {
         SELECT 1
         FROM "Lease" l
         WHERE l."propertyId" = p.id
-          AND l."startDate" <= ${date.toLocaleString('vi-VN')}
-          AND l."endDate" >= ${date.toLocaleString('vi-VN')}
+          AND l."startDate" <= ${date}
+          AND l."endDate" >= ${date}
       )
     `,
     );
