@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { ListApplicationDto } from './dto/list-application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
+import { calculateNextPaymentDate } from '../common/utils/date.util';
 
 @Injectable()
 export class ApplicationService {
@@ -40,16 +46,6 @@ export class ApplicationService {
         tenant: true,
       },
     });
-
-    // Calculate next payment date
-    function calculateNextPaymentDate(startDate: Date) {
-      const today = new Date();
-      const nextPaymentDate = new Date(startDate);
-      while (nextPaymentDate <= today) {
-        nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-      }
-      return nextPaymentDate;
-    }
 
     // Collect IDs to query in a single batch.
     const propertyIds = applications.map((app) => app.propertyId);
@@ -103,6 +99,8 @@ export class ApplicationService {
   async createApplication(createApplication: CreateApplicationDto) {
     const {
       applicationDate,
+      startDate,
+      endDate,
       status,
       propertyId,
       tenantCognitoId,
@@ -123,9 +121,45 @@ export class ApplicationService {
       throw new NotFoundException('Property not found');
     }
 
+    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+      throw new BadRequestException('End date must be after start date');
+    }
+
+    // 1. Ngăn tạo mới nếu đã có Application trạng thái Pending hoặc Approved cho cùng Property
+    const existingApplication = await this.prisma.application.findFirst({
+      where: {
+        propertyId,
+        tenantCognitoId,
+        status: { in: ['Pending', 'Approved'] },
+      },
+    });
+
+    if (existingApplication) {
+      throw new ConflictException(
+        `You already have a ${existingApplication.status.toLowerCase()} application for this property.`,
+      );
+    }
+
+    // 2. Ngăn tạo mới nếu Tenant đang có Lease hoạt động cho cùng Property
+    const activeLease = await this.prisma.lease.findFirst({
+      where: {
+        propertyId,
+        tenantCognitoId,
+        endDate: { gte: new Date() },
+      },
+    });
+
+    if (activeLease) {
+      throw new ConflictException(
+        'You already have an active lease for this property.',
+      );
+    }
+
     const application = await this.prisma.application.create({
       data: {
         applicationDate: new Date(applicationDate),
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
         status: status || 'Pending',
         name,
         email,
@@ -148,82 +182,99 @@ export class ApplicationService {
     return application;
   }
 
-  // Update application
+  // Update application status
   async updateApplicationStatus(
     applicationId: number,
     updateApplication: UpdateApplicationDto,
   ) {
     const { status } = updateApplication;
-    const application = await this.prisma.application.findUnique({
-      where: { id: applicationId },
-      include: {
-        property: true,
-        tenant: true,
-      },
-    });
 
-    if (!application) {
-      throw new NotFoundException('Application not found');
-    }
-
-    if (status === 'Approved') {
-      const newLease = await this.prisma.lease.create({
-        data: {
-          startDate: new Date(),
-          endDate: new Date(
-            new Date().setFullYear(new Date().getFullYear() + 1),
-          ),
-          rent: application.property.pricePerMonth,
-          deposit: application.property.securityDeposit,
-          propertyId: application.propertyId,
-          tenantCognitoId: application.tenantCognitoId,
-        },
-      });
-
-      // Update the property to connect the tenant
-      await this.prisma.property.update({
-        where: { id: application.propertyId },
-        data: {
-          tenants: {
-            connect: {
-              cognitoId: application.tenantCognitoId,
-            },
-          },
-        },
-      });
-
-      // Update the application with the new lease ID
-      await this.prisma.application.update({
+    return this.prisma.$transaction(async (tx) => {
+      const application = await tx.application.findUnique({
         where: { id: Number(applicationId) },
-        data: {
-          status,
-          leaseId: newLease.id,
-        },
         include: {
           property: true,
           tenant: true,
-          lease: true,
         },
       });
-    } else {
-      // Update the application status (for both "Denied" and other status)
-      await this.prisma.application.update({
-        where: {
-          id: Number(applicationId),
-        },
-        data: { status },
-      });
-    }
 
-    // Response with the updated application
-    const updatedApplication = await this.prisma.application.findUnique({
-      where: { id: Number(applicationId) },
-      include: {
-        property: true,
-        tenant: true,
-        lease: true,
-      },
+      if (!application) {
+        throw new NotFoundException('Application not found');
+      }
+
+      if (status === 'Approved') {
+        // Dynamic lease start and end dates from application requested range, or fallback to 1 year
+        const leaseStartDate = application.startDate
+          ? new Date(application.startDate)
+          : new Date();
+        const leaseEndDate = application.endDate
+          ? new Date(application.endDate)
+          : new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+
+        // Prevent approval if property already has an active lease overlapping with requested period
+        const activeLease = await tx.lease.findFirst({
+          where: {
+            propertyId: application.propertyId,
+            startDate: { lte: leaseEndDate },
+            endDate: { gte: leaseStartDate },
+          },
+        });
+
+        if (activeLease) {
+          throw new ConflictException(
+            'Cannot approve application: Property already has an active lease overlapping with requested dates.',
+          );
+        }
+
+        // Create new lease with dynamic dates
+        const newLease = await tx.lease.create({
+          data: {
+            startDate: leaseStartDate,
+            endDate: leaseEndDate,
+            rent: application.property.pricePerMonth,
+            deposit: application.property.securityDeposit,
+            propertyId: application.propertyId,
+            tenantCognitoId: application.tenantCognitoId,
+          },
+        });
+
+        // Update the property to connect the tenant
+        await tx.property.update({
+          where: { id: application.propertyId },
+          data: {
+            tenants: {
+              connect: {
+                cognitoId: application.tenantCognitoId,
+              },
+            },
+          },
+        });
+
+        // Update the application with Approved status and link lease ID
+        return tx.application.update({
+          where: { id: Number(applicationId) },
+          data: {
+            status,
+            leaseId: newLease.id,
+          },
+          include: {
+            property: true,
+            tenant: true,
+            lease: true,
+          },
+        });
+      } else {
+        // Update application status for non-approval statuses (e.g. Denied)
+        return tx.application.update({
+          where: { id: Number(applicationId) },
+          data: { status },
+          include: {
+            property: true,
+            tenant: true,
+            lease: true,
+          },
+        });
+      }
     });
-    return updatedApplication;
   }
 }

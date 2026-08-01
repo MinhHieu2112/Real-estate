@@ -12,6 +12,7 @@ const CallToActionSection = () => {
         src="/landing-call-to-action.jpg"
         alt="Rentiful Search Section Background"
         fill
+        sizes="100vw"
         className="object-cover object-center"
       />
       <div className="absolute inset-0 bg-black bg-opacity-60"></div>
@@ -25,20 +26,19 @@ const CallToActionSection = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0 md:mr-10">
             <h2 className="text-2xl font-bold text-white">
-              Find Your Dream Rental Property
+              Tìm kiếm bất động sản cho thuê mơ ước của bạn
             </h2>
           </div>
           <div>
             <p className="text-white mb-3">
-              Discover a wide range of rental properties in your desired
-              location.
+              Khám phá danh sách đa dạng các bất động sản cho thuê tại vị trí bạn mong muốn.
             </p>
             <div className="flex justify-center md:justify-start gap-4">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="inline-block text-primary-700 bg-white rounded-lg px-6 py-3 font-semibold hover:bg-primary-500 hover:text-primary-50"
               >
-                Search
+                Tìm kiếm
               </button>
             </div>
           </div>

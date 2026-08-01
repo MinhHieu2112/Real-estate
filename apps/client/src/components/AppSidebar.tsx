@@ -11,13 +11,13 @@ const AppSidebar = ({ userType }: AppSidebarProps) => {
   const { toggleSidebar, open } = useSidebar();
   const navLinks =
     userType === "manager"
-    ? [{ icon: Building, label: "Properties", href: "/managers/properties" },
-       { icon: FileText, label: "Applications", href: "/managers/applications" },
-       { icon: Settings, label: "Settings", href: "/managers/settings" }]
-    : [{ icon: Heart, label: "Favorites", href: "/tenants/favorites" },
-       { icon: FileText, label: "Applications", href: "/tenants/applications" },
-       { icon: Home, label: "Residences", href: "/tenants/residences" },
-       { icon: Settings, label: "Settings", href: "/tenants/settings" }]
+    ? [{ icon: Building, label: "Bất động sản của tôi", href: "/managers/properties" },
+       { icon: FileText, label: "Đơn đăng ký thuê", href: "/managers/applications" },
+       { icon: Settings, label: "Cài đặt tài khoản", href: "/managers/settings" }]
+    : [{ icon: Heart, label: "Danh sách yêu thích", href: "/tenants/favorites" },
+       { icon: FileText, label: "Đơn đã gửi", href: "/tenants/applications" },
+       { icon: Home, label: "Nơi ở hiện tại", href: "/tenants/residences" },
+       { icon: Settings, label: "Cài đặt tài khoản", href: "/tenants/settings" }]
 
   return (
     <Sidebar
@@ -39,7 +39,7 @@ const AppSidebar = ({ userType }: AppSidebarProps) => {
                             {open ? (
                                 <>
                                     <h1 className="text-xl font-bold text-gray-800">
-                                        {userType === "manager" ? "Manager View": "Rental View"}
+                                        {userType === "manager" ? "Trang quản lý": "Trang chủ"}
                                     </h1>
                                     <button
                                         className="hover:bg-gray-100 p-2 rounded-md"
@@ -92,7 +92,6 @@ const AppSidebar = ({ userType }: AppSidebarProps) => {
                                     </div>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-
                     )
                 })}
             </SidebarMenu>

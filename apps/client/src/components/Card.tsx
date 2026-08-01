@@ -56,27 +56,13 @@ const Card = ({
           </button>
         )}
 
-        {/* Bottom-left: badges */}
-        <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 z-10">
-          {property.isPetsAllowed && (
-            <span className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">
-              🐾 Pets OK
-            </span>
-          )}
-          {property.isParkingIncluded && (
-            <span className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">
-              🚗 Parking
-            </span>
-          )}
-        </div>
-
         {/* Bottom-right: price overlay */}
         <div className="absolute bottom-3 right-3 z-10">
           <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl px-3 py-1.5">
             <span className="text-white font-bold text-sm">
-              ${property.pricePerMonth.toFixed(0)}
+              {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
             </span>
-            <span className="text-white/80 text-[10px] ml-0.5">/mo</span>
+            <span className="text-white/80 text-[10px] ml-0.5">/tháng</span>
           </div>
         </div>
       </div>

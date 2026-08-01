@@ -49,8 +49,8 @@ const ApplicationCard = ({
               </div>
             </div>
             <div className="text-base font-bold text-primary-700">
-              ${application.property?.pricePerMonth?.toLocaleString()}{" "}
-              <span className="text-xs font-normal text-gray-500">/ month</span>
+              {application.property?.pricePerMonth?.toLocaleString("vi-VN")}{" "}
+              <span className="text-xs font-normal text-gray-500">VNĐ / tháng</span>
             </div>
           </div>
         </div>
@@ -58,34 +58,38 @@ const ApplicationCard = ({
         {/* Status & Dates Section */}
         <div className="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6 gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status:</span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái:</span>
             <span className={`px-2.5 py-0.5 border rounded-full text-xs font-semibold ${statusBadge}`}>
-              {application.status}
+              {application.status === "Approved" ? "Đã duyệt" : application.status === "Denied" ? "Đã từ chối" : "Chờ duyệt"}
             </span>
           </div>
           <div className="space-y-1.5 text-xs text-gray-600 mt-2">
             <div className="flex justify-between items-center">
-              <span className="text-gray-500">Start Date:</span>
+              <span className="text-gray-500">Ngày bắt đầu:</span>
               <span className="font-medium text-gray-800">
                 {application.lease?.startDate
                   ? new Date(application.lease.startDate).toLocaleDateString('vi-VN')
-                  : "N/A"}
+                  : application.startDate
+                  ? new Date(application.startDate).toLocaleDateString('vi-VN')
+                  : "Không xác định"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-500">End Date:</span>
+              <span className="text-gray-500">Ngày kết thúc:</span>
               <span className="font-medium text-gray-800">
                 {application.lease?.endDate
                   ? new Date(application.lease.endDate).toLocaleDateString('vi-VN')
-                  : "N/A"}
+                  : application.endDate
+                  ? new Date(application.endDate).toLocaleDateString('vi-VN')
+                  : "Không xác định"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-500">Next Payment:</span>
+              <span className="text-gray-500">Thanh toán tiếp theo:</span>
               <span className="font-medium text-gray-800">
                 {application.lease?.nextPaymentDate
                   ? new Date(application.lease.nextPaymentDate).toLocaleDateString('vi-VN')
-                  : "N/A"}
+                  : "Không xác định"}
               </span>
             </div>
           </div>
@@ -94,25 +98,25 @@ const ApplicationCard = ({
         {/* Contact Person Section */}
         <div className="lg:col-span-3 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-            {userType === "manager" ? "Tenant" : "Manager"}
+            {userType === "manager" ? "Người thuê" : "Quản lý"}
           </div>
           <div className="flex items-center gap-3">
             <Image
               src="/landing-i1.png"
-              alt={contactPerson?.name || "Contact Person"}
+              alt={contactPerson?.name || "Người liên hệ"}
               width={38}
               height={38}
               className="rounded-full shrink-0 border border-gray-200"
             />
             <div className="min-w-0 text-xs space-y-0.5">
-              <div className="font-bold text-gray-900 truncate">{contactPerson?.name || "N/A"}</div>
+              <div className="font-bold text-gray-900 truncate">{contactPerson?.name || "Không xác định"}</div>
               <div className="flex items-center text-gray-500 truncate">
                 <PhoneCall className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
-                <span className="truncate">{contactPerson?.phoneNumber || "N/A"}</span>
+                <span className="truncate">{contactPerson?.phoneNumber || "Không xác định"}</span>
               </div>
               <div className="flex items-center text-gray-500 truncate">
                 <Mail className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
-                <span className="truncate">{contactPerson?.email || "N/A"}</span>
+                <span className="truncate">{contactPerson?.email || "Không xác định"}</span>
               </div>
             </div>
           </div>

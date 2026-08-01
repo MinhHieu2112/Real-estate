@@ -59,6 +59,8 @@ export interface Property {
 export interface Application {
   id: number;
   applicationDate: string | Date;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
   status: ApplicationStatus;
   propertyId: number;
   tenantCognitoId: string;
@@ -109,6 +111,31 @@ export interface User {
   };
   userInfo: Tenant | Manager;
   userRole: "manager" | "tenant";
+}
+
+export interface Message {
+  id: number;
+  conversationId: number;
+  senderCognitoId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string | Date;
+}
+
+export interface PeerInfo {
+  cognitoId: string;
+  name: string;
+  email: string;
+}
+
+export interface ChatConversation {
+  id: number;
+  tenantCognitoId: string;
+  managerCognitoId: string;
+  lastMessage: string | null;
+  lastMessageAt: string | Date | null;
+  unreadCount: number;
+  peer: PeerInfo | null;
 }
 
 // Enums matching Prisma schema

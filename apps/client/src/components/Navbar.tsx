@@ -11,11 +11,17 @@ import { Bell, MessageCircle, Plus, Search } from "lucide-react";
 import { DropdownMenuContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { SidebarTrigger } from './ui/sidebar';
+import PopupWidget from './widgets/PopupWidget';
+import { useState } from 'react';
+import Chat from './widgets/Chat';
+import Notify from './widgets/Notify';
 
 const Navbar = () => {
     const { data: authUser } = useGetAuthUserQuery();
     const router = useRouter();
     const pathname = usePathname();
+    const [openChat, setOpenChat] = useState(false);
+    const [openNotify, setOpenNotify] = useState(false);
 
     const isDashboardPage = pathname.includes("/managers") || pathname.includes("/tenants");
 
@@ -71,14 +77,14 @@ const Navbar = () => {
                                 <>
                                     <Plus className="h-4 w-4" />
                                     <span className="hidden md:block ml-2">
-                                        Add New Property
+                                        Thêm bất động sản mới
                                     </span>
                                 </>
                             ) : (
                                 <>
                                     <Search className="h-4 w-4" />
                                     <span className="hidden md:block ml-2">
-                                        Search Properties
+                                        Tìm kiếm bất động sản
                                     </span>
                                 </>
                             )}
@@ -87,19 +93,44 @@ const Navbar = () => {
             </div>
             {!isDashboardPage && (
                 <p className="text-primary-200 hidden md:block">
-                    Discover your perfect rental apartment with our advanced search
+                    Khám phá căn hộ cho thuê lý tưởng với công cụ tìm kiếm tiên tiến
                 </p>
             )}
             <div className="flex items-center gap-5">
                 {authUser ? (
                     <>
                         <div className="relative hidden md:block">
-                            <MessageCircle className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400"></MessageCircle>
-                            <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
+                            <MessageCircle 
+                                className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenChat((prev) => !prev);
+                                }}
+                            />
+                            <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full pointer-events-none"></span>
+                            <PopupWidget 
+                                open={openChat} 
+                                title="Tin nhắn"
+                                onClose={() => setOpenChat(false)} 
+                            >
+                                <Chat />
+                            </PopupWidget>
                         </div>
                         <div className="relative hidden md:block">
-                            <Bell className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400"></Bell>
+                            <Bell 
+                                className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenNotify((prev) => !prev);
+                                }}/>
                             <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
+                            <PopupWidget
+                                open={openNotify}
+                                title="Thông báo"
+                                onClose={() => setOpenNotify(false)}
+                            >
+                                <Notify />
+                            </PopupWidget>
                         </div>
 
                         <DropdownMenu>
@@ -123,7 +154,7 @@ const Navbar = () => {
                                         : "/tenants/favorites",
                                         { scroll: false }
                                     )}>
-                                    Go to Dashboard
+                                    Trang quản lý
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-primary-200 " />
                                     <DropdownMenuItem 
@@ -132,12 +163,12 @@ const Navbar = () => {
                                             `/${authUser.userRole?.toLowerCase()}s/settings`,
                                             { scroll: false }
                                         )}>
-                                            Settings
+                                            Cài đặt
                                     </DropdownMenuItem>
                                     <DropdownMenuItem 
                                         className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
                                         onClick={handleSignOut}>
-                                        Sign out
+                                        Đăng xuất
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -149,7 +180,7 @@ const Navbar = () => {
                                 variant="outline"
                                 className="text-white border-white bg-transparent hover:bg-white hover:text-primary-700 rounded-lg"
                             >
-                                Sign In
+                                Đăng nhập
                             </Button>
                         </Link>
                         <Link href="/signup">
@@ -157,7 +188,7 @@ const Navbar = () => {
                                 variant="outline"
                                 className="bg-secondary-600 hover:bg-white hover:text-primary-700 rounded-lg"
                             >
-                                Sign Up
+                                Đăng ký
                             </Button>
                         </Link>
                     </>

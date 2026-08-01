@@ -76,6 +76,7 @@ const ImagePreview = ({ images }: ImagePreviewsProps) => {
                 src={img}
                 alt={`Property photo ${idx + 1}`}
                 fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 priority={idx === 0}
                 className="object-cover"
               />
@@ -132,7 +133,7 @@ const ImagePreview = ({ images }: ImagePreviewsProps) => {
                     : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
-                <Image src={img} alt={`Slide thumb ${i + 1}`} fill className="object-cover" />
+                <Image src={img} alt={`Slide thumb ${i + 1}`} fill sizes="(max-width: 640px) 100vw,(max-width: 1024px) 50vw, 33vw" className="object-cover" />
               </button>
             ))}
           </div>
@@ -219,7 +220,7 @@ const ImagePreview = ({ images }: ImagePreviewsProps) => {
                       : 'border-transparent opacity-50 hover:opacity-80'
                   }`}
                 >
-                  <Image src={img} alt={`Thumbnail ${i + 1}`} fill className="object-cover" />
+                  <Image src={img} alt={`Thumbnail ${i + 1}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                 </button>
               ))}
             </div>

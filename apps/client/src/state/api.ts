@@ -1,9 +1,32 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
-import { Application, Lease, Manager, Payment, Property, Tenant, User } from "@shared/types";
+import { Application, ChatConversation, Lease, Manager, Message, Payment, Property, Tenant, User } from "@shared/types";
 import { cleanParams, createNewUserInDatabase, withToast } from "@/lib/utils";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 import { FiltersState } from ".";
+
+export interface SearchPlaceResult {
+  placeId?: string;
+  label: string;
+  position: [number, number];
+  bbox?: [number, number, number, number]; // [west, south, east, north]
+}
+
+export interface AutocompleteResult {
+  placeId?: string;
+  label: string;
+}
+
+export interface DirectionsResult {
+  duration: number;
+  distance: number;
+  legs: {
+    startPosition: [number, number];
+    endPosition: [number, number];
+    distance: number;
+    duration: number;
+    steps: { startPosition: [number, number]; endPosition: [number, number]; distance: number; duration: number; }[];
+  }[];
+}
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
@@ -18,7 +41,7 @@ export const api = createApi({
     }
   }),
   reducerPath: "api",
-  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments"],
+  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments", "Conversations", "Messages"],
   endpoints: (build) => ({
     getAuthUser: build.query<User, void>({
       queryFn: async (_, _queryApi, _extraoptions, fetchWithBQ) => {
@@ -115,7 +138,7 @@ export const api = createApi({
           : [{ type: "Properties", id: "LIST" }],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch properties.",
+            error: "Không thể tải danh sách bất động sản.",
           });
         },
       }), 
@@ -125,7 +148,7 @@ export const api = createApi({
         providesTags: (result, error, id) => [{ type: "PropertyDetails", id}],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch properties.",
+            error: "Không thể tải chi tiết bất động sản.",
           });
         }
       }),
@@ -150,7 +173,7 @@ export const api = createApi({
           : [{ type: "Properties", id: "LIST" }],
       async onQueryStarted(_, { queryFulfilled }) {
         await withToast(queryFulfilled, {
-          error: "Failed to load properties.",
+          error: "Không thể tải bất động sản.",
         });
       },
     }),
@@ -169,8 +192,8 @@ export const api = createApi({
       ],
       async onQueryStarted(_, { queryFulfilled }) {
         await withToast(queryFulfilled, {
-          success: "Added to favorites!!",
-          error: "Failed to add to favorites."
+          success: "Đã thêm vào yêu thích!",
+          error: "Không thể thêm vào yêu thích."
         });
       },
     }),
@@ -189,8 +212,8 @@ export const api = createApi({
         ],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Removed from favorites!!",
-            error: "Failed to remove from favorites."
+            success: "Đã xóa khỏi yêu thích!",
+            error: "Không thể xóa khỏi yêu thích."
           });
         },
       }),
@@ -219,7 +242,7 @@ export const api = createApi({
           providesTags: ["Applications"],
           async onQueryStarted(_, { queryFulfilled }) {
             await withToast(queryFulfilled, {
-              error: "Failed to fetch applications."
+              error: "Không thể tải danh sách đơn đăng ký."
             });
           },
         }),
@@ -236,8 +259,8 @@ export const api = createApi({
         invalidatesTags: ["Applications", "Leases"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Application status updated successfully!",
-            error: "Failed to update application settings.",
+            success: "Cập nhật trạng thái đơn đăng ký thành công!",
+            error: "Không thể cập nhật trạng thái đơn đăng ký.",
           });
         },
       }),
@@ -247,7 +270,7 @@ export const api = createApi({
         providesTags: ["Leases"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch property leases.",
+            error: "Không thể tải hợp đồng thuê bất động sản.",
           });
         },
       }),
@@ -257,7 +280,7 @@ export const api = createApi({
         providesTags: ["Payments"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch payment info.",
+            error: "Không thể tải thông tin thanh toán.",
           });
         },
       }),
@@ -273,7 +296,7 @@ export const api = createApi({
             : [{ type: "Properties", id: "LIST" }],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch current residences.",
+            error: "Không thể tải danh sách nơi ở hiện tại.",
           });
         },
       }),
@@ -283,7 +306,7 @@ export const api = createApi({
         providesTags: ["Leases"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Failed to fetch leases.",
+            error: "Không thể tải danh sách hợp đồng thuê.",
           });
         },
       }),
@@ -300,8 +323,8 @@ export const api = createApi({
         ],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Property created successfully!",
-            error: "Failed to create property.",
+            success: "Tạo bất động sản thành công!",
+            error: "Không thể tạo bất động sản.",
           });
         },
       }),
@@ -322,10 +345,72 @@ export const api = createApi({
         ],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Property updated successfully!",
-            error: "Failed to update property.",
+            success: "Cập nhật bất động sản thành công!",
+            error: "Không thể cập nhật bất động sản.",
           });
         },
+      }),
+
+      searchPlace: build.query<SearchPlaceResult | null, string>({
+        query: (queryText: string) =>
+          `locations/search?query=${encodeURIComponent(queryText)}`,
+        async onQueryStarted(_: string, { queryFulfilled }: { queryFulfilled: Promise<any> }) {
+          await withToast(queryFulfilled, {
+            error: "Không thể tìm kiếm vị trí.",
+          });
+        },
+      }),
+
+      // Autocomplete address for search input (debounced).
+      autocompleteAddress: build.query<AutocompleteResult[], string>({
+        query: (queryText: string) =>
+          `locations/autocomplete?query=${encodeURIComponent(queryText)}`,
+      }),
+
+      // Get turn-by-turn directions to a property.
+      getDirections: build.query<
+        DirectionsResult,
+        { originLat: number; originLng: number; destinationLat: number; destinationLng: number; travelMode?: string }
+      >({
+        query: (params: { originLat: number; originLng: number; destinationLat: number; destinationLng: number; travelMode?: string }) => ({ url: 'locations/directions', params: cleanParams(params) }),
+        async onQueryStarted(_: any, { queryFulfilled }: { queryFulfilled: Promise<any> }) {
+          await withToast(queryFulfilled, {
+            error: "Không thể tải chỉ đường.",
+          });
+        },
+      }),
+
+      // ─── Chat ──────────────────────────────────────────────────────────────
+
+      getConversations: build.query<ChatConversation[], string>({
+        query: (userCognitoId: string) => ({ url: "messages/conversations", params: { userCognitoId } }),
+        providesTags: ["Conversations"],
+      }),
+
+      getOrCreateConversation: build.mutation<ChatConversation, { tenantCognitoId: string; managerCognitoId: string }>({
+        query: (body: { tenantCognitoId: string; managerCognitoId: string }) => ({ url: "messages/conversations", method: "POST", body }),
+        invalidatesTags: ["Conversations"],
+      }),
+
+      getMessages: build.query<Message[], number>({
+        query: (conversationId: number) => ({ url: "messages", params: { conversationId } }),
+        providesTags: (result: Message[] | undefined, error: any, conversationId: number) =>
+          result ? [{ type: "Messages", id: conversationId }] : [],
+      }),
+
+      sendMessage: build.mutation<Message, { conversationId: number; senderCognitoId: string; content: string }>({
+        query: (body: { conversationId: number; senderCognitoId: string; content: string }) => ({ url: "messages", method: "POST", body }),
+        invalidatesTags: (result: Message | undefined) =>
+          result ? [{ type: "Messages", id: result.conversationId }, "Conversations"] : [],
+      }),
+
+      markAsRead: build.mutation<{ updatedCount: number }, { conversationId: number; userCognitoId: string }>({
+        query: ({ conversationId, userCognitoId }: { conversationId: number; userCognitoId: string }) => ({
+          url: `messages/conversations/${conversationId}/read`,
+          method: "PATCH",
+          body: { userCognitoId },
+        }),
+        invalidatesTags: ["Conversations"],
       }),
     }),
   });
@@ -348,5 +433,14 @@ export const {
   useCreatePropertyMutation,
   useUpdatePropertyMutation,
   useCreateApplicationMutation,
-  useUpdateApplicationStatusMutation
+  useUpdateApplicationStatusMutation,
+  useSearchPlaceQuery,
+  useAutocompleteAddressQuery,
+  useGetDirectionsQuery,
+  // Chat
+  useGetConversationsQuery,
+  useGetOrCreateConversationMutation,
+  useGetMessagesQuery,
+  useSendMessageMutation,
+  useMarkAsReadMutation,
 } = api;

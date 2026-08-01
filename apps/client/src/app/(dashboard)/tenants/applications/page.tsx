@@ -19,13 +19,13 @@ const Applications = () => {
   });
 
   if (isLoading) return <Loading />
-  if (isError || !applications) return <div>Error fetching applications</div>;
+  if (isError || !applications) return <div>Lỗi khi tải danh sách đơn đăng ký</div>;
 
   return (
     <div className="dashboard-container">
         <Header 
-            title="Applications"
-            subtitle="Track and manage your property rental applications"
+            title="Đơn đăng ký"
+            subtitle="Theo dõi và quản lý các đơn đăng ký thuê bất động sản của bạn"
         />
         <div className="w-full">
             {applications?.map((application) => (
@@ -38,20 +38,20 @@ const Applications = () => {
                     {application.status === "Approved" ? (
                         <div className="bg-green-100 p-4 text-green-700 grow flex items-center">
                             <CircleCheckBig className="w-5 h-5 mr-2" />
-                            The property is being rented by you until{" "}
+                            Bất động sản đang được bạn thuê đến ngày{" "}
                             {application.lease?.endDate
                                 ? new Date(application.lease.endDate).toLocaleString('vi-VN')
-                                : "N/A"}
+                                : "Không xác định"}
                         </div>
                     ) : application.status === "Pending" ? (
                         <div className="bg-yellow-100 p-4 text-yellow-700 grow flex items-center">
                             <Clock className="w-5 h-5 mr-2" />
-                            Your application is pending approval
+                            Đơn đăng ký của bạn đang chờ phê duyệt
                         </div>
                     ) : (
                         <div className="bg-red-100 p-4 text-red-700 grow flex items-center">
                             <XCircle className="w-5 h-5 mr-2" />
-                            Your application has been rejected
+                            Đơn đăng ký của bạn đã bị từ chối
                         </div>
                     )}
 
@@ -60,7 +60,7 @@ const Applications = () => {
                                     rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50`}
                     >
                         <Download className="w-5 h-5 mr-2"/>
-                        Download Agreement
+                        Tải hợp đồng
                     </button>
                 </div>
                 </ApplicationCard>

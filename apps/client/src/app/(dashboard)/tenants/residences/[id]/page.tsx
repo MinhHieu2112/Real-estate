@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useGetAuthUserQuery, useGetLeasesQuery, useGetPaymentsQuery, useGetPropertyQuery } from '@/state/api';
 import { Lease, Payment, Property } from '@shared/types';
 import { ArrowDownToLineIcon, Check, CreditCard, Download, Edit, FileText, Mail, MapPin, User } from 'lucide-react'
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import React from 'react'
 
@@ -12,8 +13,8 @@ const PaymentMethod = () => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mt-10 md:mt-0 flex-1 flex flex-col justify-between">
       <div>
-        <h2 className="text-2xl font-bold mb-1">Payment method</h2>
-        <p className="text-sm text-gray-500 mb-6">Change how you pay for plan.</p>
+        <h2 className="text-2xl font-bold mb-1">Phương thức thanh toán</h2>
+        <p className="text-sm text-gray-500 mb-6">Thay đổi cách bạn thanh toán cho gói dịch vụ.</p>
         
         {/* Card Info */}
         <div className="flex gap-6 items-center">
@@ -22,14 +23,14 @@ const PaymentMethod = () => {
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h3 className="text-base font-semibold">Visa ending in 2026</h3>
+              <h3 className="text-base font-semibold">VISA</h3>
               <span className="text-xs font-medium border border-primary-700 text-primary-700 px-2.5 py-0.5 rounded-full">
                 Default
               </span>
             </div>
             <div className="text-sm text-gray-500 flex items-center gap-1.5">
               <CreditCard className="w-4 h-4" />
-              <span>Expiry date: 12/2026</span>
+              <span>Ngày hết hạn: 12/2026</span>
             </div>
             <div className="text-sm text-gray-500 flex items-center gap-1.5">
               <Mail className="w-4 h-4" />
@@ -44,7 +45,7 @@ const PaymentMethod = () => {
         <div className="flex justify-end">
           <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
             <Edit className="w-4 h-4 mr-2" />
-            <span>Edit</span>
+            <span>Thay đổi</span>
           </button>
         </div>
       </div>
@@ -64,9 +65,11 @@ const ResidenceCard = ({
       {/* Header */}
       <div className="flex gap-5">
         {property.photoUrls?.[0] ? (
-          <img
+          <Image
             src={property.photoUrls[0]}
             alt={property.name}
+            width={256}
+            height={144}
             className="w-64 h-36 object-cover rounded-xl shrink-0"
           />
         ) : (
@@ -78,7 +81,7 @@ const ResidenceCard = ({
         <div className="flex flex-col justify-between py-1">
           <div>
             <div className="bg-green-500 w-fit text-white px-3 py-1 rounded-full text-xs font-semibold mb-2">
-              Active Lease
+              Hoạt động
             </div>
 
             <h2 className="text-2xl font-bold my-1">{property.name}</h2>
@@ -91,8 +94,8 @@ const ResidenceCard = ({
             </div>
           </div>
           <div className="text-xl font-bold text-primary-700">
-            ${currentLease.rent}{" "}
-            <span className="text-gray-500 text-sm font-normal">/ month</span>
+            {currentLease.rent?.toLocaleString("vi-VN")}{" "}
+            <span className="text-gray-500 text-sm font-normal">VNĐ / tháng</span>
           </div>
         </div>
       </div>
@@ -102,24 +105,16 @@ const ResidenceCard = ({
         <hr className="my-4 border-gray-200" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Start Date:</span>
+            <span className="text-gray-500">Ngày bắt đầu:</span>
             <span className="font-semibold text-gray-800">
-              {new Date(currentLease.startDate).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+              {new Date(currentLease.startDate).toLocaleDateString('vi-VN')}
             </span>
           </div>
           <div className="hidden sm:block border-l border-gray-300 h-4" />
           <div className="flex items-center gap-2">
-            <span className="text-gray-500">Next Payment:</span>
+            <span className="text-gray-500">Ngày kết thúc:</span>
             <span className="font-semibold text-gray-800">
-              {new Date(currentLease.endDate).toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+              {new Date(currentLease.endDate).toLocaleDateString('vi-VN')}
             </span>
           </div>
         </div>
@@ -130,11 +125,7 @@ const ResidenceCard = ({
         <div className="flex justify-end gap-3 w-full">
           <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
             <User className="w-4 h-4 mr-2" />
-            Manager
-          </button>
-          <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-white transition-colors text-sm font-medium">
-            <Download className="w-4 h-4 mr-2" />
-            Download Agreement
+            Liên hệ
           </button>
         </div>
       </div>
@@ -148,28 +139,28 @@ const BillingHistory = ({ payments }: { payments: Payment[] }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold mb-1">Billing History</h2>
+          <h2 className="text-2xl font-bold mb-1">Lịch sử thanh toán</h2>
           <p className="text-sm text-gray-500">
-            Download your previous plan receipts and usage details.
+            Xem tất cả các hóa đơn và thanh toán trước đây của bạn.
           </p>
         </div>
-        <div>
+        {/* <div>
           <button className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50">
             <Download className="w-5 h-5 mr-2" />
-            <span>Download All</span>
+            <span>Xuất file</span>
           </button>
-        </div>
+        </div> */}
       </div>
       <hr className="mt-4 mb-1" />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Billing Date</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead>Hóa đơn</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Ngày thanh toán</TableHead>
+              <TableHead>Số tiền</TableHead>
+              <TableHead>Hành động</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -178,7 +169,7 @@ const BillingHistory = ({ payments }: { payments: Payment[] }) => {
                 <TableCell className="font-medium">
                   <div className="flex items-center">
                     <FileText className="w-4 h-4 mr-2" />
-                    Invoice #{payment.id} -{" "}
+                    Hóa đơn #{payment.id} -{" "}
                     {new Date(payment.paymentDate).toLocaleString("default", {
                       month: "short",
                       year: "numeric",
@@ -237,7 +228,7 @@ const Residence = () => {
   );
 
   if (propertyLoading || leasesLoading || paymentsLoading) return <Loading />;
-  if (!property || propertyError) return <div>Error loading property</div>;
+  if (!property || propertyError) return <div>Không tìm thấy kết quả</div>;
 
   const currentLease = leases?.find(
     (lease) => lease.propertyId === property.id

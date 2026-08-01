@@ -56,7 +56,10 @@ export const ModelName = {
   Location: 'Location',
   Application: 'Application',
   Lease: 'Lease',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Message: 'Message',
+  Conversation: 'Conversation',
+  spatial_ref_sys: 'spatial_ref_sys'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -138,6 +141,8 @@ export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typ
 export const ApplicationScalarFieldEnum = {
   id: 'id',
   applicationDate: 'applicationDate',
+  startDate: 'startDate',
+  endDate: 'endDate',
   status: 'status',
   propertyId: 'propertyId',
   tenantCognitoId: 'tenantCognitoId',
@@ -175,6 +180,42 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderCognitoId: 'senderCognitoId',
+  content: 'content',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+} as const
+
+export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const ConversationScalarFieldEnum = {
+  id: 'id',
+  tenantCognitoId: 'tenantCognitoId',
+  managerCognitoId: 'managerCognitoId',
+  lastMessage: 'lastMessage',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const Spatial_ref_sysScalarFieldEnum = {
+  srid: 'srid',
+  auth_name: 'auth_name',
+  auth_srid: 'auth_srid',
+  srtext: 'srtext',
+  proj4text: 'proj4text'
+} as const
+
+export type Spatial_ref_sysScalarFieldEnum = (typeof Spatial_ref_sysScalarFieldEnum)[keyof typeof Spatial_ref_sysScalarFieldEnum]
 
 
 export const SortOrder = {

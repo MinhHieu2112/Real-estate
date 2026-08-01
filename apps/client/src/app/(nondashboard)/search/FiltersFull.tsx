@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { AmenityIcons, PropertyTypeIcons } from '@/lib/constants';
+import { AmenityIcons, PropertyTypeIcons, PropertyTypeViNames } from '@/lib/constants';
 import { cleanParams, cn, formatEnumString } from '@/lib/utils';
 import { FiltersState, initialState, setFilters } from '@/state';
 import { useAppDispatch, useAppSelector } from '@/state/redux';
@@ -104,10 +104,10 @@ const FiltersFull = () => {
         <div className="flex flex-col space-y-6">
             {/* Location */}
             <div>
-                <h4 className="font-bold mb-2">Location</h4>
+                <h4 className="font-bold mb-2">Vị trí</h4>
                 <div className="flex items-center">
                     <Input 
-                        placeholder="Enter location"
+                        placeholder="Nhập vị trí"
                         value={localFilters.location}
                         onChange={(e) => 
                             setLocalFilters((prev) => ({
@@ -129,7 +129,7 @@ const FiltersFull = () => {
 
             {/* Property Type */}
             <div>
-                <h4 className="font-bold mb-2">Property Type</h4>
+                <h4 className="font-bold mb-2">Loại bất động sản</h4>
                 <div className="grid grid-cols-2 gap-4">
                     {Object.entries(PropertyTypeIcons).map(([type, Icon]) => (
                         <div
@@ -148,7 +148,7 @@ const FiltersFull = () => {
                             }
                             >
                                 <Icon className="w-6 h-6 mb-2"/>
-                                <span>{type}</span>
+                                <span className="text-sm text-center">{PropertyTypeViNames[type as PropertyTypeEnum] || type}</span>
                         </div>
                     ))}
                 </div>
@@ -156,14 +156,48 @@ const FiltersFull = () => {
 
             {/* Price Range */}
             <div>
-                <h4 className="font-bold mb-2">Price Range (Monthly)</h4>
+                <h4 className="font-bold mb-2">Khoảng giá (VNĐ/tháng)</h4>
+                <div className="flex gap-2 mb-3">
+                  <div className="flex-1">
+                    <Label className="text-xs text-gray-500 mb-1 block">Giá tối thiểu (VNĐ)</Label>
+                    <Input
+                      type="number"
+                      placeholder="1,000,000"
+                      value={localFilters.priceRange[0] ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        setLocalFilters((prev) => ({
+                          ...prev,
+                          priceRange: [val, prev.priceRange[1]] as [number, number],
+                        }));
+                      }}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-gray-500 mb-1 block">Giá tối đa (VNĐ)</Label>
+                    <Input
+                      type="number"
+                      placeholder="5,000,000"
+                      value={localFilters.priceRange[1] ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        setLocalFilters((prev) => ({
+                          ...prev,
+                          priceRange: [prev.priceRange[0], val] as [number, number],
+                        }));
+                      }}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
                 <Slider
                     min={0}
-                    max={10000}
-                    step={100}
+                    max={50000000}
+                    step={500000}
                     value={[
                         localFilters.priceRange[0] ?? 0,
-                        localFilters.priceRange[1] ?? 10000,
+                        localFilters.priceRange[1] ?? 50000000,
                     ]}
                     onValueChange={(value: any) => 
                         setLocalFilters((prev) => ({
@@ -172,9 +206,9 @@ const FiltersFull = () => {
                         }))
                     } 
                 />
-                <div className="flex justify-between mt-2">
-                    <span>${localFilters.priceRange[0] ?? 0}</span>
-                    <span>${localFilters.priceRange[1] ?? 10000}</span>
+                <div className="flex justify-between mt-2 text-xs text-gray-500 font-medium">
+                    <span>{(localFilters.priceRange[0] ?? 0).toLocaleString('vi-VN')} VNĐ</span>
+                    <span>{(localFilters.priceRange[1] ?? 50000000).toLocaleString('vi-VN')} VNĐ</span>
                 </div>
             </div>
 
@@ -188,14 +222,14 @@ const FiltersFull = () => {
                         }
                     >
                         <SelectTrigger className="w-full rounded-xl">
-                            <SelectValue placeholder="Beds" />
+                            <SelectValue placeholder="Phòng ngủ" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="any">Any beds</SelectItem>
-                            <SelectItem value="1">1+ bed</SelectItem>
-                            <SelectItem value="2">2+ beds</SelectItem>
-                            <SelectItem value="3">3+ beds</SelectItem>
-                            <SelectItem value="4">4+ beds</SelectItem>
+                            <SelectItem value="any">Tất cả phòng ngủ</SelectItem>
+                            <SelectItem value="1">1+ phòng ngủ</SelectItem>
+                            <SelectItem value="2">2+ phòng ngủ</SelectItem>
+                            <SelectItem value="3">3+ phòng ngủ</SelectItem>
+                            <SelectItem value="4">4+ phòng ngủ</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -203,7 +237,7 @@ const FiltersFull = () => {
 
             {/* Square Feet */}
             <div>
-                <h4 className="font-bold mb-2">Square Feet</h4>
+                <h4 className="font-bold mb-2">Diện tích</h4>
                 <Slider 
                     min={0}
                     max={10000}
@@ -228,7 +262,7 @@ const FiltersFull = () => {
 
             {/* Amenities */}
             <div>
-                <h4 className="font-bold mb-2">Amenities</h4>
+                <h4 className="font-bold mb-2">Tiện ích</h4>
                 <div className="flex flex-wrap gap-2">
                     {Object.entries(AmenityIcons).map(([amenity, Icon]) => (
                         <div 
@@ -252,7 +286,7 @@ const FiltersFull = () => {
 
             {/* Available From */}
             <div>
-                <h4 className="font-bold mb-2">Available From</h4>
+                <h4 className="font-bold mb-2">Có sẵn từ ngày</h4>
                 <Input 
                     type="date"
                     value={
@@ -275,12 +309,12 @@ const FiltersFull = () => {
                 <Button
                     onClick={handleSubmit}
                     className="flex-1 bg-primary-700 text-white rounded-xl">
-                        APPLY
+                        Áp dụng
                 </Button>
                 <Button
                     onClick={handleReset}
                     className="flex-1 text-primary-700 border border-primary-700 rounded-xl">
-                        RESET
+                        Đặt lại
                 </Button>
             </div>
         </div>

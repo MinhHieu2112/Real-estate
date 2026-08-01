@@ -48,7 +48,8 @@ interface FormFieldProps {
     | "switch"
     | "password"
     | "file"
-    | "multi-input";
+    | "multi-input"
+    | "date";
   placeholder?: string;
   options?: { value: string; label: string }[];
   accept?: string;

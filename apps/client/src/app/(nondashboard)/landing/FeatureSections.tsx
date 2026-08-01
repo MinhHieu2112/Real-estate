@@ -36,7 +36,7 @@ const FeatureSections = () => {
                     variants={itemVariants}
                     className="text-3xl font-bold text-center mb-12 w-full sm:w-2/3 mx-auto"
                 >
-                    Quickly find the home you want with our powerful search and personalized recommendations
+                    Nhanh chóng tìm ngôi nhà mơ ước với công cụ tìm kiếm mạnh mẽ và các gợi ý cá nhân hóa
                 </motion.h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 xl:gap-16">
                     {[0, 1, 2].map((index) => (
@@ -45,20 +45,20 @@ const FeatureSections = () => {
                             imageSrc={`/landing-search${3 - index}.png`}
                             title={
                                 [
-                                    "Trustworthy and Verified Listings", 
-                                    "Browse Rental Listings with Ease", 
-                                    "Simplify Your Rental Search with Advanced"
+                                    "Danh sách bất động sản uy tín và đã xác minh", 
+                                    "Duyệt danh sách cho thuê một cách dễ dàng", 
+                                    "Tối ưu hóa tìm kiếm với bộ lọc nâng cao"
                                 ][index]
                             }
                             description={
                                 [
-                                    "Discover the best rental options with user reviews and ratings.",
-                                    "Get detailed information and high-quality photos to make informed decisions.",
-                                    "Find your perfect rental home with our powerful search filters and personalized recommendations."
+                                    "Khám phá các lựa chọn tốt nhất kèm theo đánh giá và phản hồi từ người dùng thực tế.",
+                                    "Cung cấp thông tin chi tiết và hình ảnh chất lượng cao giúp bạn đưa ra quyết định dễ dàng.",
+                                    "Tìm kiếm căn hộ lý tưởng nhờ bộ lọc mạnh mẽ và các gợi ý phù hợp nhất với bạn."
                                 ][index]
                             }
-                            linkText={["Explore", "Search", "Discover"][index]}
-                            linkHref={["/explore", "/search", "/discover"][index]}
+                            linkText={["Khám phá", "Tìm kiếm", "Trải nghiệm"][index]}
+                            linkHref={["/search", "/search", "/search"][index]}
                             />
                         </motion.div>
                     ))}

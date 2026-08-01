@@ -7,7 +7,7 @@ const ManagerSettings = () => {
     const { data: authUser, isLoading } = useGetAuthUserQuery();
     const [updateManager] = useUpdateManagerSettingsMutation();
 
-    if (isLoading) return <>Loading...</>
+    if (isLoading) return <>Đang tải...</>
 
     const initialData = {
         name: authUser?.userInfo?.name,

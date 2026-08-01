@@ -31,12 +31,12 @@ const PropertyCard = ({
         <div className="absolute bottom-2 left-2 flex gap-1 flex-col">
           {property.isPetsAllowed && (
             <span className="bg-white/80 text-black text-xs font-semibold px-2 py-1 rounded-full w-fit">
-              Pets
+              Thú cưng
             </span>
           )}
           {property.isParkingIncluded && (
             <span className="bg-white/80 text-black text-xs font-semibold px-2 py-1 rounded-full w-fit">
-              Parking
+              Đỗ xe
             </span>
           )}
         </div>
@@ -71,9 +71,9 @@ const PropertyCard = ({
               property.name
             )}
           </h2>
-          <p className="text-base font-bold whitespace-nowrap">
-            ${property.pricePerMonth.toFixed(0)}
-            <span className="text-gray-500 text-xs font-normal"> /mo</span>
+          <p className="text-base font-bold whitespace-nowrap text-primary-700">
+            {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
+            <span className="text-gray-500 text-xs font-normal"> /tháng</span>
           </p>
         </div>
 
@@ -84,7 +84,7 @@ const PropertyCard = ({
         <div className="flex items-center gap-1 text-sm">
           <Star className="w-3 h-3 text-yellow-400" />
           <span className="font-semibold">
-            {property.averageRating?.toFixed(1) ?? "N/A"}
+            {property.averageRating?.toFixed(1) ?? "Chưa có"}
           </span>
           <span className="text-gray-500">({property.numberOfReviews ?? 0})</span>
         </div>
@@ -92,11 +92,11 @@ const PropertyCard = ({
         <div className="flex gap-3 text-gray-600 text-sm mt-1">
           <span className="flex items-center gap-1">
             <Bed className="w-4 h-4" />
-            {property.beds} beds
+            {property.beds} phòng ngủ
           </span>
           <span className="flex items-center gap-1">
             <Bath className="w-4 h-4" />
-            {property.baths} baths
+            {property.baths} phòng tắm
           </span>
           <span className="flex items-center gap-1">
             <House className="w-4 h-4" />

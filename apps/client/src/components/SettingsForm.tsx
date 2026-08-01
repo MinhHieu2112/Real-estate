@@ -35,10 +35,10 @@ const SettingsForm = ({
         <div className="pt-8 pb-5 px-8">
             <div className="mb-5">
                 <h1 className="text-xl font-semibold">
-                    {`${userType.charAt(0).toUpperCase() + userType.slice(1)} Settings`}
+                    {`Cài đặt ${userType === 'manager' ? 'quản lý' : 'người thuê'}`}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    Manage your account preferences and personal information
+                    Quản lý thông tin tài khoản và thông tin cá nhân của bạn
                 </p>
             </div>
             <div className="bg-white rounded-xl p-6 shadow-md">
@@ -47,22 +47,22 @@ const SettingsForm = ({
                         onSubmit={form.handleSubmit(handleSubmit)}
                         className="space-y-6"
                     >
-                        <CustomFormField name="name" label="Name" disabled={!editMode} />
+                        <CustomFormField name="name" label="Họ và tên" disabled={!editMode} />
                         <CustomFormField name="email" label="Email" type="email" disabled={!editMode} />
-                        <CustomFormField name="phoneNumber" label="Phone Number" disabled={!editMode} />
+                        <CustomFormField name="phoneNumber" label="Số điện thoại" disabled={!editMode} />
 
                         <div className="pt-4 flex justify-between">
                             <Button 
                                 type="button" 
                                 onClick={toggleEditMode} 
                                 className="bg-secondary-500 text-white hover:bg-secondary-600">
-                                    {editMode ? "Cancel" : "Edit"}
+                                    {editMode ? "Hủy" : "Chỉnh sửa"}
                             </Button>
                             {editMode && (
                                 <Button 
                                     type="submit" 
                                     className="bg-primary-700 text-white hover:bg-secondary-800">
-                                        Save Changes
+                                        Lưu thay đổi
                                 </Button>
                             )}
                         </div>

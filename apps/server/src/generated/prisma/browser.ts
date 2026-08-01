@@ -51,3 +51,18 @@ export type Lease = Prisma.LeaseModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
+/**
+ * Model Conversation
+ * 
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model spatial_ref_sys
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+ */
+export type spatial_ref_sys = Prisma.spatial_ref_sysModel

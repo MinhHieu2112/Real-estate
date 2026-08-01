@@ -22,19 +22,19 @@ const FooterSection = () => {
                 <nav className="mb-4">
                     <ul className="flex space-x-6">
                         <li>
-                            <Link href="/about"> About us </Link>
+                            <Link href="/about"> Về chúng tôi </Link>
                         </li>
                         <li>
-                            <Link href="/contact"> Contact us </Link>
+                            <Link href="/contact"> Liên hệ </Link>
                         </li>
                         <li>
-                            <Link href="/faq"> FAQ </Link>
+                            <Link href="/faq"> Hỏi đáp </Link>
                         </li>
                         <li>
-                            <Link href="/terms"> Terms </Link>
+                            <Link href="/terms"> Điều khoản </Link>
                         </li>
                         <li>
-                            <Link href="/privacy"> Privacy </Link>
+                            <Link href="/privacy"> Bảo mật </Link>
                         </li>
                     </ul>
                 </nav>
@@ -73,10 +73,10 @@ const FooterSection = () => {
             </div>
             {/* copy right */}
             <div className="mt-8 text-center text-sm text-gray-500 flex justify-center space-x-4">
-                <span>&copy; {new Date().getFullYear()} RENTIFUL. All rights reserved.</span>
-                <Link href="/privacy">Privacy Policy</Link>
-                <Link href="/terms">Terms of Service</Link>
-                <Link href="/cookies">Cookie Policy</Link>
+                <span>&copy; {new Date().getFullYear()} RENTIFUL. Tất cả quyền được bảo lưu.</span>
+                <Link href="/privacy">Chính sách bảo mật</Link>
+                <Link href="/terms">Điều khoản dịch vụ</Link>
+                <Link href="/cookies">Chính sách Cookie</Link>
             </div>
         </div>
     </footer>

@@ -17,21 +17,21 @@ const Properties = () => {
   })
 
   if (isLoading) return <Loading />
-  if (error) return <div>Error loading properties</div>
+  if (error) return <div>Lỗi khi tải danh sách bất động sản</div>
 
   return (
     <div className="dashboard-container">
         <div className="flex justify-between items-center mb-6">
             <Header 
-                title="My Properties"
-                subtitle="View and manage your properties"
+                title="Bất động sản của tôi"
+                subtitle="Xem và quản lý các bất động sản của bạn"
             />
             {/* <Link
                 href="/managers/properties/new"
                 className="bg-primary-700 hover:bg-primary-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center shadow transition-all"
             >
                 <Plus className="w-4 h-4 mr-2" />
-                <span>Add Property</span>
+                <span>Thêm bất động sản</span>
             </Link> */}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -49,12 +49,12 @@ const Properties = () => {
             <div className="flex flex-col items-center">
                 <Image
                     src="/not-found.png"
-                    alt="No properties"
+                    alt="Không có bất động sản"
                     width={600}
                     height={600}
                 />
                 <p className="text-gray-500 text-xl mt-8">
-                    You don&apos;t have any properties yet
+                    Bạn chưa có bất động sản nào
                 </p>
             </div>
         )}

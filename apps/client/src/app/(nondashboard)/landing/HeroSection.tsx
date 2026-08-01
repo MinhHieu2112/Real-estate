@@ -24,22 +24,22 @@ const HeroSection = () => {
                 >
                     <div className="max-w-4xl mx-auto px-16 sm:px-12">
                         <h1 className="text-5xl font-bold text-white mb-4">
-                            Start your rental journey to find the perfect place
+                            Bắt đầu hành trình tìm kiếm căn hộ thuê hoàn hảo của bạn
                         </h1>
                         <p className="text-xl text-white mb-8">
-                            Discover your perfect rental apartment with our advanced search and personalized recommendations
+                            Khám phá căn hộ cho thuê lý tưởng với công cụ tìm kiếm tiên tiến và gợi ý cá nhân hóa
                         </p>
                         <div className="flex justify-center">
                             <Input
                                 type="text"
                                 onChange={() => {}}
-                                placeholder="Search by city, neighborhood or address"
+                                placeholder="Tìm kiếm theo thành phố, khu vực hoặc địa chỉ"
                                 className="w-full max-w-lg rounded-none rounded-l-xl border-none bg-white h-12"
                             />
                             <Button
                                 onClick={() => {}}
                                 className="bg-secondary-500 text-white rounded-none rounded-r-xl border-none hover:bg-secondary-600 h-12">
-                                Search
+                                Tìm kiếm
                             </Button>
                         </div>
                     </div>

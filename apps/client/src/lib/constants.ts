@@ -92,6 +92,42 @@ export const HighlightIcons: Record<HighlightEnum, LucideIcon> = {
   QuietNeighborhood: VolumeX,
 };
 
+// Tên tiếng Việt cho các tiện ích
+export const AmenityViNames: Record<AmenityEnum, string> = {
+  WasherDryer: "Máy giặt sấy",
+  AirConditioning: "Điều hòa",
+  Dishwasher: "Máy rửa bát",
+  HighSpeedInternet: "Internet tốc độ cao",
+  HardwoodFloors: "Sàn gỗ",
+  WalkInClosets: "Tủ quần áo âm tường",
+  Microwave: "Lò vi sóng",
+  Refrigerator: "Tủ lạnh",
+  Pool: "Hồ bơi",
+  Gym: "Phòng gym",
+  Parking: "Bãi đỗ xe",
+  PetsAllowed: "Cho phép thú cưng",
+  WiFi: "Wi-Fi",
+};
+
+// Tên tiếng Việt cho điểm nổi bật
+export const HighlightViNames: Record<HighlightEnum, string> = {
+  HighSpeedInternetAccess: "Truy cập Internet tốc độ cao",
+  WasherDryer: "Máy giặt sấy",
+  AirConditioning: "Điều hòa",
+  Heating: "Hệ thống sưởi",
+  SmokeFree: "Môi trường không khói thuốc",
+  CableReady: "Sẵn sàng truyền hình cáp",
+  SatelliteTV: "Truyền hình vệ tinh",
+  DoubleVanities: "Bồn rửa đôi",
+  TubShower: "Bồn tắm vòi sen",
+  Intercom: "Hệ thống đàm thoại nội bộ",
+  SprinklerSystem: "Hệ thống chữa cháy tự động",
+  RecentlyRenovated: "Mới sửa chữa nâng cấp",
+  CloseToTransit: "Gần giao thông công cộng",
+  GreatView: "Tầm nhìn đẹp",
+  QuietNeighborhood: "Khu vực yên tĩnh",
+};
+
 export enum PropertyTypeEnum {
   Rooms = "Rooms",
   Tinyhouse = "Tinyhouse",
@@ -109,6 +145,20 @@ export const PropertyTypeIcons: Record<PropertyTypeEnum, LucideIcon> = {
   Townhouse: Home,
   Cottage: Trees,
 };
+
+// Tên tiếng Việt cho từng loại bất động sản
+export const PropertyTypeViNames: Record<PropertyTypeEnum, string> = {
+  Rooms: "Phòng trọ",
+  Tinyhouse: "Nhà mini",
+  Apartment: "Căn hộ chung cư",
+  Villa: "Biệt thự",
+  Townhouse: "Nhà phố",
+  Cottage: "Nhà vườn",
+};
+
+// Các mức giá thống nhất bằng VNĐ (từ 1 triệu đến 100 triệu)
+export const PRICE_RANGES_MIN = [1000000, 2000000, 3000000, 5000000, 10000000, 15000000, 20000000, 30000000, 50000000];
+export const PRICE_RANGES_MAX = [2000000, 3000000, 5000000, 10000000, 15000000, 20000000, 30000000, 50000000, 100000000];
 
 // Add this constant at the end of the file
 export const NAVBAR_HEIGHT = 52; // in pixels

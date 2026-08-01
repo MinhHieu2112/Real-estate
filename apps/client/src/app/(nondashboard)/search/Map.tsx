@@ -68,7 +68,7 @@ const Map = () => {
   if (isLoading) {
     return (
       <div className="basis-5/12 grow relative rounded-xl flex items-center justify-center bg-gray-100">
-        <p className="text-gray-500 text-sm">Loading...</p>
+        <p className="text-gray-500 text-sm">Đang tải...</p>
       </div>
     );
   }
@@ -76,7 +76,7 @@ const Map = () => {
   if (isError || !properties) {
     return (
       <div className="basis-5/12 grow relative rounded-xl flex items-center justify-center bg-gray-100">
-        <p className="text-red-500 text-sm">Failed to load!</p>
+        <p className="text-red-500 text-sm">Không thể tải!</p>
       </div>
     );
   }
@@ -108,7 +108,7 @@ const addPropertyMarker = (property: Property, map: maplibregl.Map) => {
     whiteSpace: "nowrap",
     transition: "transform 0.15s ease",
   });
-  markerEl.textContent = `$${property.pricePerMonth?.toLocaleString()}/mo`;
+  markerEl.textContent = `${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ/tháng`;
 
   markerEl.addEventListener("mouseenter", () => {
     markerEl.style.transform = "scale(1.1)";
@@ -133,7 +133,7 @@ const addPropertyMarker = (property: Property, map: maplibregl.Map) => {
         ${property.name}
       </a>
       <p style="margin: 0; font-size: 13px; color: #555;">
-        <strong>$${property.pricePerMonth?.toLocaleString()}</strong> / tháng
+        <strong>${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ</strong> / tháng
       </p>
       <p style="margin: 4px 0 0; font-size: 12px; color: #888;">
         ${property.beds} phòng ngủ · ${property.baths} WC

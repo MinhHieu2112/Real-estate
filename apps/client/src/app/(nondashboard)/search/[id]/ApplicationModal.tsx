@@ -16,8 +16,11 @@ const ApplicationModal = ({
     onClose,
     propertyId
 }: ApplicationModalProps) => {
-  const [createApplication] = useCreateApplicationMutation();
+  const [createApplication, { isLoading: isSubmitting }] = useCreateApplicationMutation();
   const { data: authUser } = useGetAuthUserQuery();
+
+  const defaultStartDate = new Date().toISOString().split("T")[0];
+  const defaultEndDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0];
 
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
@@ -25,6 +28,8 @@ const ApplicationModal = ({
         name: "",
         email: "",
         phoneNumber: "",
+        startDate: defaultStartDate,
+        endDate: defaultEndDate,
         message: "",
     },
   });
@@ -36,51 +41,71 @@ const ApplicationModal = ({
         );
         return;
     }
-  
-  await createApplication({
-    ...data,
-    applicationDate: new Date().toISOString(),
-    status: ApplicationStatus.Pending,
-    propertyId: propertyId,
-    tenantCognitoId: authUser.cognitoInfo.userId,
-  });
-  onClose();
+
+    await createApplication({
+      ...data,
+      applicationDate: new Date().toISOString(),
+      startDate: new Date(data.startDate).toISOString(),
+      endDate: new Date(data.endDate).toISOString(),
+      status: ApplicationStatus.Pending,
+      propertyId: propertyId,
+      tenantCognitoId: authUser.cognitoInfo.userId,
+    });
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : onClose}>
         <DialogContent className="bg-white">
             <DialogHeader className="mb-4">
-                <DialogTitle>Submit Application for this Property</DialogTitle>
+                <DialogTitle>Nộp đơn đăng ký thuê bất động sản này</DialogTitle>
             </DialogHeader>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <CustomFormField 
                         name="name"
-                        label="Name"
+                        label="Họ và tên"
                         type="text"
-                        placeholder="Enter your name"
+                        placeholder="Nhập họ và tên"
                     />
                     <CustomFormField 
                         name="email"
                         label="Email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder="Nhập địa chỉ email"
                     />
                     <CustomFormField 
                         name="phoneNumber"
-                        label="Phone Number"
+                        label="Số điện thoại"
                         type="text"
-                        placeholder="Enter your phone number"
+                        placeholder="Nhập số điện thoại"
                     />
+                    <div className="grid grid-cols-2 gap-4">
+                      <CustomFormField 
+                          name="startDate"
+                          label="Ngày chuyển vào"
+                          type="date"
+                          placeholder="Chọn ngày bắt đầu"
+                      />
+                      <CustomFormField 
+                          name="endDate"
+                          label="Ngày kết thúc hợp đồng"
+                          type="date"
+                          placeholder="Chọn ngày kết thúc"
+                      />
+                    </div>
                     <CustomFormField 
                         name="message"
-                        label="Message (Optional)"
+                        label="Lời nhắn (Không bắt buộc)"
                         type="textarea"
-                        placeholder="Enter any additional information"
+                        placeholder="Nhập thêm thông tin nếu có"
                     />
-                    <Button type="submit" className="bg-primary-700 text-white w-full">
-                        Submit Application
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="bg-primary-700 text-white w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? "Đang gửi..." : "Gửi đơn đăng ký"}
                     </Button>
                 </form>
             </Form>

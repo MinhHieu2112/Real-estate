@@ -36,37 +36,36 @@ const DiscoverSection = () => {
                     className="my-12 text-center"
                 >
                     <h2 className="text-3xl font-semibold leading-tight text-gray-800">
-                        Discover
+                        Khám phá
                     </h2>
                     <p className="mt-4 text-lg text-gray-600">
-                        Find your Dream Rental Property Today!
+                        Tìm kiếm bất động sản cho thuê mơ ước ngay hôm nay!
                     </p>
                     <p className="mt-2 text-gray-500 max-w-3xl mx-auto">
-                        Searching for your dream rental property has never been easier. With 
-                        our user-friendly search feature, you can quickly find the perfect 
-                        home that meets all your needs. Start your search today and discover 
-                        your dream rental property!
+                        Tìm kiếm bất động sản mơ ước chưa bao giờ dễ dàng đến thế. Với 
+                        tính năng tìm kiếm tiện lợi, bạn có thể nhanh chóng tìm thấy ngôi 
+                        nhà lý tưởng đáp ứng mọi nhu cầu của mình.
                     </p>
                 </motion.div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 xl:gap-16 text-center">
                     {[
                         {
                             imageSrc: "/landing-icon-wand.png",
-                            title: "Search for Properties",
+                            title: "Tìm kiếm bất động sản",
                             description: 
-                                "Easily search for rental properties based on your preferences and criteria. Find the perfect home that meets all your needs.",
+                                "Dễ dàng tìm kiếm các bất động sản cho thuê dựa trên sở thích và tiêu chí của bạn.",
                         },
                         {
                             imageSrc: "/landing-icon-calendar.png",
-                            title: "Book Your Rental",
+                            title: "Đặt lịch thuê dễ dàng",
                             description: 
-                                "Schedule viewings and book your rental property with ease. Our platform allows you to connect directly with landlords and property managers for a seamless rental experience.",
+                                "Lên lịch xem nhà và đăng ký thuê nhanh chóng. Nền tảng giúp bạn kết nối trực tiếp với chủ nhà và người quản lý.",
                         },
                         {
                             imageSrc: "/landing-icon-heart.png",
-                            title: "Enjoy Your New Home",
+                            title: "Tận hưởng không gian sống",
                             description: 
-                                "Save your favorite properties and never lose track of the homes you love. Our favorites feature makes it easy to keep tabs on your top picks.",
+                                "Lưu lại các bất động sản yêu thích để không bỏ lỡ những lựa chọn tuyệt vời nhất của bạn.",
                         },
                     ].map((card, index) => (
                         <motion.div

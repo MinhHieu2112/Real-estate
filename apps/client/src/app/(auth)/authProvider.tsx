@@ -25,22 +25,34 @@ const components = {
                         IFUL
                     </span>
                 </Heading>
-                <p className="text-muted-foreground mt-2">
-                    <span className="font-bold">Welcome!</span>Please sign in to continue
-                </p>
             </View>
         );
     },
+    ForgotPassword: {
+        Header() {
+            return (
+                <Heading level={4} className="!text-lg !font-semibold !mb-4">
+                </Heading>
+            );
+        },
+    },
     SignIn: {
         Footer() {
-            const { toSignUp } = useAuthenticator();
+            const { toSignUp, toForgotPassword } = useAuthenticator();
             return (
                 <View className="mt-4 mb-7">
+                    <button
+                        type="button"
+                        onClick={toForgotPassword}
+                        className="text-sm text-primary hover:underline bg-transparent border-none p-0 text-left"
+                        >
+                            Forgot your password?
+                    </button>
                     <p className="text-muted-foreground">
                         Don&apos;t have an account?{" "}
                         <button
                             onClick={toSignUp}
-                            className="text-primary hover:underline bg-transparent border-none p-0">
+                            className="text-sm text-primary hover:underline bg-transparent border-none p-0">
                                 Sign up here
                         </button>
                     </p>
@@ -126,7 +138,26 @@ const formFields = {
             label: "Confirm Password",
             isRequired: true
         }
-    }
+    },
+    forgotPassword: {
+        username: {
+            placeholder: "Enter your email",
+            label: "Email",
+            isRequired: true
+        },
+    },
+    confirmResetPassword: {
+        password: {
+            placeholder: "Enter your password",
+            label: "Password",
+            isRequired: true
+        },
+        confirm_password: {
+            placeholder: "Confirm your password",
+            label: "Confirm Password",
+            isRequired: true
+        }
+    },
 }
 
 const Auth = ({ children } : { children: React.ReactNode}) => {

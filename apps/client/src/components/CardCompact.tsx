@@ -29,12 +29,12 @@ const CardCompact = ({
         <div className="absolute bottom-2 left-2 flex gap-1 flex-col">
           {property.isPetsAllowed && (
             <span className="bg-white/80 text-black text-xs font-semibold px-2 py-1 rounded-full w-fit">
-              Pets
+              Thú cưng
             </span>
           )}
           {property.isParkingIncluded && (
             <span className="bg-white/80 text-black text-xs font-semibold px-2 py-1 rounded-full">
-              Parking
+              Đỗ xe
             </span>
           )}
         </div>
@@ -74,7 +74,7 @@ const CardCompact = ({
           <div className="flex text-sm items-center">
             <Star className="w-3 h-3 text-yellow-400 mr-1" />
             <span className="font-semibold">
-              {property.averageRating?.toFixed(1) ?? "N/A"}
+              {property.averageRating?.toFixed(1) ?? "Chưa có"}
             </span>
             <span className="text-gray-600 ml-1">
               ({property.numberOfReviews ?? 0})
@@ -97,9 +97,9 @@ const CardCompact = ({
             </span>
           </div>
 
-          <p className="text-base font-bold">
-            ${property.pricePerMonth.toFixed(0)}
-            <span className="text-gray-600 text-xs font-normal"> /mo</span>
+          <p className="text-base font-bold text-primary-700">
+            {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
+            <span className="text-gray-600 text-xs font-normal"> /tháng</span>
           </p>
         </div>
       </div>

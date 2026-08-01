@@ -33,7 +33,7 @@ const Applications = () => {
   }
 
   if (isLoading) return <Loading />;
-  if (isError || !applications) return <div>Error fetching applications</div>;
+  if (isError || !applications) return <div>Lỗi khi tải danh sách đơn đăng ký</div>;
 
   const filteredApplications = applications?.filter((application) => {
     if (activeTab === "all") return true;
@@ -43,8 +43,8 @@ const Applications = () => {
   return (
     <div className="dashboard-container">
         <Header
-            title="Applications"
-            subtitle="View and manage applications for your properties"
+            title="Đơn đăng ký"
+            subtitle="Xem và quản lý các đơn đăng ký thuê bất động sản của bạn"
         />
         <Tabs 
             value={activeTab}
@@ -52,10 +52,10 @@ const Applications = () => {
             className="w-full my-5"
         >
             <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="denied">Denied</TabsTrigger>
+                <TabsTrigger value="all">Tất cả</TabsTrigger>
+                <TabsTrigger value="pending">Chờ duyệt</TabsTrigger>
+                <TabsTrigger value="approved">Đã duyệt</TabsTrigger>
+                <TabsTrigger value="denied">Đã từ chối</TabsTrigger>
             </TabsList>
             {["all", "pending", "approved", "denied"].map((tab) => (
                 <TabsContent key={tab} value={tab} className="mt-5 w-full">
@@ -83,7 +83,7 @@ const Applications = () => {
                                         <div className="flex flex-wrap items-center gap-1.5">
                                             <File className="w-4 h-4 shrink-0" />
                                             <span>
-                                            Application submitted on{" "}
+                                            Đơn đăng ký nộp ngày{" "}
                                             <strong>
                                             {new Date(
                                                 application.applicationDate
@@ -94,11 +94,11 @@ const Applications = () => {
                                             <CircleCheckBig className="w-4 h-4 ml-1 shrink-0" />
                                             <span className="font-semibold">
                                             {application.status === "Approved" &&
-                                                "This application has been approved."}
+                                                "Đơn đăng ký này đã được phê duyệt."}
                                             {application.status === "Denied" &&
-                                                "This application has been denied."}
+                                                "Đơn đăng ký này đã bị từ chối."}
                                             {application.status === "Pending" &&
-                                                "This application is pending review."}
+                                                "Đơn đăng ký này đang chờ xem xét."}
                                             </span>
                                         </div>
                                     </div>
@@ -112,7 +112,7 @@ const Applications = () => {
                                             scroll={false}
                                         >
                                             <Hospital className="w-4 h-4 mr-1.5" />
-                                            Property Details
+                                            Chi tiết bất động sản
                                         </Link>
                                         {application.status === "Approved" && (
                                             <button
@@ -120,7 +120,7 @@ const Applications = () => {
                                                             rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-gray-50 transition-all shadow-sm"
                                             >
                                                 <Download className="w-4 h-4 mr-1.5" />
-                                                Download Agreement
+                                                Tải hợp đồng
                                             </button>
                                         )}
                                         {application.status === "Pending" && (
@@ -131,7 +131,7 @@ const Applications = () => {
                                                     handleStatusChange(application.id, "Approved")
                                                     }
                                                 >
-                                                    Approve
+                                                    Phê duyệt
                                                 </button>
                                                 <button
                                                     className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-all shadow-sm"
@@ -139,7 +139,7 @@ const Applications = () => {
                                                     handleStatusChange(application.id, "Denied")
                                                     }
                                                 >
-                                                    Deny
+                                                    Từ chối
                                                 </button>
                                             </>
                                         )}
@@ -148,7 +148,7 @@ const Applications = () => {
                                             className="bg-gray-900 text-white py-2 px-3.5 rounded-lg text-xs font-semibold flex items-center
                                             justify-center hover:bg-gray-800 transition-all shadow-sm"
                                             >
-                                                Contact User
+                                                Liên hệ người dùng
                                             </button>
                                         )}
                                     </div>
@@ -162,12 +162,12 @@ const Applications = () => {
             <div className="flex flex-col items-center">
                 <Image
                     src="/not-found.png"
-                    alt="Not Found"
+                    alt="Không tìm thấy"
                     width={500}
                     height={500}
                 />
                 <p className="text-gray-500 text-xl mt-8">
-                    You don&apos;t have any applications yet
+                    Bạn chưa có đơn đăng ký nào
                 </p>
             </div>
         )}

@@ -1,12 +1,19 @@
-import { clsx, type ClassValue } from "clsx"
+import { clsx, type ClassValue } from "clsx";
 import { toast } from "sonner";
-import { twMerge } from "tailwind-merge"
+import { twMerge } from "tailwind-merge";
+import { AmenityViNames, HighlightViNames, AmenityEnum, HighlightEnum } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatEnumString(str: string) {
+  if (AmenityViNames[str as AmenityEnum]) {
+    return AmenityViNames[str as AmenityEnum];
+  }
+  if (HighlightViNames[str as HighlightEnum]) {
+    return HighlightViNames[str as HighlightEnum];
+  }
   return str.replace(/([A-Z])/g, " $1").trim();
 }
 
@@ -44,12 +51,13 @@ export const withToast = async <T>(
 
 export function formatPriceValue(value: number | null, isMin: boolean) {
   if (value === null || value === 0)
-    return isMin ? "Any Min Price" : "Any Max Price";
-  if (value >= 1000) {
-    const kValue = value / 1000;
-    return isMin ? `$${kValue}k+` : `<$${kValue}k`;
+    return isMin ? "Giá tối thiểu" : "Giá tối đa";
+
+  if (value >= 1_000_000) {
+    const millions = (value / 1_000_000).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+    return isMin ? `${millions} triệu+` : `< ${millions} triệu`;
   }
-  return isMin ? `$${value}+` : `<$${value}`;
+  return isMin ? `${value.toLocaleString('vi-VN')} VNĐ+` : `< ${value.toLocaleString('vi-VN')} VNĐ`;
 }
 
 export const createNewUserInDatabase = async (
@@ -73,7 +81,7 @@ export const createNewUserInDatabase = async (
   });
 
   if (createUserResponse.error) {
-    throw new Error("Failed to create user record");
+    throw new Error("Không thể tạo thông tin người dùng");
   }
 
   return createUserResponse;

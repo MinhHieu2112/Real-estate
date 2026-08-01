@@ -100,7 +100,7 @@ export class PropertyQueryBuilder {
     );
   }
 
-  // Define a private to add location
+  // Legacy: radius-based filter (backward compatible, used when no bbox or locationText is given)
   private addLocation() {
     const { latitude, longitude } = this.filters;
     if (
@@ -123,6 +123,27 @@ export class PropertyQueryBuilder {
     }
   }
 
+  // Boundary filter using bbox resolved from AWS Location SearchText.
+  // Produces precise administrative-level results (e.g. only within phường Cầu Kiệu).
+  private addBBoxFilter() {
+    const { bboxWest, bboxSouth, bboxEast, bboxNorth } = this.filters;
+    if (
+      bboxWest === undefined ||
+      bboxSouth === undefined ||
+      bboxEast === undefined ||
+      bboxNorth === undefined
+    )
+      return false;
+
+    this.conditions.push(
+      Prisma.sql`ST_Intersects(
+        l.coordinates::geometry,
+        ST_MakeEnvelope(${bboxWest}, ${bboxSouth}, ${bboxEast}, ${bboxNorth}, 4326)
+      )`,
+    );
+    return true;
+  }
+
   build() {
     this.addFavoriteIds();
     this.addPriceCondition();
@@ -131,7 +152,13 @@ export class PropertyQueryBuilder {
     this.addPropertyType();
     this.addAmenitiesConditions();
     this.addAvailableFrom();
-    this.addLocation();
+
+    // Priority 1: Use administrative boundary box (from AWS Location SearchText)
+    // Priority 2: Fallback to legacy radius if no bbox (backward compat)
+    const hasBBox = this.addBBoxFilter();
+    if (!hasBBox) {
+      this.addLocation();
+    }
 
     return this.conditions;
   }

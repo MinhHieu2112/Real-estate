@@ -9,9 +9,9 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
     isLoading,
   } = useGetPropertyQuery(propertyId);
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <>Đang tải...</>;
   if (isError || !property) {
-    return <>Property not Found</>;
+    return <>Không tìm thấy bất động sản</>;
   }
 
   return (
@@ -35,9 +35,9 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
             <span className="flex items-center text-yellow-500">
               <Star className="w-4 h-4 mr-1 fill-current" />
               {property.averageRating?.toFixed(1)} ({property.numberOfReviews}{" "}
-              Reviews)
+              đánh giá)
             </span>
-            <span className="text-green-600">Verified Listing</span>
+            <span className="text-green-600">Đã xác minh</span>
           </div>
         </div>
       </div>
@@ -46,24 +46,24 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
       <div className="border border-primary-200 rounded-xl p-6 mb-6">
         <div className="flex justify-between items-center gap-4 px-5">
           <div>
-            <div className="text-sm text-gray-500">Monthly Rent</div>
-            <div className="font-semibold">
-              ${property.pricePerMonth.toLocaleString()}
+            <div className="text-sm text-gray-500">Giá thuê hàng tháng</div>
+            <div className="font-semibold text-primary-700">
+              {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
             </div>
           </div>
           <div className="border-l border-gray-300 h-10"></div>
           <div>
-            <div className="text-sm text-gray-500">Bedrooms</div>
+            <div className="text-sm text-gray-500">Phòng ngủ</div>
             <div className="font-semibold">{property.beds}</div>
           </div>
           <div className="border-l border-gray-300 h-10"></div>
           <div>
-            <div className="text-sm text-gray-500">Bathrooms</div>
+            <div className="text-sm text-gray-500">Phòng tắm</div>
             <div className="font-semibold">{property.baths}</div>
           </div>
           <div className="border-l border-gray-300 h-10"></div>
           <div>
-            <div className="text-sm text-gray-500">Square Feet</div>
+            <div className="text-sm text-gray-500">Diện tích</div>
             <div className="font-semibold">
               {property.squareFeet.toLocaleString()} sq ft
             </div>
@@ -73,7 +73,7 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
 
       {/* Summary */}
       <div className="my-16">
-        <h2 className="text-xl font-semibold mb-5">Summary</h2>
+        <h2 className="text-xl font-semibold mb-5">Mô tả tổng quan</h2>
         <p className="text-gray-500 leading-7">
           {property.description}
         </p>

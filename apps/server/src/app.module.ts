@@ -7,6 +7,9 @@ import { ManagerModule } from './manager/manager.module';
 import { LeaseModule } from './lease/lease.module';
 import { ApplicationModule } from './application/application.module';
 import { PropertyModule } from './property/property.module';
+import { LocationModule } from './location/location.module';
+import { MessageModule } from './message/message.module';
+import { NotifyModule } from './notify/notify.module';
 
 @Module({
   imports: [
@@ -16,6 +19,9 @@ import { PropertyModule } from './property/property.module';
     LeaseModule,
     ApplicationModule,
     PropertyModule,
+    LocationModule,
+    MessageModule,
+    NotifyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

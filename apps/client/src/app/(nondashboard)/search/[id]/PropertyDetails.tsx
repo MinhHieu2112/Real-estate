@@ -12,16 +12,16 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
     isLoading,
   } = useGetPropertyQuery(propertyId);
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <>Đang tải...</>;
   if (isError || !property) {
-    return <>Property not Found</>;
+    return <>Không tìm thấy bất động sản</>;
   }
 
   return (
     <div className="mb-6">
       {/* Amenities */}
       <div>
-        <h2 className="text-xl font-semibold my-3">Property Amenities</h2>
+        <h2 className="text-xl font-semibold my-3">Tiện ích bất động sản</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {property.amenities.map((amenity) => {
             const Icon = AmenityIcons[amenity] || HelpCircle;
@@ -43,7 +43,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
       {/* Highlights */}
       <div className="mt-12 mb-16">
         <h3 className="text-xl font-semibold text-primary-800 dark:text-primary-100">
-          Highlights
+          Điểm nổi bật
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-4 w-full">
           {property.highlights.map((highlight) => {
@@ -67,49 +67,48 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
       {/* Tabs Section */}
       <div>
         <h3 className="text-xl font-semibold text-primary-800 dark:text-primary-100 mb-5">
-          Fees and Policies
+          Phí và quy định
         </h3>
         <p className="text-sm text-primary-600 dark:text-primary-300 mt-2">
-          The fees below are based on community-supplied data and may exclude
-          additional fees and utilities.
+          Các khoản phí bên dưới được tổng hợp từ thông tin thực tế và có thể chưa bao gồm các khoản phí phụ phát sinh.
         </p>
         <Tabs defaultValue="required-fees" className="mt-8">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="required-fees">Required Fees</TabsTrigger>
-            <TabsTrigger value="pets">Pets</TabsTrigger>
-            <TabsTrigger value="parking">Parking</TabsTrigger>
+            <TabsTrigger value="required-fees">Phí bắt buộc</TabsTrigger>
+            <TabsTrigger value="pets">Thú cưng</TabsTrigger>
+            <TabsTrigger value="parking">Chỗ đỗ xe</TabsTrigger>
           </TabsList>
           <TabsContent value="required-fees" className="w-1/3">
-            <p className="font-semibold mt-5 mb-2">One time move in fees</p>
+            <p className="font-semibold mt-5 mb-2">Phí chuyển vào một lần</p>
             <hr />
             <div className="flex justify-between py-2 bg-secondary-50">
               <span className="text-primary-700 font-medium">
-                Application Fee
+                Phí đăng ký
               </span>
               <span className="text-primary-700">
-                ${property.applicationFee}
+                {property.applicationFee} VNĐ
               </span>
             </div>
             <hr />
             <div className="flex justify-between py-2 bg-secondary-50">
               <span className="text-primary-700 font-medium">
-                Security Deposit
+                Tiền cọc an toàn
               </span>
               <span className="text-primary-700">
-                ${property.securityDeposit}
+                {property.securityDeposit} VNĐ
               </span>
             </div>
             <hr />
           </TabsContent>
           <TabsContent value="pets">
             <p className="font-semibold mt-5 mb-2">
-              Pets are {property.isPetsAllowed ? "allowed" : "not allowed"}
+              Quy định thú cưng: {property.isPetsAllowed ? "Cho phép nuôi thú cưng" : "Không cho phép nuôi thú cưng"}
             </p>
           </TabsContent>
           <TabsContent value="parking">
             <p className="font-semibold mt-5 mb-2">
-              Parking is{" "}
-              {property.isParkingIncluded ? "included" : "not included"}
+              Chỗ đỗ xe:{" "}
+              {property.isParkingIncluded ? "Đã bao gồm chỗ đỗ xe" : "Không bao gồm chỗ đỗ xe"}
             </p>
           </TabsContent>
         </Tabs>

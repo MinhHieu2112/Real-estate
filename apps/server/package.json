@@ -22,6 +22,8 @@
     "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@aws-sdk/client-geo-places": "^3.1096.0",
+    "@aws-sdk/client-geo-routes": "^3.1096.0",
     "@aws-sdk/client-location": "^3.1090.0",
     "@aws-sdk/client-s3": "^3.1068.0",
     "@aws-sdk/client-sts": "^3.1090.0",
@@ -31,7 +33,9 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.28",
     "@nestjs/swagger": "^11.4.5",
+    "@nestjs/websockets": "^11.1.28",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@prisma/driver-adapter-utils": "^7.8.0",
@@ -54,6 +58,7 @@
     "react-oidc-context": "^3.3.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
