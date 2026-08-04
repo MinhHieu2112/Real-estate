@@ -3,13 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { AmenityIcons, PropertyTypeIcons, PropertyTypeViNames } from '@/lib/constants';
-import { cleanParams, cn, formatEnumString } from '@/lib/utils';
+import { AmenityIcons, PropertyTypeIcons } from '@/lib/constants';
+import { cleanParams, cn } from '@/lib/utils';
 import { FiltersState, initialState, setFilters } from '@/state';
 import { useAppDispatch, useAppSelector } from '@/state/redux';
 import { debounce } from 'lodash';
 import { Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import { AmenityEnum, PropertyTypeEnum } from '@shared/types';
 import React, { useState } from 'react'
 
 const FiltersFull = () => {
@@ -148,7 +149,7 @@ const FiltersFull = () => {
                             }
                             >
                                 <Icon className="w-6 h-6 mb-2"/>
-                                <span className="text-sm text-center">{PropertyTypeViNames[type as PropertyTypeEnum] || type}</span>
+                                <span className="text-sm text-center">{PropertyTypeEnum[type as unknown as keyof typeof PropertyTypeEnum] || type}</span>
                         </div>
                     ))}
                 </div>
@@ -277,7 +278,7 @@ const FiltersFull = () => {
                             >
                             <Icon className="w-5 h-5 hover:cursor-pointer" />
                             <Label className="hover:cursor-pointer">
-                                {formatEnumString(amenity)}
+                                {AmenityEnum[amenity as unknown as keyof typeof AmenityEnum] || amenity}
                             </Label>
                         </div>
                     ))}

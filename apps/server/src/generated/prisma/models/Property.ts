@@ -55,6 +55,7 @@ export type PropertyMinAggregateOutputType = {
   id: number | null
   name: string | null
   description: string | null
+  status: $Enums.PropertyStatus | null
   pricePerMonth: number | null
   securityDeposit: number | null
   applicationFee: number | null
@@ -75,6 +76,7 @@ export type PropertyMaxAggregateOutputType = {
   id: number | null
   name: string | null
   description: string | null
+  status: $Enums.PropertyStatus | null
   pricePerMonth: number | null
   securityDeposit: number | null
   applicationFee: number | null
@@ -95,6 +97,7 @@ export type PropertyCountAggregateOutputType = {
   id: number
   name: number
   description: number
+  status: number
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -146,6 +149,7 @@ export type PropertyMinAggregateInputType = {
   id?: true
   name?: true
   description?: true
+  status?: true
   pricePerMonth?: true
   securityDeposit?: true
   applicationFee?: true
@@ -166,6 +170,7 @@ export type PropertyMaxAggregateInputType = {
   id?: true
   name?: true
   description?: true
+  status?: true
   pricePerMonth?: true
   securityDeposit?: true
   applicationFee?: true
@@ -186,6 +191,7 @@ export type PropertyCountAggregateInputType = {
   id?: true
   name?: true
   description?: true
+  status?: true
   pricePerMonth?: true
   securityDeposit?: true
   applicationFee?: true
@@ -296,6 +302,7 @@ export type PropertyGroupByOutputType = {
   id: number
   name: string
   description: string
+  status: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -342,6 +349,7 @@ export type PropertyWhereInput = {
   id?: Prisma.IntFilter<"Property"> | number
   name?: Prisma.StringFilter<"Property"> | string
   description?: Prisma.StringFilter<"Property"> | string
+  status?: Prisma.EnumPropertyStatusFilter<"Property"> | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFilter<"Property"> | number
   securityDeposit?: Prisma.FloatFilter<"Property"> | number
   applicationFee?: Prisma.FloatFilter<"Property"> | number
@@ -371,6 +379,7 @@ export type PropertyOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   pricePerMonth?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
   applicationFee?: Prisma.SortOrder
@@ -403,6 +412,7 @@ export type PropertyWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PropertyWhereInput | Prisma.PropertyWhereInput[]
   name?: Prisma.StringFilter<"Property"> | string
   description?: Prisma.StringFilter<"Property"> | string
+  status?: Prisma.EnumPropertyStatusFilter<"Property"> | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFilter<"Property"> | number
   securityDeposit?: Prisma.FloatFilter<"Property"> | number
   applicationFee?: Prisma.FloatFilter<"Property"> | number
@@ -432,6 +442,7 @@ export type PropertyOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   pricePerMonth?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
   applicationFee?: Prisma.SortOrder
@@ -463,6 +474,7 @@ export type PropertyScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Property"> | number
   name?: Prisma.StringWithAggregatesFilter<"Property"> | string
   description?: Prisma.StringWithAggregatesFilter<"Property"> | string
+  status?: Prisma.EnumPropertyStatusWithAggregatesFilter<"Property"> | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatWithAggregatesFilter<"Property"> | number
   securityDeposit?: Prisma.FloatWithAggregatesFilter<"Property"> | number
   applicationFee?: Prisma.FloatWithAggregatesFilter<"Property"> | number
@@ -485,6 +497,7 @@ export type PropertyScalarWhereWithAggregatesInput = {
 export type PropertyCreateInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -512,6 +525,7 @@ export type PropertyUncheckedCreateInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -538,6 +552,7 @@ export type PropertyUncheckedCreateInput = {
 export type PropertyUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -565,6 +580,7 @@ export type PropertyUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -592,6 +608,7 @@ export type PropertyCreateManyInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -614,6 +631,7 @@ export type PropertyCreateManyInput = {
 export type PropertyUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -635,6 +653,7 @@ export type PropertyUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -682,6 +701,7 @@ export type PropertyCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   pricePerMonth?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
   applicationFee?: Prisma.SortOrder
@@ -718,6 +738,7 @@ export type PropertyMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   pricePerMonth?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
   applicationFee?: Prisma.SortOrder
@@ -738,6 +759,7 @@ export type PropertyMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   pricePerMonth?: Prisma.SortOrder
   securityDeposit?: Prisma.SortOrder
   applicationFee?: Prisma.SortOrder
@@ -796,6 +818,10 @@ export type PropertyCreatehighlightsInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type EnumPropertyStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PropertyStatus
 }
 
 export type FloatFieldUpdateOperationsInput = {
@@ -1034,6 +1060,7 @@ export type PropertyUpdateOneRequiredWithoutLeasesNestedInput = {
 export type PropertyCreateWithoutManagerInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1060,6 +1087,7 @@ export type PropertyUncheckedCreateWithoutManagerInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1115,6 +1143,7 @@ export type PropertyScalarWhereInput = {
   id?: Prisma.IntFilter<"Property"> | number
   name?: Prisma.StringFilter<"Property"> | string
   description?: Prisma.StringFilter<"Property"> | string
+  status?: Prisma.EnumPropertyStatusFilter<"Property"> | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFilter<"Property"> | number
   securityDeposit?: Prisma.FloatFilter<"Property"> | number
   applicationFee?: Prisma.FloatFilter<"Property"> | number
@@ -1137,6 +1166,7 @@ export type PropertyScalarWhereInput = {
 export type PropertyCreateWithoutFavoritedByInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1163,6 +1193,7 @@ export type PropertyUncheckedCreateWithoutFavoritedByInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1193,6 +1224,7 @@ export type PropertyCreateOrConnectWithoutFavoritedByInput = {
 export type PropertyCreateWithoutTenantsInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1219,6 +1251,7 @@ export type PropertyUncheckedCreateWithoutTenantsInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1281,6 +1314,7 @@ export type PropertyUpdateManyWithWhereWithoutTenantsInput = {
 export type PropertyCreateWithoutLocationInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1307,6 +1341,7 @@ export type PropertyUncheckedCreateWithoutLocationInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1358,6 +1393,7 @@ export type PropertyUpdateManyWithWhereWithoutLocationInput = {
 export type PropertyCreateWithoutApplicationsInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1384,6 +1420,7 @@ export type PropertyUncheckedCreateWithoutApplicationsInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1425,6 +1462,7 @@ export type PropertyUpdateToOneWithWhereWithoutApplicationsInput = {
 export type PropertyUpdateWithoutApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1451,6 +1489,7 @@ export type PropertyUncheckedUpdateWithoutApplicationsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1476,6 +1515,7 @@ export type PropertyUncheckedUpdateWithoutApplicationsInput = {
 export type PropertyCreateWithoutLeasesInput = {
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1502,6 +1542,7 @@ export type PropertyUncheckedCreateWithoutLeasesInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1543,6 +1584,7 @@ export type PropertyUpdateToOneWithWhereWithoutLeasesInput = {
 export type PropertyUpdateWithoutLeasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1569,6 +1611,7 @@ export type PropertyUncheckedUpdateWithoutLeasesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1595,6 +1638,7 @@ export type PropertyCreateManyManagerInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1616,6 +1660,7 @@ export type PropertyCreateManyManagerInput = {
 export type PropertyUpdateWithoutManagerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1642,6 +1687,7 @@ export type PropertyUncheckedUpdateWithoutManagerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1668,6 +1714,7 @@ export type PropertyUncheckedUpdateManyWithoutManagerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1689,6 +1736,7 @@ export type PropertyUncheckedUpdateManyWithoutManagerInput = {
 export type PropertyUpdateWithoutFavoritedByInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1715,6 +1763,7 @@ export type PropertyUncheckedUpdateWithoutFavoritedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1741,6 +1790,7 @@ export type PropertyUncheckedUpdateManyWithoutFavoritedByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1763,6 +1813,7 @@ export type PropertyUncheckedUpdateManyWithoutFavoritedByInput = {
 export type PropertyUpdateWithoutTenantsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1789,6 +1840,7 @@ export type PropertyUncheckedUpdateWithoutTenantsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1815,6 +1867,7 @@ export type PropertyUncheckedUpdateManyWithoutTenantsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1837,6 +1890,7 @@ export type PropertyUncheckedUpdateManyWithoutTenantsInput = {
 export type PropertyUpdateWithoutLocationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1863,6 +1917,7 @@ export type PropertyUncheckedUpdateWithoutLocationInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1889,6 +1944,7 @@ export type PropertyCreateManyLocationInput = {
   id?: number
   name: string
   description: string
+  status?: $Enums.PropertyStatus
   pricePerMonth: number
   securityDeposit: number
   applicationFee: number
@@ -1911,6 +1967,7 @@ export type PropertyUncheckedUpdateManyWithoutLocationInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
   pricePerMonth?: Prisma.FloatFieldUpdateOperationsInput | number
   securityDeposit?: Prisma.FloatFieldUpdateOperationsInput | number
   applicationFee?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -1991,6 +2048,7 @@ export type PropertySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   name?: boolean
   description?: boolean
+  status?: boolean
   pricePerMonth?: boolean
   securityDeposit?: boolean
   applicationFee?: boolean
@@ -2021,6 +2079,7 @@ export type PropertySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   name?: boolean
   description?: boolean
+  status?: boolean
   pricePerMonth?: boolean
   securityDeposit?: boolean
   applicationFee?: boolean
@@ -2046,6 +2105,7 @@ export type PropertySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   name?: boolean
   description?: boolean
+  status?: boolean
   pricePerMonth?: boolean
   securityDeposit?: boolean
   applicationFee?: boolean
@@ -2071,6 +2131,7 @@ export type PropertySelectScalar = {
   id?: boolean
   name?: boolean
   description?: boolean
+  status?: boolean
   pricePerMonth?: boolean
   securityDeposit?: boolean
   applicationFee?: boolean
@@ -2090,7 +2151,7 @@ export type PropertySelectScalar = {
   managerCognitoId?: boolean
 }
 
-export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "pricePerMonth" | "securityDeposit" | "applicationFee" | "photoUrls" | "amenities" | "highlights" | "isPetsAllowed" | "isParkingIncluded" | "beds" | "baths" | "squareFeet" | "propertyType" | "postedDate" | "averageRating" | "numberOfReviews" | "locationId" | "managerCognitoId", ExtArgs["result"]["property"]>
+export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "status" | "pricePerMonth" | "securityDeposit" | "applicationFee" | "photoUrls" | "amenities" | "highlights" | "isPetsAllowed" | "isParkingIncluded" | "beds" | "baths" | "squareFeet" | "propertyType" | "postedDate" | "averageRating" | "numberOfReviews" | "locationId" | "managerCognitoId", ExtArgs["result"]["property"]>
 export type PropertyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   applications?: boolean | Prisma.Property$applicationsArgs<ExtArgs>
   leases?: boolean | Prisma.Property$leasesArgs<ExtArgs>
@@ -2123,6 +2184,7 @@ export type $PropertyPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: number
     name: string
     description: string
+    status: $Enums.PropertyStatus
     pricePerMonth: number
     securityDeposit: number
     applicationFee: number
@@ -2572,6 +2634,7 @@ export interface PropertyFieldRefs {
   readonly id: Prisma.FieldRef<"Property", 'Int'>
   readonly name: Prisma.FieldRef<"Property", 'String'>
   readonly description: Prisma.FieldRef<"Property", 'String'>
+  readonly status: Prisma.FieldRef<"Property", 'PropertyStatus'>
   readonly pricePerMonth: Prisma.FieldRef<"Property", 'Float'>
   readonly securityDeposit: Prisma.FieldRef<"Property", 'Float'>
   readonly applicationFee: Prisma.FieldRef<"Property", 'Float'>

@@ -305,6 +305,7 @@ export type ApplicationOrderByWithRelationInput = {
 export type ApplicationWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   leaseId?: number
+  tenantCognitoId_propertyId_status?: Prisma.ApplicationTenantCognitoIdPropertyIdStatusCompoundUniqueInput
   AND?: Prisma.ApplicationWhereInput | Prisma.ApplicationWhereInput[]
   OR?: Prisma.ApplicationWhereInput[]
   NOT?: Prisma.ApplicationWhereInput | Prisma.ApplicationWhereInput[]
@@ -321,7 +322,7 @@ export type ApplicationWhereUniqueInput = Prisma.AtLeast<{
   lease?: Prisma.XOR<Prisma.LeaseNullableScalarRelationFilter, Prisma.LeaseWhereInput> | null
   property?: Prisma.XOR<Prisma.PropertyScalarRelationFilter, Prisma.PropertyWhereInput>
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
-}, "id" | "leaseId">
+}, "id" | "leaseId" | "tenantCognitoId_propertyId_status">
 
 export type ApplicationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -468,6 +469,12 @@ export type ApplicationListRelationFilter = {
 
 export type ApplicationOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ApplicationTenantCognitoIdPropertyIdStatusCompoundUniqueInput = {
+  tenantCognitoId: string
+  propertyId: number
+  status: $Enums.ApplicationStatus
 }
 
 export type ApplicationCountOrderByAggregateInput = {

@@ -1,20 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
-import { AmenityViNames, HighlightViNames, AmenityEnum, HighlightEnum } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-export function formatEnumString(str: string) {
-  if (AmenityViNames[str as AmenityEnum]) {
-    return AmenityViNames[str as AmenityEnum];
-  }
-  if (HighlightViNames[str as HighlightEnum]) {
-    return HighlightViNames[str as HighlightEnum];
-  }
-  return str.replace(/([A-Z])/g, " $1").trim();
 }
 
 export function cleanParams(params: Record<string, any>): Record<string, any> {

@@ -35,18 +35,19 @@ export interface Property {
   id: number;
   name: string;
   description: string;
+  status: PropertyStatus;
   pricePerMonth: number;
   securityDeposit: number;
   applicationFee: number;
   photoUrls: string[];
-  amenities: Amenity[];
-  highlights: Highlight[];
+  amenities: AmenityEnum[];
+  highlights: HighlightEnum[];
   isPetsAllowed: boolean;
   isParkingIncluded: boolean;
   beds: number;
   baths: number;
   squareFeet: number;
-  propertyType: PropertyType;
+  propertyType: PropertyTypeEnum;
   postedDate: string | Date;
   averageRating?: number | null;
   numberOfReviews?: number | null;
@@ -59,7 +60,7 @@ export interface Property {
 export interface Application {
   id: number;
   applicationDate: string | Date;
-  startDate?: string | Date | null;
+  startDate: string | Date;
   endDate?: string | Date | null;
   status: ApplicationStatus;
   propertyId: number;
@@ -83,6 +84,7 @@ export interface Lease {
   rent: number;
   deposit: number;
   propertyId: number;
+  status: LeaseStatus;
   tenantCognitoId: string;
   property?: Property;
   tenant?: Tenant;
@@ -113,6 +115,20 @@ export interface User {
   userRole: "manager" | "tenant";
 }
 
+export interface Notification {
+  id: number;
+  receiverCognitoId: string;
+  senderCognitoId?: string | null;
+  type: "New_application" | "Application_approved" | "Application_denied" | "New_message";
+  title: string;
+  content: string;
+  isRead: boolean;
+  applicationId?: number | null;
+  conversationId?: number | null;
+  messageId?: number | null;
+  createdAt: string | Date;
+}
+
 export interface Message {
   id: number;
   conversationId: number;
@@ -138,50 +154,6 @@ export interface ChatConversation {
   peer: PeerInfo | null;
 }
 
-// Enums matching Prisma schema
-export enum Highlight {
-  HighSpeedInternetAccess = "HighSpeedInternetAccess",
-  WasherDryer = "WasherDryer",
-  AirConditioning = "AirConditioning",
-  Heating = "Heating",
-  SmokeFree = "SmokeFree",
-  CableReady = "CableReady",
-  SatelliteTV = "SatelliteTV",
-  DoubleVanities = "DoubleVanities",
-  TubShower = "TubShower",
-  Intercom = "Intercom",
-  SprinklerSystem = "SprinklerSystem",
-  RecentlyRenovated = "RecentlyRenovated",
-  CloseToTransit = "CloseToTransit",
-  GreatView = "GreatView",
-  QuietNeighborhood = "QuietNeighborhood",
-}
-
-export enum Amenity {
-  WasherDryer = "WasherDryer",
-  AirConditioning = "AirConditioning",
-  Dishwasher = "Dishwasher",
-  HighSpeedInternet = "HighSpeedInternet",
-  HardwoodFloors = "HardwoodFloors",
-  WalkInClosets = "WalkInClosets",
-  Microwave = "Microwave",
-  Refrigerator = "Refrigerator",
-  Pool = "Pool",
-  Gym = "Gym",
-  Parking = "Parking",
-  PetsAllowed = "PetsAllowed",
-  WiFi = "WiFi",
-}
-
-export enum PropertyType {
-  Rooms = "Rooms",
-  Tinyhouse = "Tinyhouse",
-  Apartment = "Apartment",
-  Villa = "Villa",
-  Townhouse = "Townhouse",
-  Cottage = "Cottage",
-}
-
 export enum ApplicationStatus {
   Pending = "Pending",
   Denied = "Denied",
@@ -193,4 +165,73 @@ export enum PaymentStatus {
   Paid = "Paid",
   PartiallyPaid = "PartiallyPaid",
   Overdue = "Overdue",
+}
+
+export enum LeaseStatus {
+  Draft = "Draft",
+  Active = "Active",
+  Terminated = "Terminated",
+  Expired = "Expired",
+}
+
+export enum NotificationType {
+  New_application = "New_application",
+  Application_approved = "Application_approved",
+  Application_denied = "Application_denied",
+  New_message = "New_message"
+}
+
+export enum PropertyStatus {
+  Available = "Available",
+  Rented = "Rented",
+  Maintenance = "Maintenance"
+}
+
+export enum PropertyTypeEnum {
+  Rooms = "Phòng trọ",
+  Minihouse = "Nhà mini",
+  Apartment = "Căn hộ chung cư",
+  Villa = "Biệt thự",
+  Townhouse = "Nhà phố",
+  Cottage = "Nhà vườn",
+}
+
+export enum AmenityEnum {
+  AirConditioning = "Điều hòa",
+  Washer = "Máy giặt",
+  Dryer = "Máy sấy",
+  Refrigerator = "Tủ lạnh",
+  Microwave = "Lò vi sóng",
+  Dishwasher = "Máy rửa bát",
+  Oven = "Lò nướng",
+  Kitchen = "Nhà bếp đầy đủ",
+  WiFi = "Wi-Fi",
+  Television = "TV",
+  Parking = "Chỗ đậu xe",
+  Elevator = "Thang máy",
+  SwimmingPool = "Hồ bơi",
+  Gym = "Phòng gym",
+  Balcony = "Ban công",
+  Garden = "Sân vườn",
+  CCTV = "Camera an ninh",
+  Furnished = "Đầy đủ nội thất",
+}
+
+export enum HighlightEnum {
+    NewlyRenovated = "Mới được cải tạo",
+    NewlyBuilt = "Mới xây dựng",
+    PrimeLocation = "Vị trí đắc địa",
+    CityView = "View thành phố",
+    SeaView = "View biển",
+    MountainView = "View núi",
+    RiverView = "View sông",
+    QuietNeighborhood = "Khu dân cư yên tĩnh",
+    NearSchool = "Gần trường học",
+    NearHospital = "Gần bệnh viện",
+    NearSupermarket = "Gần siêu thị",
+    NearPublicTransport = "Gần phương tiện công cộng",
+    HighSecurityArea = "Khu vực an ninh cao",
+    SpaciousLayout = "Thiết kế rộng rãi",
+    NaturalLight = "Ánh sáng tự nhiên",
+    PetFriendlyCommunity = "Cộng đồng thân thiện với thú cưng",
 }

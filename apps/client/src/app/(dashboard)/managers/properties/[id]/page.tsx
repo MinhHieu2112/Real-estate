@@ -54,20 +54,20 @@ const PropertyTenants = () => {
         scroll={false}
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        <span>Back to Properties</span>
+        <span>Trở lại</span>
       </Link>
 
       <div className="flex justify-between items-center mb-6">
         <Header
-          title={property?.name || "My Property"}
-          subtitle="Manage tenants and leases for this property"
+          title={property?.name || "Dự án"}
+          subtitle="Xem và quản lý thông tin dự án"
         />
         <Link
           href={`/managers/properties/${propertyId}/edit`}
           className="bg-primary-700 hover:bg-primary-800 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center shadow transition-all"
         >
           <Edit className="w-4 h-4 mr-2" />
-          <span>Edit Property</span>
+          <span>Chỉnh sửa</span>
         </Link>
       </div>
 
@@ -75,9 +75,9 @@ const PropertyTenants = () => {
         <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden p-6">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-2xl font-bold mb-1">Tenants Overview</h2>
+              <h2 className="text-2xl font-bold mb-1">Khách thuê</h2>
               <p className="text-sm text-gray-500">
-                Manage and view all tenants for this property.
+                Xem và quản lý thông tin về các khách thuê hiện tại của dự án này
               </p>
             </div>
             <div>
@@ -86,7 +86,7 @@ const PropertyTenants = () => {
               px-4 rounded-md flex items-center justify-center hover:bg-primary-700 hover:text-primary-50`}
               >
                 <Download className="w-5 h-5 mr-2" />
-                <span>Download All</span>
+                <span>Tải về</span>
               </button>
             </div>
           </div>
@@ -95,12 +95,12 @@ const PropertyTenants = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Lease Period</TableHead>
-                  <TableHead>Monthly Rent</TableHead>
-                  <TableHead>Current Month Status</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead>Khách hàng</TableHead>
+                  <TableHead>Thời gian thuê</TableHead>
+                  <TableHead>Chi phí</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Liên hệ</TableHead>
+                  <TableHead>Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -9,43 +9,59 @@
 */
 
 export const Highlight = {
-  HighSpeedInternetAccess: 'HighSpeedInternetAccess',
-  WasherDryer: 'WasherDryer',
-  AirConditioning: 'AirConditioning',
-  Heating: 'Heating',
-  SmokeFree: 'SmokeFree',
-  CableReady: 'CableReady',
-  SatelliteTV: 'SatelliteTV',
-  DoubleVanities: 'DoubleVanities',
-  TubShower: 'TubShower',
-  Intercom: 'Intercom',
-  SprinklerSystem: 'SprinklerSystem',
-  RecentlyRenovated: 'RecentlyRenovated',
-  CloseToTransit: 'CloseToTransit',
-  GreatView: 'GreatView',
-  QuietNeighborhood: 'QuietNeighborhood'
+  NewlyRenovated: 'NewlyRenovated',
+  NewlyBuilt: 'NewlyBuilt',
+  PrimeLocation: 'PrimeLocation',
+  CityView: 'CityView',
+  SeaView: 'SeaView',
+  MountainView: 'MountainView',
+  RiverView: 'RiverView',
+  QuietNeighborhood: 'QuietNeighborhood',
+  NearSchool: 'NearSchool',
+  NearHospital: 'NearHospital',
+  NearSupermarket: 'NearSupermarket',
+  NearPublicTransport: 'NearPublicTransport',
+  HighSecurityArea: 'HighSecurityArea',
+  SpaciousLayout: 'SpaciousLayout',
+  NaturalLight: 'NaturalLight',
+  PetFriendlyCommunity: 'PetFriendlyCommunity'
 } as const
 
 export type Highlight = (typeof Highlight)[keyof typeof Highlight]
 
 
 export const Amenity = {
-  WasherDryer: 'WasherDryer',
   AirConditioning: 'AirConditioning',
-  Dishwasher: 'Dishwasher',
-  HighSpeedInternet: 'HighSpeedInternet',
-  HardwoodFloors: 'HardwoodFloors',
-  WalkInClosets: 'WalkInClosets',
-  Microwave: 'Microwave',
+  Washer: 'Washer',
+  Dryer: 'Dryer',
   Refrigerator: 'Refrigerator',
-  Pool: 'Pool',
-  Gym: 'Gym',
+  Microwave: 'Microwave',
+  Dishwasher: 'Dishwasher',
+  Oven: 'Oven',
+  Kitchen: 'Kitchen',
+  WiFi: 'WiFi',
+  Television: 'Television',
   Parking: 'Parking',
-  PetsAllowed: 'PetsAllowed',
-  WiFi: 'WiFi'
+  Elevator: 'Elevator',
+  SwimmingPool: 'SwimmingPool',
+  Gym: 'Gym',
+  Balcony: 'Balcony',
+  Garden: 'Garden',
+  CCTV: 'CCTV',
+  Furnished: 'Furnished'
 } as const
 
 export type Amenity = (typeof Amenity)[keyof typeof Amenity]
+
+
+export const NotificationType = {
+  New_application: 'New_application',
+  Application_approved: 'Application_approved',
+  Application_denied: 'Application_denied',
+  New_message: 'New_message'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
 
 
 export const PropertyType = {
@@ -63,10 +79,21 @@ export type PropertyType = (typeof PropertyType)[keyof typeof PropertyType]
 export const ApplicationStatus = {
   Pending: 'Pending',
   Denied: 'Denied',
-  Approved: 'Approved'
+  Approved: 'Approved',
+  Cancelled: 'Cancelled'
 } as const
 
 export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus]
+
+
+export const LeaseStatus = {
+  Draft: 'Draft',
+  Active: 'Active',
+  Expired: 'Expired',
+  Terminated: 'Terminated'
+} as const
+
+export type LeaseStatus = (typeof LeaseStatus)[keyof typeof LeaseStatus]
 
 
 export const PaymentStatus = {
@@ -77,3 +104,12 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PropertyStatus = {
+  Available: 'Available',
+  Rented: 'Rented',
+  Maintenance: 'Maintenance'
+} as const
+
+export type PropertyStatus = (typeof PropertyStatus)[keyof typeof PropertyStatus]

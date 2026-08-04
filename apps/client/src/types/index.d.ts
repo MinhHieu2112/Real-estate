@@ -1,6 +1,5 @@
 import { LucideIcon } from "lucide-react";
-import { AuthUser } from "aws-amplify/auth";
-import { Manager, Tenant, Property, Application } from "@shared/types";
+import { Property, Application } from "@shared/types";
 import { MotionProps as OriginalMotionProps } from "framer-motion";
 
 declare module "framer-motion" {
@@ -10,49 +9,6 @@ declare module "framer-motion" {
 }
 
 declare global {
-  enum AmenityEnum {
-    WasherDryer = "WasherDryer",
-    AirConditioning = "AirConditioning",
-    Dishwasher = "Dishwasher",
-    HighSpeedInternet = "HighSpeedInternet",
-    HardwoodFloors = "HardwoodFloors",
-    WalkInClosets = "WalkInClosets",
-    Microwave = "Microwave",
-    Refrigerator = "Refrigerator",
-    Pool = "Pool",
-    Gym = "Gym",
-    Parking = "Parking",
-    PetsAllowed = "PetsAllowed",
-    WiFi = "WiFi",
-  }
-
-  enum HighlightEnum {
-    HighSpeedInternetAccess = "HighSpeedInternetAccess",
-    WasherDryer = "WasherDryer",
-    AirConditioning = "AirConditioning",
-    Heating = "Heating",
-    SmokeFree = "SmokeFree",
-    CableReady = "CableReady",
-    SatelliteTV = "SatelliteTV",
-    DoubleVanities = "DoubleVanities",
-    TubShower = "TubShower",
-    Intercom = "Intercom",
-    SprinklerSystem = "SprinklerSystem",
-    RecentlyRenovated = "RecentlyRenovated",
-    CloseToTransit = "CloseToTransit",
-    GreatView = "GreatView",
-    QuietNeighborhood = "QuietNeighborhood",
-  }
-
-  enum PropertyTypeEnum {
-    Rooms = "Rooms",
-    Tinyhouse = "Tinyhouse",
-    Apartment = "Apartment",
-    Villa = "Villa",
-    Townhouse = "Townhouse",
-    Cottage = "Cottage",
-  }
-
   interface SidebarLinkProps {
     href: string;
     icon: LucideIcon;
@@ -126,12 +82,6 @@ declare global {
     initialData: SettingsFormData;
     onSubmit: (data: SettingsFormData) => Promise<void>;
     userType: "manager" | "tenant";
-  }
-
-  interface User {
-    cognitoInfo: AuthUser;
-    userInfo: Tenant | Manager;
-    userRole: JsonObject | JsonPrimitive | JsonArray;
   }
 }
 

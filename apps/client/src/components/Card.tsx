@@ -105,7 +105,7 @@ const Card = ({
 
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] text-emerald-600 font-medium">Available</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Đang hoạt động</span>
           </div>
         </div>
       </div>

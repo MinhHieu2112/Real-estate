@@ -29,9 +29,6 @@ export class LocationController {
     return this.locationService.findAll();
   }
 
-  // Text search: resolve a place name to { position, bbox }.
-  // Used by the frontend to get coordinates/bbox for a text query
-  // before firing GET /properties?bboxWest=...&bboxNorth=...
   @Get('search')
   searchPlace(
     @Query('query') query: string,

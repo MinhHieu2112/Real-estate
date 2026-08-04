@@ -1,9 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmenityIcons, HighlightIcons } from "@/lib/constants";
-import { formatEnumString } from "@/lib/utils";
 import { useGetPropertyQuery } from "@/state/api";
+import { AmenityEnum, HighlightEnum } from "@shared/types";
 import { HelpCircle } from "lucide-react";
 import React from "react";
+
+interface PropertyDetailsProps {
+  propertyId: number;
+}
 
 const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
   const {
@@ -24,7 +28,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
         <h2 className="text-xl font-semibold my-3">Tiện ích bất động sản</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {property.amenities.map((amenity) => {
-            const Icon = AmenityIcons[amenity] || HelpCircle;
+            const Icon = AmenityIcons[amenity as AmenityEnum] || HelpCircle;
             return (
               <div
                 key={amenity}
@@ -32,7 +36,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
               >
                 <Icon className="w-8 h-8 mb-2 text-gray-700" />
                 <span className="text-sm text-center text-gray-700">
-                  {formatEnumString(amenity)}
+                  {AmenityEnum[amenity as unknown as keyof typeof AmenityEnum] || amenity}
                 </span>
               </div>
             );
@@ -48,7 +52,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-4 w-full">
           {property.highlights.map((highlight) => {
             const Icon =
-              HighlightIcons[highlight] || HelpCircle;
+              HighlightIcons[highlight as HighlightEnum] || HelpCircle;
             return (
               <div
                 key={highlight}
@@ -56,7 +60,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
               >
                 <Icon className="w-8 h-8 mb-2 text-primary-600 dark:text-primary-300" />
                 <span className="text-sm text-center text-primary-600 dark:text-primary-300">
-                  {formatEnumString(highlight)}
+                  {HighlightEnum[highlight as unknown as keyof typeof HighlightEnum] || highlight}
                 </span>
               </div>
             );

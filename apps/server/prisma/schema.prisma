@@ -14,6 +14,7 @@ model Property {
   id                Int           @id @default(autoincrement())
   name              String
   description       String
+  status            PropertyStatus @default(Available)
   pricePerMonth     Float
   securityDeposit   Float
   applicationFee    Float
@@ -87,6 +88,8 @@ model Application {
   lease           Lease?            @relation(fields: [leaseId], references: [id])
   property        Property          @relation(fields: [propertyId], references: [id])
   tenant          Tenant            @relation(fields: [tenantCognitoId], references: [cognitoId])
+
+  @@unique([tenantCognitoId, propertyId, status])
 }
 
 model Lease {
@@ -97,6 +100,7 @@ model Lease {
   deposit         Float
   propertyId      Int
   tenantCognitoId String
+  status          LeaseStatus
   application     Application?
   property        Property     @relation(fields: [propertyId], references: [id])
   tenant          Tenant       @relation(fields: [tenantCognitoId], references: [cognitoId])
@@ -147,6 +151,21 @@ model Conversation {
   @@index([lastMessageAt])
 }
 
+model Notification {
+  id                 Int               @id @default(autoincrement())
+  receiverCognitoId  String
+  type               NotificationType
+  title              String
+  content            String
+  isRead             Boolean           @default(false)
+  applicationId      Int
+  createdAt          DateTime          @default(now())
+
+  @@index([receiverCognitoId, isRead])
+  @@index([createdAt])
+  @@unique([receiverCognitoId, applicationId, type])
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model spatial_ref_sys {
   srid      Int     @id
@@ -157,37 +176,50 @@ model spatial_ref_sys {
 }
 
 enum Highlight {
-  HighSpeedInternetAccess
-  WasherDryer
-  AirConditioning
-  Heating
-  SmokeFree
-  CableReady
-  SatelliteTV
-  DoubleVanities
-  TubShower
-  Intercom
-  SprinklerSystem
-  RecentlyRenovated
-  CloseToTransit
-  GreatView
+  NewlyRenovated
+  NewlyBuilt
+  PrimeLocation
+  CityView
+  SeaView
+  MountainView
+  RiverView
   QuietNeighborhood
+  NearSchool
+  NearHospital
+  NearSupermarket
+  NearPublicTransport
+  HighSecurityArea
+  SpaciousLayout
+  NaturalLight
+  PetFriendlyCommunity
 }
 
 enum Amenity {
-  WasherDryer
   AirConditioning
-  Dishwasher
-  HighSpeedInternet
-  HardwoodFloors
-  WalkInClosets
-  Microwave
+  Washer
+  Dryer
   Refrigerator
-  Pool
-  Gym
-  Parking
-  PetsAllowed
+  Microwave
+  Dishwasher
+  Oven
+  Kitchen
   WiFi
+  Television
+  Parking
+  Elevator
+  SwimmingPool
+  Gym
+  Balcony
+  Garden
+  CCTV
+  Furnished 
+}
+
+enum NotificationType {
+  New_application
+  Application_approved
+  Application_denied
+  New_message
 }
 
 enum PropertyType {
@@ -203,6 +235,14 @@ enum ApplicationStatus {
   Pending
   Denied
   Approved
+  Cancelled
+}
+
+enum LeaseStatus {
+  Draft
+  Active
+  Expired
+  Terminated
 }
 
 enum PaymentStatus {
@@ -210,4 +250,10 @@ enum PaymentStatus {
   Paid
   PartiallyPaid
   Overdue
+}
+
+enum PropertyStatus {
+  Available
+  Rented
+  Maintenance
 }

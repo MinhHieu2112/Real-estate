@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PropertyTypeIcons, PropertyTypeViNames, PRICE_RANGES_MIN, PRICE_RANGES_MAX } from '@/lib/constants';
+import { PropertyTypeIcons, PRICE_RANGES_MIN, PRICE_RANGES_MAX } from '@/lib/constants';
+import { PropertyTypeEnum } from '@shared/types';
 import { useAutocompleteAddressQuery, api } from '@/state/api';
 
 const FiltersBar = () => {
@@ -260,7 +261,7 @@ const FiltersBar = () => {
               <SelectItem key={type} value={type}>
                 <div className="flex items-center">
                   <Icon className="w-4 h-4 mr-2" />
-                  <span>{PropertyTypeViNames[type as PropertyTypeEnum] || type}</span>
+                  <span>{PropertyTypeEnum[type as unknown as keyof typeof PropertyTypeEnum] || type}</span>
                 </div>
               </SelectItem>
             ))}

@@ -87,7 +87,7 @@ export class PropertyController {
   })
   async createProperties(
     @Body() createPropertyDto: CreatePropertyDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files?: Express.Multer.File[],
   ) {
     return await this.propertyService.createProperty(createPropertyDto, files);
   }

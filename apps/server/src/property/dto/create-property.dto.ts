@@ -8,7 +8,12 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { PropertyType, Amenity, Highlight } from '../../generated/prisma/enums';
+import {
+  PropertyType,
+  Amenity,
+  Highlight,
+  PropertyStatus,
+} from '../../generated/prisma/enums';
 
 export class CreatePropertyDto {
   // Location information
@@ -40,6 +45,10 @@ export class CreatePropertyDto {
   @IsString()
   @IsNotEmpty()
   description!: string;
+
+  @IsEnum(PropertyStatus)
+  @IsNotEmpty()
+  status!: PropertyStatus;
 
   @IsEnum(PropertyType)
   @IsNotEmpty()

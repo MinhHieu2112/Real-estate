@@ -4,7 +4,7 @@ import { CustomFormField } from '@/components/FormField';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { AmenityEnum, HighlightEnum, PropertyTypeEnum } from '@/lib/constants';
+import { AmenityEnum, HighlightEnum, PropertyTypeEnum } from '@shared/types';
 import { PropertyFormData, propertySchema } from '@/lib/schemas';
 import { useCreatePropertyMutation, useGetAuthUserQuery } from '@/state/api';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,11 +22,12 @@ const NewProperty = () => {
     defaultValues: {
       name: "",
       description: "",
-      pricePerMonth: 1000,
-      securityDeposit: 500,
-      applicationFee: 100,
+      pricePerMonth: 1,
+      securityDeposit: 1,
+      applicationFee: 1,
       isPetsAllowed: true,
       isParkingIncluded: true,
+      propertyType: PropertyTypeEnum.Rooms,
       photoUrls: [],
       amenities: [],
       highlights: [],
@@ -55,7 +56,7 @@ const NewProperty = () => {
         });
       } else if (Array.isArray(value)) {
         formData.append(key, value.join(","));
-      } else {
+      } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
     });
@@ -73,8 +74,8 @@ const NewProperty = () => {
   return (
     <div className="dashboard-container">
       <Header 
-        title="Add New Property"
-        subtitle="Create a new property listing with detailed information"
+        title="Tên dự án"
+        subtitle="Điền thông tin dự án của bạn vào form bên dưới"
       />
       <div className="bg-white rounded-xl p-6">
         <Form {...form}>
@@ -85,13 +86,13 @@ const NewProperty = () => {
             {/* Basic Information*/}
             <div>
               <h2 className="text-lg font-semibold mb-4">
-                Basic Information
+                Thông tin cơ bản
               </h2>
               <div className="space-y-4">
-                <CustomFormField name="name" label="Property Name"/>
+                <CustomFormField name="name" label="Tên dự án"/>
                 <CustomFormField 
                   name="description" 
-                  label="Description"
+                  label="Mô tả"
                   type="textarea"
                 />
               </div>
@@ -101,21 +102,21 @@ const NewProperty = () => {
 
             {/* Fees */}
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold mb-4">Fees</h2>
-              <CustomFormField 
+              <h2 className="text-lg font-semibold mb-4">Chi phí</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CustomFormField 
                 name="pricePerMonth"
-                label="Price per Month"
+                label="Phí qua đêm"
                 type="number"
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                />
                 <CustomFormField 
                   name="securityDeposit"
-                  label="Security Deposit"
+                  label="Phí đặt cọc"
                   type="number"
                 />
                 <CustomFormField 
                   name="applicationFee"
-                  label="Application Fee"
+                  label="Phí đăng ký"
                   type="number"
                 />
               </div>
@@ -125,45 +126,43 @@ const NewProperty = () => {
 
             {/* Property Details */}
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold mb-4">Property Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <h2 className="text-lg font-semibold mb-4">Thông tin bất động sản</h2>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <CustomFormField 
                   name="beds"
-                  label="Number of Beds"
+                  label="Số lượng giường"
                   type="number"
                 />
                 <CustomFormField 
                   name="baths"
-                  label="Number of Baths"
+                  label="Số lượng phòng tắm"
                   type="number"
                 />
                 <CustomFormField 
                   name="squareFeet"
-                  label="Square Feet"
+                  label="Diện tích (m²)"
                   type="number"
+                />
+                <CustomFormField 
+                  name="propertyType"
+                  label="Loại bất động sản"
+                  type="select"
+                  options={Object.entries(PropertyTypeEnum).map(([key, label]) => ({
+                    value: key,
+                    label: label,
+                  }))}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <CustomFormField 
                   name="isPetsAllowed"
-                  label="Pets Allowed"
+                  label="Cho phép giữ thú cưng"
                   type="switch"
                 />
                 <CustomFormField 
                   name="isParkingIncluded"
-                  label="Parking Included"
+                  label="Bao gồm chỗ đậu xe"
                   type="switch"
-                />
-              </div>
-              <div className="mt-4">
-                <CustomFormField 
-                  name="propertyType"
-                  label="Property Type"
-                  type="select"
-                  options={Object.keys(PropertyTypeEnum).map((type) => ({
-                    value: type,
-                    label: type,
-                  }))}
                 />
               </div>
             </div>
@@ -173,25 +172,25 @@ const NewProperty = () => {
             {/* Amenities and Highlights */}
             <div>
               <h2 className="text-lg font-semibold mb-4">
-                Amenities and Highlights
+                Tiện ích
               </h2>
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CustomFormField 
                   name="amenities"
-                  label="Amenities"
+                  label="Dịch vụ"
                   type="multi-select"
-                  options={Object.keys(AmenityEnum).map((amenity) => ({
-                    value: amenity,
-                    label: amenity,
+                  options={Object.entries(AmenityEnum).map(([key, label]) => ({
+                    value: key,
+                    label: label,
                   }))}
                 />
                 <CustomFormField 
                   name="highlights"
-                  label="Highlights"
+                  label="Điểm nổi bật"
                   type="multi-select"
-                  options={Object.keys(HighlightEnum).map((highlight) => ({
-                    value: highlight,
-                    label: highlight,
+                  options={Object.entries(HighlightEnum).map(([key, label]) => ({
+                    value: key,
+                    label: label,
                   }))}
                 />
               </div>
@@ -201,29 +200,53 @@ const NewProperty = () => {
 
             {/* Photos */}
             <div>
-              <h2 className="text-lg font-semibold mb-4">Photos</h2>
-              <CustomFormField 
+              <h2 className="text-lg font-semibold mb-4">Hình ảnh</h2>
+                <CustomFormField 
                 name="photoUrls"
-                label="Property Photos"
+                label="Tải lên hình ảnh"
                 type="file"
                 accept="image/*"
-              />
+                />
             </div>
 
             <hr className="my-6 border-gray-200" />
 
             {/* Additional Information */}
-            <div className="space-y-6">
-              <h2 className="text-lg font-semibold mb-4">
-                Additional Information
+            <div className="space-y-5">
+              <h2 className="text-lg font-semibold">
+                Thông tin bổ sung
               </h2>
-              <CustomFormField name="address" label="Address" />
-              <div className="flex justify-between gap-4">
-                <CustomFormField name="city" label="City" className="w-full" />
-                <CustomFormField name="state" label="State" className="w-full" />
-                <CustomFormField name="postalCode" label="Postal Code" className="w-full" />
+
+              {/* Address */}
+              <CustomFormField
+                name="address"
+                label="Địa chỉ"
+                placeholder="123 Nguyễn Huệ"
+              />
+
+              {/* City + State */}
+              <div className="grid grid-cols-2 gap-4">
+                <CustomFormField
+                  name="city"
+                  label="Thành phố"
+                />
+                <CustomFormField
+                  name="state"
+                  label="Phường / Xã"
+                />
               </div>
-              <CustomFormField name="country" label="Country" />
+
+              {/* Postal Code + Country */}
+              <div className="grid grid-cols-2 gap-4">
+                <CustomFormField
+                  name="postalCode"
+                  label="Mã bưu điện"
+                />
+                <CustomFormField
+                  name="country"
+                  label="Quốc gia"
+                />
+              </div>
             </div>
 
             <Button

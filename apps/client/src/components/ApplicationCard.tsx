@@ -85,11 +85,13 @@ const ApplicationCard = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-500">Thanh toán tiếp theo:</span>
+              <span className="text-gray-500">Tình trạng:</span>
               <span className="font-medium text-gray-800">
                 {application.lease?.nextPaymentDate
                   ? new Date(application.lease.nextPaymentDate).toLocaleDateString('vi-VN')
-                  : "Không xác định"}
+                  : application.lease?.status === "Active"
+                  ? "Không xác định"
+                  : "Chưa có hợp đồng"}
               </span>
             </div>
           </div>

@@ -36,7 +36,7 @@ export class CreateApplicationDto {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  startDate?: Date;
+  startDate!: Date;
 
   @IsOptional()
   @Type(() => Date)

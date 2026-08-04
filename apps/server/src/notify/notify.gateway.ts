@@ -1,34 +1,50 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
-import { NotifyService } from './notify.service';
-import { CreateNotifyDto } from './dto/create-notify.dto';
-import { UpdateNotifyDto } from './dto/update-notify.dto';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  ConnectedSocket,
+  MessageBody,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
-export class NotifyGateway {
-  constructor(private readonly notifyService: NotifyService) {}
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+  namespace: '/notify',
+})
+export class NotifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server!: Server;
 
-  @SubscribeMessage('createNotify')
-  create(@MessageBody() createNotifyDto: CreateNotifyDto) {
-    return this.notifyService.create(createNotifyDto);
+  handleConnection(client: Socket) {
+    const cognitoId = client.handshake.query.cognitoId as string;
+    if (cognitoId) {
+      client.join(cognitoId);
+    }
   }
 
-  @SubscribeMessage('findAllNotify')
-  findAll() {
-    return this.notifyService.findAll();
+  handleDisconnect(client: Socket) {
+    client.disconnect();
   }
 
-  @SubscribeMessage('findOneNotify')
-  findOne(@MessageBody() id: number) {
-    return this.notifyService.findOne(id);
+  // Cho phép Client chủ động gia nhập phòng theo cognitoId của mình
+  @SubscribeMessage('joinNotification')
+  handleJoinNotification(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { cognitoId: string },
+  ) {
+    if (data?.cognitoId) {
+      client.join(data.cognitoId);
+    }
   }
 
-  @SubscribeMessage('updateNotify')
-  update(@MessageBody() updateNotifyDto: UpdateNotifyDto) {
-    return this.notifyService.update(updateNotifyDto.id, updateNotifyDto);
-  }
-
-  @SubscribeMessage('removeNotify')
-  remove(@MessageBody() id: number) {
-    return this.notifyService.remove(id);
+  // Gửi thông báo thời gian thực tới 1 user qua phòng cognitoId
+  sendNotificationToUser(receiverCognitoId: string, notification: any) {
+    if (this.server) {
+      this.server.to(receiverCognitoId).emit('newNotification', notification);
+    }
   }
 }

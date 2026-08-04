@@ -4,6 +4,7 @@ import Card from '@/components/Card';
 import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetAuthUserQuery, useGetPropertiesQuery, useGetTenantQuery } from '@/state/api';
+import Image from 'next/image';
 import React from 'react'
 
 const Favorites = () => {
@@ -45,8 +46,16 @@ const Favorites = () => {
         ))}
       </div>
         {(!favoriteProperties || favoriteProperties.length === 0) && (
-          <div className="text-center text-gray-500 mt-4">
-            Bạn chưa có bất động sản yêu thích nào
+          <div className="flex flex-col items-center">
+            <Image
+                src="/not-found.png"
+                alt="Không tìm thấy"
+                width={500}
+                height={500}
+            />
+            <p className="text-gray-500 text-xl mt-8">
+                Bạn chưa có đơn đăng ký nào
+            </p>
           </div>
         )}
     </div>

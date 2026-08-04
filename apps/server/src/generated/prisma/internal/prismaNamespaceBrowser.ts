@@ -59,6 +59,7 @@ export const ModelName = {
   Payment: 'Payment',
   Message: 'Message',
   Conversation: 'Conversation',
+  Notification: 'Notification',
   spatial_ref_sys: 'spatial_ref_sys'
 } as const
 
@@ -82,6 +83,7 @@ export const PropertyScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  status: 'status',
   pricePerMonth: 'pricePerMonth',
   securityDeposit: 'securityDeposit',
   applicationFee: 'applicationFee',
@@ -163,7 +165,8 @@ export const LeaseScalarFieldEnum = {
   rent: 'rent',
   deposit: 'deposit',
   propertyId: 'propertyId',
-  tenantCognitoId: 'tenantCognitoId'
+  tenantCognitoId: 'tenantCognitoId',
+  status: 'status'
 } as const
 
 export type LeaseScalarFieldEnum = (typeof LeaseScalarFieldEnum)[keyof typeof LeaseScalarFieldEnum]
@@ -205,6 +208,20 @@ export const ConversationScalarFieldEnum = {
 } as const
 
 export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  receiverCognitoId: 'receiverCognitoId',
+  type: 'type',
+  title: 'title',
+  content: 'content',
+  isRead: 'isRead',
+  applicationId: 'applicationId',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const Spatial_ref_sysScalarFieldEnum = {

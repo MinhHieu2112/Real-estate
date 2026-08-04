@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetApplicationsQuery, useGetAuthUserQuery } from '@/state/api';
 import { CircleCheckBig, Clock, Download, XCircle } from 'lucide-react';
+import Image from 'next/image';
 import React from 'react'
 
 const Applications = () => {
@@ -38,10 +39,7 @@ const Applications = () => {
                     {application.status === "Approved" ? (
                         <div className="bg-green-100 p-4 text-green-700 grow flex items-center">
                             <CircleCheckBig className="w-5 h-5 mr-2" />
-                            Bất động sản đang được bạn thuê đến ngày{" "}
-                            {application.lease?.endDate
-                                ? new Date(application.lease.endDate).toLocaleString('vi-VN')
-                                : "Không xác định"}
+                            Đơn đăng ký của bạn đã được duyệt {" "}
                         </div>
                     ) : application.status === "Pending" ? (
                         <div className="bg-yellow-100 p-4 text-yellow-700 grow flex items-center">
@@ -65,6 +63,19 @@ const Applications = () => {
                 </div>
                 </ApplicationCard>
             ))}
+            {applications.length === 0 && (
+                <div className="flex flex-col items-center">
+                    <Image
+                        src="/not-found.png"
+                        alt="Không tìm thấy"
+                        width={500}
+                        height={500}
+                    />
+                    <p className="text-gray-500 text-xl mt-8">
+                        Bạn chưa có đơn đăng ký nào
+                    </p>
+                </div>
+                )}
         </div>
     </div>
   )

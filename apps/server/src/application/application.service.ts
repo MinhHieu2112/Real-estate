@@ -9,10 +9,15 @@ import { ListApplicationDto } from './dto/list-application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { calculateNextPaymentDate } from '../common/utils/date.util';
+import { NotifyService } from '../notify/notify.service';
+import { Application } from './entities/application.entity';
 
 @Injectable()
 export class ApplicationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifyService: NotifyService,
+  ) {}
 
   async listApplication(listApplicationDto: ListApplicationDto) {
     // Set up filters
@@ -125,22 +130,7 @@ export class ApplicationService {
       throw new BadRequestException('End date must be after start date');
     }
 
-    // 1. Ngăn tạo mới nếu đã có Application trạng thái Pending hoặc Approved cho cùng Property
-    const existingApplication = await this.prisma.application.findFirst({
-      where: {
-        propertyId,
-        tenantCognitoId,
-        status: { in: ['Pending', 'Approved'] },
-      },
-    });
-
-    if (existingApplication) {
-      throw new ConflictException(
-        `You already have a ${existingApplication.status.toLowerCase()} application for this property.`,
-      );
-    }
-
-    // 2. Ngăn tạo mới nếu Tenant đang có Lease hoạt động cho cùng Property
+    // 1. Ngăn tạo mới nếu Tenant đang có Lease hoạt động cho cùng Property
     const activeLease = await this.prisma.lease.findFirst({
       where: {
         propertyId,
@@ -155,10 +145,18 @@ export class ApplicationService {
       );
     }
 
-    const application = await this.prisma.application.create({
-      data: {
+    const application = await this.prisma.application.upsert({
+      where: {
+        tenantCognitoId_propertyId_status: {
+          tenantCognitoId,
+          propertyId,
+          status,
+        },
+      },
+      update: {},
+      create: {
         applicationDate: new Date(applicationDate),
-        startDate: startDate ? new Date(startDate) : undefined,
+        startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : undefined,
         status: status || 'Pending',
         name,
@@ -179,102 +177,62 @@ export class ApplicationService {
       },
     });
 
+    const manager = await this.prisma.manager.findUnique({
+      where: { cognitoId: application.property.managerCognitoId },
+    });
+
+    if (!manager) {
+      throw new NotFoundException(`Manager not found`);
+    }
+
+    if (application.status === 'Pending') {
+      void this.notifyService
+        .notifyNewApplication({
+          managerCognitoId: application.property.managerCognitoId,
+          managerEmail: manager.email,
+          tenantName: application.tenant.name,
+          propertyName: application.property.name,
+          applicationId: application.id,
+        })
+        .catch((err: Error) => {
+          console.error(`Bắn thông báo tạo đơn thất bại: ${err.message}`);
+        });
+    }
     return application;
   }
 
-  // Update application status
+  // Cập nhật trang thái đơn đăng ký
   async updateApplicationStatus(
     applicationId: number,
     updateApplication: UpdateApplicationDto,
-  ) {
+  ): Promise<Application> {
     const { status } = updateApplication;
 
-    return this.prisma.$transaction(async (tx) => {
-      const application = await tx.application.findUnique({
-        where: { id: Number(applicationId) },
-        include: {
-          property: true,
-          tenant: true,
-        },
-      });
-
-      if (!application) {
-        throw new NotFoundException('Application not found');
-      }
-
-      if (status === 'Approved') {
-        // Dynamic lease start and end dates from application requested range, or fallback to 1 year
-        const leaseStartDate = application.startDate
-          ? new Date(application.startDate)
-          : new Date();
-        const leaseEndDate = application.endDate
-          ? new Date(application.endDate)
-          : new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-
-        // Prevent approval if property already has an active lease overlapping with requested period
-        const activeLease = await tx.lease.findFirst({
-          where: {
-            propertyId: application.propertyId,
-            startDate: { lte: leaseEndDate },
-            endDate: { gte: leaseStartDate },
-          },
-        });
-
-        if (activeLease) {
-          throw new ConflictException(
-            'Cannot approve application: Property already has an active lease overlapping with requested dates.',
-          );
-        }
-
-        // Create new lease with dynamic dates
-        const newLease = await tx.lease.create({
-          data: {
-            startDate: leaseStartDate,
-            endDate: leaseEndDate,
-            rent: application.property.pricePerMonth,
-            deposit: application.property.securityDeposit,
-            propertyId: application.propertyId,
-            tenantCognitoId: application.tenantCognitoId,
-          },
-        });
-
-        // Update the property to connect the tenant
-        await tx.property.update({
-          where: { id: application.propertyId },
-          data: {
-            tenants: {
-              connect: {
-                cognitoId: application.tenantCognitoId,
-              },
-            },
-          },
-        });
-
-        // Update the application with Approved status and link lease ID
-        return tx.application.update({
-          where: { id: Number(applicationId) },
-          data: {
-            status,
-            leaseId: newLease.id,
-          },
-          include: {
-            property: true,
-            tenant: true,
-            lease: true,
-          },
-        });
-      } else {
-        // Update application status for non-approval statuses (e.g. Denied)
-        return tx.application.update({
-          where: { id: Number(applicationId) },
-          data: { status },
-          include: {
-            property: true,
-            tenant: true,
-            lease: true,
-          },
-        });
-      }
+    // 1. Cập nhật trạng thái Application đơn thuần
+    const updatedApplication = await this.prisma.application.update({
+      where: { id: Number(applicationId) },
+      data: { status },
+      include: {
+        property: true,
+        tenant: true,
+      },
     });
+
+    // 2. Bắn thông báo cho Tenant (Approved / Denied)
+    if (status === 'Approved' || status === 'Denied') {
+      void this.notifyService
+        .notifyApplicationStatus({
+          tenantCognitoId: updatedApplication.tenantCognitoId,
+          tenantEmail: updatedApplication.tenant.email,
+          propertyName: updatedApplication.property.name,
+          status: status,
+          applicationId: updatedApplication.id,
+        })
+        .catch((err: Error) => {
+          console.error(`Bắn thông báo thất bại: ${err.message}`);
+        });
+    }
+
+    return updatedApplication;
   }
 }

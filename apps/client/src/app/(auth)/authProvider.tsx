@@ -1,9 +1,10 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import { Authenticator, useAuthenticator, View, Heading, RadioGroupField, Radio } from '@aws-amplify/ui-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 // https://docs.amplify.aws/gen1/javascript/tools/libraries/configure-categories/
 Amplify.configure({
     Auth: {
@@ -181,7 +182,7 @@ const Auth = ({ children } : { children: React.ReactNode}) => {
         return <>{children}</>;
     }
     return (
-        <div className="h-full">
+        <div className={isAuthPage ? "flex justify-center items-center min-h-[calc(100vh-80px)] py-12" : "h-full"}>
             <Authenticator
                 initialState={pathname.includes("signup") ? "signUp" : "signIn"}
                 components={components}

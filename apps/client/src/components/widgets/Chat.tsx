@@ -22,15 +22,12 @@ const Chat = () => {
     refetch,
   } = useGetConversationsQuery(cognitoId!, {
     skip: !cognitoId,
-    // Không cần polling thường xuyên khi đã có WebSocket, dùng 60 giây làm fallback
     pollingInterval: 60_000,
   });
 
   // Kết nối socket khi user đăng nhập, ngắt khi unmount
   useEffect(() => {
     if (!cognitoId) return;
-
-    // Khởi tạo socket để lắng nghe sự kiện global (ví dụ: cập nhật badge unread)
     getChatSocket(cognitoId);
 
     return () => {

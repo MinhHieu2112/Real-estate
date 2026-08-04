@@ -25,9 +25,9 @@ const ApplicationModal = ({
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
-        name: "",
-        email: "",
-        phoneNumber: "",
+        name: authUser?.userInfo?.name || "",
+        email: authUser?.userInfo?.email || "",
+        phoneNumber: authUser?.userInfo?.phoneNumber || "",
         startDate: defaultStartDate,
         endDate: defaultEndDate,
         message: "",
@@ -57,8 +57,8 @@ const ApplicationModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={isSubmitting ? undefined : onClose}>
         <DialogContent className="bg-white">
-            <DialogHeader className="mb-4">
-                <DialogTitle>Nộp đơn đăng ký thuê bất động sản này</DialogTitle>
+            <DialogHeader className="mb-4 font-semibold text-center">
+                <DialogTitle>Đơn đăng ký</DialogTitle>
             </DialogHeader>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">

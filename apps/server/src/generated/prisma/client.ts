@@ -84,6 +84,11 @@ export type Message = Prisma.MessageModel
  */
 export type Conversation = Prisma.ConversationModel
 /**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
+/**
  * Model spatial_ref_sys
  * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  */

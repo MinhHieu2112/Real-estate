@@ -1,4 +1,4 @@
-import { Application, ChatConversation, Lease, Manager, Message, Payment, Property, Tenant, User } from "@shared/types";
+import { Application, ChatConversation, Lease, Manager, Message, Notification, Payment, Property, Tenant, User } from "@shared/types";
 import { cleanParams, createNewUserInDatabase, withToast } from "@/lib/utils";
 import { createApi, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
@@ -41,7 +41,7 @@ export const api = createApi({
     }
   }),
   reducerPath: "api",
-  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments", "Conversations", "Messages"],
+  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments", "Conversations", "Messages", "Notifications"],
   endpoints: (build) => ({
     getAuthUser: build.query<User, void>({
       queryFn: async (_, _queryApi, _extraoptions, fetchWithBQ) => {
@@ -404,6 +404,23 @@ export const api = createApi({
           result ? [{ type: "Messages", id: result.conversationId }, "Conversations"] : [],
       }),
 
+      // ─── Notifications ────────────────────────────────────────────────────────
+
+      getNotifications: build.query<Notification[], string>({
+        query: (userId: string) => ({ url: "notify", params: { userId } }),
+        providesTags: ["Notifications"],
+      }),
+
+      markNotificationAsRead: build.mutation<Notification, number>({
+        query: (id: number) => ({ url: `notify/${id}/read`, method: "PATCH" }),
+        invalidatesTags: ["Notifications"],
+      }),
+
+      markAllNotificationsAsRead: build.mutation<{ count: number }, string>({
+        query: (userId: string) => ({ url: "notify/read-all", method: "PATCH", params: { userId } }),
+        invalidatesTags: ["Notifications"],
+      }),
+
       markAsRead: build.mutation<{ updatedCount: number }, { conversationId: number; userCognitoId: string }>({
         query: ({ conversationId, userCognitoId }: { conversationId: number; userCognitoId: string }) => ({
           url: `messages/conversations/${conversationId}/read`,
@@ -443,4 +460,8 @@ export const {
   useGetMessagesQuery,
   useSendMessageMutation,
   useMarkAsReadMutation,
+  // Notifications
+  useGetNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
 } = api;

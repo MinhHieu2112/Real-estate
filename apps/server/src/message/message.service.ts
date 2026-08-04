@@ -169,8 +169,6 @@ export class MessageService {
         data: { lastMessage: content, lastMessageAt: new Date() },
       }),
     ]);
-
-    // Broadcast WebSocket event sang cho các client đang mở conversation
     this.messageGateway.broadcastNewMessage(message);
 
     return message;

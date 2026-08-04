@@ -5,25 +5,57 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from "next/image";
 import { Button } from './ui/button';
-import { useGetAuthUserQuery } from '@/state/api';
+import { useGetAuthUserQuery, useGetNotificationsQuery } from '@/state/api';
 import { signOut } from 'aws-amplify/auth';
 import { Bell, MessageCircle, Plus, Search } from "lucide-react";
 import { DropdownMenuContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { SidebarTrigger } from './ui/sidebar';
 import PopupWidget from './widgets/PopupWidget';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Chat from './widgets/Chat';
 import Notify from './widgets/Notify';
+import { getNotifySocket, disconnectNotifySocket } from '@/lib/socket';
+import { Notification } from '@shared/types';
+import { api } from '@/state/api';
+import { useDispatch } from 'react-redux';
 
 const Navbar = () => {
     const { data: authUser } = useGetAuthUserQuery();
     const router = useRouter();
     const pathname = usePathname();
+    const dispatch = useDispatch();
     const [openChat, setOpenChat] = useState(false);
     const [openNotify, setOpenNotify] = useState(false);
 
     const isDashboardPage = pathname.includes("/managers") || pathname.includes("/tenants");
+
+    const cognitoId = authUser?.cognitoInfo?.userId;
+
+    // Lấy danh sách thông báo từ server
+    const { data: notifications = [] } = useGetNotificationsQuery(
+        cognitoId ?? "",
+        { skip: !cognitoId }
+    );
+
+    const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
+
+    // Kết nối WebSocket /notify — lắng nghe thông báo mới thời gian thực
+    useEffect(() => {
+        if (!cognitoId) return;
+
+        const socket = getNotifySocket(cognitoId);
+
+        socket.on("newNotification", () => {
+            // Invalidate cache để RTK Query tự fetch lại danh sách thông báo
+            dispatch(api.util.invalidateTags(["Notifications"]));
+        });
+
+        return () => {
+            socket.off("newNotification");
+            disconnectNotifySocket();
+        };
+    }, [cognitoId, dispatch]);
 
     const handleSignOut = async () => {
         await signOut();
@@ -123,13 +155,21 @@ const Navbar = () => {
                                     e.stopPropagation();
                                     setOpenNotify((prev) => !prev);
                                 }}/>
-                            <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
+                            {/* Badge hiển thị số thông báo chưa đọc */}
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center pointer-events-none">
+                                    {unreadCount > 99 ? "99+" : unreadCount}
+                                </span>
+                            )}
                             <PopupWidget
                                 open={openNotify}
                                 title="Thông báo"
                                 onClose={() => setOpenNotify(false)}
                             >
-                                <Notify />
+                                <Notify
+                                    notifications={notifications}
+                                    userId={cognitoId ?? ""}
+                                />
                             </PopupWidget>
                         </div>
 

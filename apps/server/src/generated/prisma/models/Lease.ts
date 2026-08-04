@@ -47,6 +47,7 @@ export type LeaseMinAggregateOutputType = {
   deposit: number | null
   propertyId: number | null
   tenantCognitoId: string | null
+  status: $Enums.LeaseStatus | null
 }
 
 export type LeaseMaxAggregateOutputType = {
@@ -57,6 +58,7 @@ export type LeaseMaxAggregateOutputType = {
   deposit: number | null
   propertyId: number | null
   tenantCognitoId: string | null
+  status: $Enums.LeaseStatus | null
 }
 
 export type LeaseCountAggregateOutputType = {
@@ -67,6 +69,7 @@ export type LeaseCountAggregateOutputType = {
   deposit: number
   propertyId: number
   tenantCognitoId: number
+  status: number
   _all: number
 }
 
@@ -93,6 +96,7 @@ export type LeaseMinAggregateInputType = {
   deposit?: true
   propertyId?: true
   tenantCognitoId?: true
+  status?: true
 }
 
 export type LeaseMaxAggregateInputType = {
@@ -103,6 +107,7 @@ export type LeaseMaxAggregateInputType = {
   deposit?: true
   propertyId?: true
   tenantCognitoId?: true
+  status?: true
 }
 
 export type LeaseCountAggregateInputType = {
@@ -113,6 +118,7 @@ export type LeaseCountAggregateInputType = {
   deposit?: true
   propertyId?: true
   tenantCognitoId?: true
+  status?: true
   _all?: true
 }
 
@@ -210,6 +216,7 @@ export type LeaseGroupByOutputType = {
   deposit: number
   propertyId: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
   _count: LeaseCountAggregateOutputType | null
   _avg: LeaseAvgAggregateOutputType | null
   _sum: LeaseSumAggregateOutputType | null
@@ -243,6 +250,7 @@ export type LeaseWhereInput = {
   deposit?: Prisma.FloatFilter<"Lease"> | number
   propertyId?: Prisma.IntFilter<"Lease"> | number
   tenantCognitoId?: Prisma.StringFilter<"Lease"> | string
+  status?: Prisma.EnumLeaseStatusFilter<"Lease"> | $Enums.LeaseStatus
   application?: Prisma.XOR<Prisma.ApplicationNullableScalarRelationFilter, Prisma.ApplicationWhereInput> | null
   property?: Prisma.XOR<Prisma.PropertyScalarRelationFilter, Prisma.PropertyWhereInput>
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -257,6 +265,7 @@ export type LeaseOrderByWithRelationInput = {
   deposit?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   application?: Prisma.ApplicationOrderByWithRelationInput
   property?: Prisma.PropertyOrderByWithRelationInput
   tenant?: Prisma.TenantOrderByWithRelationInput
@@ -274,6 +283,7 @@ export type LeaseWhereUniqueInput = Prisma.AtLeast<{
   deposit?: Prisma.FloatFilter<"Lease"> | number
   propertyId?: Prisma.IntFilter<"Lease"> | number
   tenantCognitoId?: Prisma.StringFilter<"Lease"> | string
+  status?: Prisma.EnumLeaseStatusFilter<"Lease"> | $Enums.LeaseStatus
   application?: Prisma.XOR<Prisma.ApplicationNullableScalarRelationFilter, Prisma.ApplicationWhereInput> | null
   property?: Prisma.XOR<Prisma.PropertyScalarRelationFilter, Prisma.PropertyWhereInput>
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -288,6 +298,7 @@ export type LeaseOrderByWithAggregationInput = {
   deposit?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   _count?: Prisma.LeaseCountOrderByAggregateInput
   _avg?: Prisma.LeaseAvgOrderByAggregateInput
   _max?: Prisma.LeaseMaxOrderByAggregateInput
@@ -306,6 +317,7 @@ export type LeaseScalarWhereWithAggregatesInput = {
   deposit?: Prisma.FloatWithAggregatesFilter<"Lease"> | number
   propertyId?: Prisma.IntWithAggregatesFilter<"Lease"> | number
   tenantCognitoId?: Prisma.StringWithAggregatesFilter<"Lease"> | string
+  status?: Prisma.EnumLeaseStatusWithAggregatesFilter<"Lease"> | $Enums.LeaseStatus
 }
 
 export type LeaseCreateInput = {
@@ -313,6 +325,7 @@ export type LeaseCreateInput = {
   endDate: Date | string
   rent: number
   deposit: number
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationCreateNestedOneWithoutLeaseInput
   property: Prisma.PropertyCreateNestedOneWithoutLeasesInput
   tenant: Prisma.TenantCreateNestedOneWithoutLeasesInput
@@ -327,6 +340,7 @@ export type LeaseUncheckedCreateInput = {
   deposit: number
   propertyId: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedCreateNestedOneWithoutLeaseInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutLeaseInput
 }
@@ -336,6 +350,7 @@ export type LeaseUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUpdateOneWithoutLeaseNestedInput
   property?: Prisma.PropertyUpdateOneRequiredWithoutLeasesNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutLeasesNestedInput
@@ -350,6 +365,7 @@ export type LeaseUncheckedUpdateInput = {
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedUpdateOneWithoutLeaseNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutLeaseNestedInput
 }
@@ -362,6 +378,7 @@ export type LeaseCreateManyInput = {
   deposit: number
   propertyId: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
 }
 
 export type LeaseUpdateManyMutationInput = {
@@ -369,6 +386,7 @@ export type LeaseUpdateManyMutationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
 }
 
 export type LeaseUncheckedUpdateManyInput = {
@@ -379,6 +397,7 @@ export type LeaseUncheckedUpdateManyInput = {
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
 }
 
 export type LeaseListRelationFilter = {
@@ -404,6 +423,7 @@ export type LeaseCountOrderByAggregateInput = {
   deposit?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
 }
 
 export type LeaseAvgOrderByAggregateInput = {
@@ -421,6 +441,7 @@ export type LeaseMaxOrderByAggregateInput = {
   deposit?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
 }
 
 export type LeaseMinOrderByAggregateInput = {
@@ -431,6 +452,7 @@ export type LeaseMinOrderByAggregateInput = {
   deposit?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
 }
 
 export type LeaseSumOrderByAggregateInput = {
@@ -545,6 +567,10 @@ export type LeaseUpdateOneWithoutApplicationNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LeaseUpdateToOneWithWhereWithoutApplicationInput, Prisma.LeaseUpdateWithoutApplicationInput>, Prisma.LeaseUncheckedUpdateWithoutApplicationInput>
 }
 
+export type EnumLeaseStatusFieldUpdateOperationsInput = {
+  set?: $Enums.LeaseStatus
+}
+
 export type LeaseCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.LeaseCreateWithoutPaymentsInput, Prisma.LeaseUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.LeaseCreateOrConnectWithoutPaymentsInput
@@ -564,6 +590,7 @@ export type LeaseCreateWithoutPropertyInput = {
   endDate: Date | string
   rent: number
   deposit: number
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationCreateNestedOneWithoutLeaseInput
   tenant: Prisma.TenantCreateNestedOneWithoutLeasesInput
   payments?: Prisma.PaymentCreateNestedManyWithoutLeaseInput
@@ -576,6 +603,7 @@ export type LeaseUncheckedCreateWithoutPropertyInput = {
   rent: number
   deposit: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedCreateNestedOneWithoutLeaseInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutLeaseInput
 }
@@ -617,6 +645,7 @@ export type LeaseScalarWhereInput = {
   deposit?: Prisma.FloatFilter<"Lease"> | number
   propertyId?: Prisma.IntFilter<"Lease"> | number
   tenantCognitoId?: Prisma.StringFilter<"Lease"> | string
+  status?: Prisma.EnumLeaseStatusFilter<"Lease"> | $Enums.LeaseStatus
 }
 
 export type LeaseCreateWithoutTenantInput = {
@@ -624,6 +653,7 @@ export type LeaseCreateWithoutTenantInput = {
   endDate: Date | string
   rent: number
   deposit: number
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationCreateNestedOneWithoutLeaseInput
   property: Prisma.PropertyCreateNestedOneWithoutLeasesInput
   payments?: Prisma.PaymentCreateNestedManyWithoutLeaseInput
@@ -636,6 +666,7 @@ export type LeaseUncheckedCreateWithoutTenantInput = {
   rent: number
   deposit: number
   propertyId: number
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedCreateNestedOneWithoutLeaseInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutLeaseInput
 }
@@ -671,6 +702,7 @@ export type LeaseCreateWithoutApplicationInput = {
   endDate: Date | string
   rent: number
   deposit: number
+  status: $Enums.LeaseStatus
   property: Prisma.PropertyCreateNestedOneWithoutLeasesInput
   tenant: Prisma.TenantCreateNestedOneWithoutLeasesInput
   payments?: Prisma.PaymentCreateNestedManyWithoutLeaseInput
@@ -684,6 +716,7 @@ export type LeaseUncheckedCreateWithoutApplicationInput = {
   deposit: number
   propertyId: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutLeaseInput
 }
 
@@ -708,6 +741,7 @@ export type LeaseUpdateWithoutApplicationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   property?: Prisma.PropertyUpdateOneRequiredWithoutLeasesNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutLeasesNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutLeaseNestedInput
@@ -721,6 +755,7 @@ export type LeaseUncheckedUpdateWithoutApplicationInput = {
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutLeaseNestedInput
 }
 
@@ -729,6 +764,7 @@ export type LeaseCreateWithoutPaymentsInput = {
   endDate: Date | string
   rent: number
   deposit: number
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationCreateNestedOneWithoutLeaseInput
   property: Prisma.PropertyCreateNestedOneWithoutLeasesInput
   tenant: Prisma.TenantCreateNestedOneWithoutLeasesInput
@@ -742,6 +778,7 @@ export type LeaseUncheckedCreateWithoutPaymentsInput = {
   deposit: number
   propertyId: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedCreateNestedOneWithoutLeaseInput
 }
 
@@ -766,6 +803,7 @@ export type LeaseUpdateWithoutPaymentsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUpdateOneWithoutLeaseNestedInput
   property?: Prisma.PropertyUpdateOneRequiredWithoutLeasesNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutLeasesNestedInput
@@ -779,6 +817,7 @@ export type LeaseUncheckedUpdateWithoutPaymentsInput = {
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedUpdateOneWithoutLeaseNestedInput
 }
 
@@ -789,6 +828,7 @@ export type LeaseCreateManyPropertyInput = {
   rent: number
   deposit: number
   tenantCognitoId: string
+  status: $Enums.LeaseStatus
 }
 
 export type LeaseUpdateWithoutPropertyInput = {
@@ -796,6 +836,7 @@ export type LeaseUpdateWithoutPropertyInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUpdateOneWithoutLeaseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutLeasesNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutLeaseNestedInput
@@ -808,6 +849,7 @@ export type LeaseUncheckedUpdateWithoutPropertyInput = {
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedUpdateOneWithoutLeaseNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutLeaseNestedInput
 }
@@ -819,6 +861,7 @@ export type LeaseUncheckedUpdateManyWithoutPropertyInput = {
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
 }
 
 export type LeaseCreateManyTenantInput = {
@@ -828,6 +871,7 @@ export type LeaseCreateManyTenantInput = {
   rent: number
   deposit: number
   propertyId: number
+  status: $Enums.LeaseStatus
 }
 
 export type LeaseUpdateWithoutTenantInput = {
@@ -835,6 +879,7 @@ export type LeaseUpdateWithoutTenantInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUpdateOneWithoutLeaseNestedInput
   property?: Prisma.PropertyUpdateOneRequiredWithoutLeasesNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutLeaseNestedInput
@@ -847,6 +892,7 @@ export type LeaseUncheckedUpdateWithoutTenantInput = {
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
   application?: Prisma.ApplicationUncheckedUpdateOneWithoutLeaseNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutLeaseNestedInput
 }
@@ -858,6 +904,7 @@ export type LeaseUncheckedUpdateManyWithoutTenantInput = {
   rent?: Prisma.FloatFieldUpdateOperationsInput | number
   deposit?: Prisma.FloatFieldUpdateOperationsInput | number
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumLeaseStatusFieldUpdateOperationsInput | $Enums.LeaseStatus
 }
 
 
@@ -899,6 +946,7 @@ export type LeaseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   deposit?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
+  status?: boolean
   application?: boolean | Prisma.Lease$applicationArgs<ExtArgs>
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -914,6 +962,7 @@ export type LeaseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   deposit?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
+  status?: boolean
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lease"]>
@@ -926,6 +975,7 @@ export type LeaseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   deposit?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
+  status?: boolean
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lease"]>
@@ -938,9 +988,10 @@ export type LeaseSelectScalar = {
   deposit?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
+  status?: boolean
 }
 
-export type LeaseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "startDate" | "endDate" | "rent" | "deposit" | "propertyId" | "tenantCognitoId", ExtArgs["result"]["lease"]>
+export type LeaseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "startDate" | "endDate" | "rent" | "deposit" | "propertyId" | "tenantCognitoId" | "status", ExtArgs["result"]["lease"]>
 export type LeaseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   application?: boolean | Prisma.Lease$applicationArgs<ExtArgs>
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
@@ -973,6 +1024,7 @@ export type $LeasePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     deposit: number
     propertyId: number
     tenantCognitoId: string
+    status: $Enums.LeaseStatus
   }, ExtArgs["result"]["lease"]>
   composites: {}
 }
@@ -1407,6 +1459,7 @@ export interface LeaseFieldRefs {
   readonly deposit: Prisma.FieldRef<"Lease", 'Float'>
   readonly propertyId: Prisma.FieldRef<"Lease", 'Int'>
   readonly tenantCognitoId: Prisma.FieldRef<"Lease", 'String'>
+  readonly status: Prisma.FieldRef<"Lease", 'LeaseStatus'>
 }
     
 

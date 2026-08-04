@@ -3,7 +3,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '../generated/prisma/client';
+import { Prisma, PropertyStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LocationService } from '../location/location.service';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -39,9 +39,6 @@ export class PropertyService {
   }
 
   async getProperties(favoriteIds: number[], dto: GetPropertyDto) {
-    // Resolve locationText to administrative bbox via AWS Location SearchText.
-    // This enables boundary-accurate filtering (e.g. "phường Cầu Kiệu" → only properties
-    // within the administrative boundary of Cầu Kiệu, not surrounding areas).
     if (dto.locationText && !dto.bboxWest) {
       const place = await this.locationService.searchPlaceByText(
         dto.locationText,
@@ -52,7 +49,6 @@ export class PropertyService {
         dto.bboxEast = place.bbox[2];
         dto.bboxNorth = place.bbox[3];
       } else if (place?.position) {
-        // Fallback: use centroid with a tight radius (500m) if no bbox returned
         dto.longitude = place.position[0];
         dto.latitude = place.position[1];
       }
@@ -61,7 +57,6 @@ export class PropertyService {
     const builder = new PropertyQueryBuilder(dto, favoriteIds);
     const whereConditions = builder.build();
 
-    // If bbox is present, order by distance from bbox centroid for relevance ranking.
     const hasBBox =
       dto.bboxWest !== undefined &&
       dto.bboxEast !== undefined &&
@@ -134,7 +129,7 @@ export class PropertyService {
 
   async createProperty(
     createPropertyDto: CreatePropertyDto,
-    files: Express.Multer.File[],
+    files?: Express.Multer.File[],
   ) {
     const {
       address,
@@ -159,33 +154,56 @@ export class PropertyService {
       throw new ConflictException('A property with this name already exists.');
     }
 
+    // Ensure manager exists in database
+    let manager = await this.prisma.manager.findUnique({
+      where: { cognitoId: managerCognitoId },
+    });
+
+    if (!manager) {
+      manager = await this.prisma.manager.create({
+        data: {
+          cognitoId: managerCognitoId,
+          name: 'Manager',
+          email: `${managerCognitoId}@example.com`,
+          phoneNumber: '0000000000',
+        },
+      });
+    }
+
     // Limit the number of concurrent uploads
     const limit = pLimit(10);
 
-    // Upload files concurrently
-    const photoUrls = await Promise.all(
-      files.map((file) =>
-        limit(async () => {
-          const uploadParams = {
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: `properties/${Date.now()}-${file.originalname}`,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-          };
+    // Upload files concurrently if files exist
+    let photoUrls: string[] = [];
+    if (files && files.length > 0) {
+      try {
+        photoUrls = await Promise.all(
+          files.map((file) =>
+            limit(async () => {
+              const uploadParams = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: `properties/${managerCognitoId}/${Date.now()}-${file.originalname}`,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+              };
 
-          const uploadResult = await new Upload({
-            client: this.s3Client,
-            params: uploadParams,
-          }).done();
+              const uploadResult = await new Upload({
+                client: this.s3Client,
+                params: uploadParams,
+              }).done();
 
-          if (!uploadResult.Location) {
-            throw new Error('S3 upload failed: Location is missing');
-          }
+              if (!uploadResult.Location) {
+                throw new Error('S3 upload failed: Location is missing');
+              }
 
-          return uploadResult.Location;
-        }),
-      ),
-    );
+              return uploadResult.Location;
+            }),
+          ),
+        );
+      } catch (err) {
+        console.error('Failed to upload images to S3:', err);
+      }
+    }
 
     // Create location using LocationService
     const location = await this.locationService.createLocationWithCoordinates({
@@ -232,6 +250,12 @@ export class PropertyService {
 
     if (!existingProperty) {
       throw new NotFoundException('Property not found');
+    }
+
+    if (existingProperty.status === PropertyStatus.Rented) {
+      throw new ConflictException(
+        'Cannot update a property that is currently rented.',
+      );
     }
 
     const { address, city, state, country, postalCode, ...propertyData } =

@@ -4,6 +4,7 @@ import Card from '@/components/Card';
 import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetAuthUserQuery, useGetCurrentResidencesQuery, useGetTenantQuery } from '@/state/api'
+import Image from 'next/image';
 import React from 'react'
 
 const Residences = () => {
@@ -44,8 +45,14 @@ const Residences = () => {
             ))}
         </div>
         {(!currentResidences || currentResidences.length === 0) && (
-            <div className="text-center mt-10">
-                <p className="text-gray-500">Không tìm thấy nơi ở hiện tại nào</p>
+            <div className="flex flex-col items-center">
+                <Image
+                    src="/not-found.png"
+                    alt="Không tìm thấy"
+                    width={500}
+                    height={500}
+                />
+                <p className="text-gray-500">Không có nơi ở hiện tại nào</p>
             </div>
         )}
     </div>
