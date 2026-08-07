@@ -11,7 +11,7 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
 
   if (isLoading) return <>Đang tải...</>;
   if (isError || !property) {
-    return <>Không tìm thấy bất động sản</>;
+    return <>Không tìm thấy dự án</>;
   }
 
   return (

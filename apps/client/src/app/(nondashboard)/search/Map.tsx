@@ -19,6 +19,10 @@ const MAP_STYLE_URL = API_KEY
 
 const Map = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
+
   const filters = useAppSelector((state) => state.global.filters);
 
   const {
@@ -28,9 +32,9 @@ const Map = () => {
   } = useGetPropertiesQuery(filters);
 
   useEffect(() => {
-    if (isLoading || isError || !properties || !mapContainerRef.current || !MAP_STYLE_URL) return;
-
-    // Khởi tạo trực tiếp không qua async Cognito auth
+    if (!mapContainerRef.current || !MAP_STYLE_URL) return;
+    
+    // Tạo bản đồ mới
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: MAP_STYLE_URL,
@@ -43,18 +47,49 @@ const Map = () => {
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", () => {
-      properties.forEach((property) => {
-        addPropertyMarker(property, map);
-      });
+      map.resize();
     });
 
-    const timer = setTimeout(() => map.resize(), 700);
-
     return () => {
-      clearTimeout(timer);
+      // Dọn dẹp marker
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+
+      // Hủy bản đồ
       map.remove();
+      mapRef.current = null;
     };
-  }, [isLoading, isError, properties, filters.coordinates]);
+  }, []);
+
+  // Tự động di chuyển bản đồ
+  useEffect(() => {
+    if (!mapRef.current || !filters.coordinates) return;
+
+    mapRef.current.flyTo({
+      center: [filters.coordinates[0], filters.coordinates[1]],
+      zoom: 12,
+      essential: true,
+    });
+  }, [filters.coordinates]);
+
+  // Cập nhật lại marker
+  useEffect(() => {
+    if (!mapRef.current || !properties) return;
+
+    const map = mapRef.current;
+
+    // Xóa đi marker cũ
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+
+    // Tạo lại marker mới
+    properties.forEach((property) => {
+      const marker = createPropertyMarker(property, map)
+      if (marker) {
+        markersRef.current.push(marker);
+      }
+    });
+  }, [properties]);
 
   if (!MAP_NAME || !API_KEY) {
     return (
@@ -92,9 +127,10 @@ const Map = () => {
   );
 };
 
-const addPropertyMarker = (property: Property, map: maplibregl.Map) => {
+const createPropertyMarker = (property: Property, map: maplibregl.Map): maplibregl.Marker | null => {
   const { coordinates } = property?.location || {};
-  if (!coordinates?.longitude || !coordinates?.latitude) return;
+  if (!coordinates?.longitude || !coordinates?.latitude) return null;
+
   const markerEl = document.createElement("div");
   Object.assign(markerEl.style, {
     background: "#1a1a1a",
@@ -141,10 +177,12 @@ const addPropertyMarker = (property: Property, map: maplibregl.Map) => {
     </div>
   `);
 
-  new maplibregl.Marker({ element: markerEl })
+  const marker = new maplibregl.Marker({ element: markerEl })
     .setLngLat([coordinates.longitude, coordinates.latitude])
     .setPopup(popup)
     .addTo(map);
+
+  return marker;
 };
 
 export default Map;

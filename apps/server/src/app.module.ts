@@ -10,10 +10,12 @@ import { PropertyModule } from './property/property.module';
 import { LocationModule } from './location/location.module';
 import { MessageModule } from './message/message.module';
 import { NotifyModule } from './notify/notify.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
     TenantModule,
     ManagerModule,
     LeaseModule,

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from '@/lib/utils';
 import { Bath, Bed, Heart, MapPin, Maximize2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -99,13 +100,33 @@ const Card = ({
             <span className="w-px h-3 bg-gray-200" />
             <span className="flex items-center gap-1 text-xs font-medium">
               <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
-              {property.squareFeet.toLocaleString()} ft²
+              {property.squareFeet.toLocaleString()} m²
             </span>
           </div>
-
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] text-emerald-600 font-medium">Đang hoạt động</span>
+            <div
+              className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                {
+                  "bg-emerald-400": property.status === "Available",
+                  "bg-yellow-400": property.status === "Rented",
+                  "bg-gray-400": property.status === "Maintenance",
+                }
+              )}
+            />
+
+            <span
+              className={cn(
+                "text-[10px] font-medium",
+                {
+                  "text-emerald-600": property.status === "Available",
+                  "text-yellow-600": property.status === "Rented",
+                  "text-gray-600": property.status === "Maintenance",
+                }
+              )}
+            >
+              {property.status}
+            </span>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, PropertyStatus } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LocationService } from '../location/location.service';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -43,6 +43,11 @@ export class PropertyService {
       const place = await this.locationService.searchPlaceByText(
         dto.locationText,
       );
+      if (!place) {
+        throw new NotFoundException(
+          `No location found for the provided text: ${dto.locationText}`,
+        );
+      }
       if (place?.bbox) {
         dto.bboxWest = place.bbox[0];
         dto.bboxSouth = place.bbox[1];
@@ -137,6 +142,7 @@ export class PropertyService {
       state,
       country,
       postalCode,
+      status,
       managerCognitoId,
       name,
       ...propertyData
@@ -152,22 +158,6 @@ export class PropertyService {
 
     if (existingProperty) {
       throw new ConflictException('A property with this name already exists.');
-    }
-
-    // Ensure manager exists in database
-    let manager = await this.prisma.manager.findUnique({
-      where: { cognitoId: managerCognitoId },
-    });
-
-    if (!manager) {
-      manager = await this.prisma.manager.create({
-        data: {
-          cognitoId: managerCognitoId,
-          name: 'Manager',
-          email: `${managerCognitoId}@example.com`,
-          phoneNumber: '0000000000',
-        },
-      });
     }
 
     // Limit the number of concurrent uploads
@@ -218,6 +208,7 @@ export class PropertyService {
       data: {
         ...propertyData,
         name,
+        status,
         photoUrls,
         locationId: location.id,
         managerCognitoId,
@@ -252,14 +243,22 @@ export class PropertyService {
       throw new NotFoundException('Property not found');
     }
 
-    if (existingProperty.status === PropertyStatus.Rented) {
-      throw new ConflictException(
-        'Cannot update a property that is currently rented.',
-      );
-    }
+    // if (existingProperty.status === PropertyStatus.Rented) {
+    //   throw new ConflictException({
+    //     code: 'Cannot update a property that is currently rented.',
+    //     message: 'Hiện tại đang có người thuê !',
+    //   });
+    // }
 
-    const { address, city, state, country, postalCode, ...propertyData } =
-      updatePropertyDto;
+    const {
+      address,
+      city,
+      state,
+      country,
+      postalCode,
+      status,
+      ...propertyData
+    } = updatePropertyDto;
     delete (propertyData as any).managerCognitoId;
 
     // Upload new photos if provided
@@ -271,7 +270,7 @@ export class PropertyService {
           limit(async () => {
             const uploadParams = {
               Bucket: process.env.S3_BUCKET_NAME,
-              Key: `properties/${Date.now()}-${file.originalname}`,
+              Key: `properties/${existingProperty.managerCognitoId}/${Date.now()}-${file.originalname}`,
               Body: file.buffer,
               ContentType: file.mimetype,
             };
@@ -308,6 +307,7 @@ export class PropertyService {
       data: {
         ...propertyData,
         photoUrls,
+        status,
       },
       include: {
         location: true,

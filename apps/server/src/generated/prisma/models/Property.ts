@@ -66,6 +66,7 @@ export type PropertyMinAggregateOutputType = {
   squareFeet: number | null
   propertyType: $Enums.PropertyType | null
   postedDate: Date | null
+  availableFrom: Date | null
   averageRating: number | null
   numberOfReviews: number | null
   locationId: number | null
@@ -87,6 +88,7 @@ export type PropertyMaxAggregateOutputType = {
   squareFeet: number | null
   propertyType: $Enums.PropertyType | null
   postedDate: Date | null
+  availableFrom: Date | null
   averageRating: number | null
   numberOfReviews: number | null
   locationId: number | null
@@ -111,6 +113,7 @@ export type PropertyCountAggregateOutputType = {
   squareFeet: number
   propertyType: number
   postedDate: number
+  availableFrom: number
   averageRating: number
   numberOfReviews: number
   locationId: number
@@ -160,6 +163,7 @@ export type PropertyMinAggregateInputType = {
   squareFeet?: true
   propertyType?: true
   postedDate?: true
+  availableFrom?: true
   averageRating?: true
   numberOfReviews?: true
   locationId?: true
@@ -181,6 +185,7 @@ export type PropertyMaxAggregateInputType = {
   squareFeet?: true
   propertyType?: true
   postedDate?: true
+  availableFrom?: true
   averageRating?: true
   numberOfReviews?: true
   locationId?: true
@@ -205,6 +210,7 @@ export type PropertyCountAggregateInputType = {
   squareFeet?: true
   propertyType?: true
   postedDate?: true
+  availableFrom?: true
   averageRating?: true
   numberOfReviews?: true
   locationId?: true
@@ -316,6 +322,7 @@ export type PropertyGroupByOutputType = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate: Date
+  availableFrom: Date | null
   averageRating: number | null
   numberOfReviews: number | null
   locationId: number
@@ -363,6 +370,7 @@ export type PropertyWhereInput = {
   squareFeet?: Prisma.IntFilter<"Property"> | number
   propertyType?: Prisma.EnumPropertyTypeFilter<"Property"> | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFilter<"Property"> | Date | string
+  availableFrom?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
   averageRating?: Prisma.FloatNullableFilter<"Property"> | number | null
   numberOfReviews?: Prisma.IntNullableFilter<"Property"> | number | null
   locationId?: Prisma.IntFilter<"Property"> | number
@@ -393,6 +401,7 @@ export type PropertyOrderByWithRelationInput = {
   squareFeet?: Prisma.SortOrder
   propertyType?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
+  availableFrom?: Prisma.SortOrderInput | Prisma.SortOrder
   averageRating?: Prisma.SortOrderInput | Prisma.SortOrder
   numberOfReviews?: Prisma.SortOrderInput | Prisma.SortOrder
   locationId?: Prisma.SortOrder
@@ -426,6 +435,7 @@ export type PropertyWhereUniqueInput = Prisma.AtLeast<{
   squareFeet?: Prisma.IntFilter<"Property"> | number
   propertyType?: Prisma.EnumPropertyTypeFilter<"Property"> | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFilter<"Property"> | Date | string
+  availableFrom?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
   averageRating?: Prisma.FloatNullableFilter<"Property"> | number | null
   numberOfReviews?: Prisma.IntNullableFilter<"Property"> | number | null
   locationId?: Prisma.IntFilter<"Property"> | number
@@ -456,6 +466,7 @@ export type PropertyOrderByWithAggregationInput = {
   squareFeet?: Prisma.SortOrder
   propertyType?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
+  availableFrom?: Prisma.SortOrderInput | Prisma.SortOrder
   averageRating?: Prisma.SortOrderInput | Prisma.SortOrder
   numberOfReviews?: Prisma.SortOrderInput | Prisma.SortOrder
   locationId?: Prisma.SortOrder
@@ -488,6 +499,7 @@ export type PropertyScalarWhereWithAggregatesInput = {
   squareFeet?: Prisma.IntWithAggregatesFilter<"Property"> | number
   propertyType?: Prisma.EnumPropertyTypeWithAggregatesFilter<"Property"> | $Enums.PropertyType
   postedDate?: Prisma.DateTimeWithAggregatesFilter<"Property"> | Date | string
+  availableFrom?: Prisma.DateTimeNullableWithAggregatesFilter<"Property"> | Date | string | null
   averageRating?: Prisma.FloatNullableWithAggregatesFilter<"Property"> | number | null
   numberOfReviews?: Prisma.IntNullableWithAggregatesFilter<"Property"> | number | null
   locationId?: Prisma.IntWithAggregatesFilter<"Property"> | number
@@ -511,6 +523,7 @@ export type PropertyCreateInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -539,6 +552,7 @@ export type PropertyUncheckedCreateInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -566,6 +580,7 @@ export type PropertyUpdateInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -594,6 +609,7 @@ export type PropertyUncheckedUpdateInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -622,6 +638,7 @@ export type PropertyCreateManyInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -645,6 +662,7 @@ export type PropertyUpdateManyMutationInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -667,6 +685,7 @@ export type PropertyUncheckedUpdateManyInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -715,6 +734,7 @@ export type PropertyCountOrderByAggregateInput = {
   squareFeet?: Prisma.SortOrder
   propertyType?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
+  availableFrom?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   numberOfReviews?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
@@ -749,6 +769,7 @@ export type PropertyMaxOrderByAggregateInput = {
   squareFeet?: Prisma.SortOrder
   propertyType?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
+  availableFrom?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   numberOfReviews?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
@@ -770,6 +791,7 @@ export type PropertyMinOrderByAggregateInput = {
   squareFeet?: Prisma.SortOrder
   propertyType?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
+  availableFrom?: Prisma.SortOrder
   averageRating?: Prisma.SortOrder
   numberOfReviews?: Prisma.SortOrder
   locationId?: Prisma.SortOrder
@@ -865,6 +887,10 @@ export type EnumPropertyTypeFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -1074,6 +1100,7 @@ export type PropertyCreateWithoutManagerInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -1101,6 +1128,7 @@ export type PropertyUncheckedCreateWithoutManagerInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1157,6 +1185,7 @@ export type PropertyScalarWhereInput = {
   squareFeet?: Prisma.IntFilter<"Property"> | number
   propertyType?: Prisma.EnumPropertyTypeFilter<"Property"> | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFilter<"Property"> | Date | string
+  availableFrom?: Prisma.DateTimeNullableFilter<"Property"> | Date | string | null
   averageRating?: Prisma.FloatNullableFilter<"Property"> | number | null
   numberOfReviews?: Prisma.IntNullableFilter<"Property"> | number | null
   locationId?: Prisma.IntFilter<"Property"> | number
@@ -1180,6 +1209,7 @@ export type PropertyCreateWithoutFavoritedByInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -1207,6 +1237,7 @@ export type PropertyUncheckedCreateWithoutFavoritedByInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1238,6 +1269,7 @@ export type PropertyCreateWithoutTenantsInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -1265,6 +1297,7 @@ export type PropertyUncheckedCreateWithoutTenantsInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1328,6 +1361,7 @@ export type PropertyCreateWithoutLocationInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -1355,6 +1389,7 @@ export type PropertyUncheckedCreateWithoutLocationInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   managerCognitoId: string
@@ -1407,6 +1442,7 @@ export type PropertyCreateWithoutApplicationsInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   leases?: Prisma.LeaseCreateNestedManyWithoutPropertyInput
@@ -1434,6 +1470,7 @@ export type PropertyUncheckedCreateWithoutApplicationsInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1476,6 +1513,7 @@ export type PropertyUpdateWithoutApplicationsInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   leases?: Prisma.LeaseUpdateManyWithoutPropertyNestedInput
@@ -1503,6 +1541,7 @@ export type PropertyUncheckedUpdateWithoutApplicationsInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1529,6 +1568,7 @@ export type PropertyCreateWithoutLeasesInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   applications?: Prisma.ApplicationCreateNestedManyWithoutPropertyInput
@@ -1556,6 +1596,7 @@ export type PropertyUncheckedCreateWithoutLeasesInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1598,6 +1639,7 @@ export type PropertyUpdateWithoutLeasesInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -1625,6 +1667,7 @@ export type PropertyUncheckedUpdateWithoutLeasesInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1652,6 +1695,7 @@ export type PropertyCreateManyManagerInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   locationId: number
@@ -1674,6 +1718,7 @@ export type PropertyUpdateWithoutManagerInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -1701,6 +1746,7 @@ export type PropertyUncheckedUpdateWithoutManagerInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1728,6 +1774,7 @@ export type PropertyUncheckedUpdateManyWithoutManagerInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1750,6 +1797,7 @@ export type PropertyUpdateWithoutFavoritedByInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -1777,6 +1825,7 @@ export type PropertyUncheckedUpdateWithoutFavoritedByInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1804,6 +1853,7 @@ export type PropertyUncheckedUpdateManyWithoutFavoritedByInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1827,6 +1877,7 @@ export type PropertyUpdateWithoutTenantsInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -1854,6 +1905,7 @@ export type PropertyUncheckedUpdateWithoutTenantsInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1881,6 +1933,7 @@ export type PropertyUncheckedUpdateManyWithoutTenantsInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   locationId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1904,6 +1957,7 @@ export type PropertyUpdateWithoutLocationInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applications?: Prisma.ApplicationUpdateManyWithoutPropertyNestedInput
@@ -1931,6 +1985,7 @@ export type PropertyUncheckedUpdateWithoutLocationInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   managerCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1958,6 +2013,7 @@ export type PropertyCreateManyLocationInput = {
   squareFeet: number
   propertyType: $Enums.PropertyType
   postedDate?: Date | string
+  availableFrom?: Date | string | null
   averageRating?: number | null
   numberOfReviews?: number | null
   managerCognitoId: string
@@ -1981,6 +2037,7 @@ export type PropertyUncheckedUpdateManyWithoutLocationInput = {
   squareFeet?: Prisma.IntFieldUpdateOperationsInput | number
   propertyType?: Prisma.EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
   postedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  availableFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   averageRating?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   numberOfReviews?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   managerCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2062,6 +2119,7 @@ export type PropertySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   squareFeet?: boolean
   propertyType?: boolean
   postedDate?: boolean
+  availableFrom?: boolean
   averageRating?: boolean
   numberOfReviews?: boolean
   locationId?: boolean
@@ -2093,6 +2151,7 @@ export type PropertySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   squareFeet?: boolean
   propertyType?: boolean
   postedDate?: boolean
+  availableFrom?: boolean
   averageRating?: boolean
   numberOfReviews?: boolean
   locationId?: boolean
@@ -2119,6 +2178,7 @@ export type PropertySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   squareFeet?: boolean
   propertyType?: boolean
   postedDate?: boolean
+  availableFrom?: boolean
   averageRating?: boolean
   numberOfReviews?: boolean
   locationId?: boolean
@@ -2145,13 +2205,14 @@ export type PropertySelectScalar = {
   squareFeet?: boolean
   propertyType?: boolean
   postedDate?: boolean
+  availableFrom?: boolean
   averageRating?: boolean
   numberOfReviews?: boolean
   locationId?: boolean
   managerCognitoId?: boolean
 }
 
-export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "status" | "pricePerMonth" | "securityDeposit" | "applicationFee" | "photoUrls" | "amenities" | "highlights" | "isPetsAllowed" | "isParkingIncluded" | "beds" | "baths" | "squareFeet" | "propertyType" | "postedDate" | "averageRating" | "numberOfReviews" | "locationId" | "managerCognitoId", ExtArgs["result"]["property"]>
+export type PropertyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "status" | "pricePerMonth" | "securityDeposit" | "applicationFee" | "photoUrls" | "amenities" | "highlights" | "isPetsAllowed" | "isParkingIncluded" | "beds" | "baths" | "squareFeet" | "propertyType" | "postedDate" | "availableFrom" | "averageRating" | "numberOfReviews" | "locationId" | "managerCognitoId", ExtArgs["result"]["property"]>
 export type PropertyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   applications?: boolean | Prisma.Property$applicationsArgs<ExtArgs>
   leases?: boolean | Prisma.Property$leasesArgs<ExtArgs>
@@ -2198,6 +2259,7 @@ export type $PropertyPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     squareFeet: number
     propertyType: $Enums.PropertyType
     postedDate: Date
+    availableFrom: Date | null
     averageRating: number | null
     numberOfReviews: number | null
     locationId: number
@@ -2648,6 +2710,7 @@ export interface PropertyFieldRefs {
   readonly squareFeet: Prisma.FieldRef<"Property", 'Int'>
   readonly propertyType: Prisma.FieldRef<"Property", 'PropertyType'>
   readonly postedDate: Prisma.FieldRef<"Property", 'DateTime'>
+  readonly availableFrom: Prisma.FieldRef<"Property", 'DateTime'>
   readonly averageRating: Prisma.FieldRef<"Property", 'Float'>
   readonly numberOfReviews: Prisma.FieldRef<"Property", 'Int'>
   readonly locationId: Prisma.FieldRef<"Property", 'Int'>

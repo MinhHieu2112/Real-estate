@@ -8,10 +8,16 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { verifyWsToken } from '../auth/ws-jwt.helper';
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : ['http://localhost:3000'];
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: allowedOrigins,
+    credentials: true,
   },
   namespace: '/notify',
 })
@@ -19,29 +25,38 @@ export class NotifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  handleConnection(client: Socket) {
-    const cognitoId = client.handshake.query.cognitoId as string;
-    if (cognitoId) {
-      client.join(cognitoId);
+  async handleConnection(client: Socket) {
+    // Verify JWT before allowing connection
+    const user = await verifyWsToken(client);
+    if (!user) {
+      client.emit('error', { message: 'Unauthorized: invalid token' });
+      client.disconnect();
+      return;
     }
+
+    // Store verified identity and auto-join user's notification room
+    client.data = { cognitoId: user.sub, role: user.role };
+    client.join(user.sub);
   }
 
   handleDisconnect(client: Socket) {
     client.disconnect();
   }
 
-  // Cho phép Client chủ động gia nhập phòng theo cognitoId của mình
+  // Allow client to explicitly join their notification room
   @SubscribeMessage('joinNotification')
   handleJoinNotification(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { cognitoId: string },
   ) {
-    if (data?.cognitoId) {
-      client.join(data.cognitoId);
+    // Only allow joining own room (from verified JWT sub)
+    const verifiedId = client.data?.cognitoId;
+    if (verifiedId && verifiedId === data?.cognitoId) {
+      client.join(verifiedId);
     }
   }
 
-  // Gửi thông báo thời gian thực tới 1 user qua phòng cognitoId
+  // Send real-time notification to a user
   sendNotificationToUser(receiverCognitoId: string, notification: any) {
     if (this.server) {
       this.server.to(receiverCognitoId).emit('newNotification', notification);

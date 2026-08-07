@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AmenityIcons, HighlightIcons } from "@/lib/constants";
 import { useGetPropertyQuery } from "@/state/api";
-import { AmenityEnum, HighlightEnum } from "@shared/types";
+import { AmenityEnum, HighlightEnum, AmenityLabels, HighlightLabels } from "@shared/types";
 import { HelpCircle } from "lucide-react";
 import React from "react";
 
@@ -18,14 +18,14 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
 
   if (isLoading) return <>Đang tải...</>;
   if (isError || !property) {
-    return <>Không tìm thấy bất động sản</>;
+    return <>Không tìm thấy dự án</>;
   }
 
   return (
     <div className="mb-6">
       {/* Amenities */}
       <div>
-        <h2 className="text-xl font-semibold my-3">Tiện ích bất động sản</h2>
+        <h2 className="text-xl font-semibold my-3">Tiện ích dự án</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {property.amenities.map((amenity) => {
             const Icon = AmenityIcons[amenity as AmenityEnum] || HelpCircle;
@@ -36,7 +36,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
               >
                 <Icon className="w-8 h-8 mb-2 text-gray-700" />
                 <span className="text-sm text-center text-gray-700">
-                  {AmenityEnum[amenity as unknown as keyof typeof AmenityEnum] || amenity}
+                  {AmenityLabels[amenity as AmenityEnum] || amenity}
                 </span>
               </div>
             );
@@ -60,7 +60,7 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
               >
                 <Icon className="w-8 h-8 mb-2 text-primary-600 dark:text-primary-300" />
                 <span className="text-sm text-center text-primary-600 dark:text-primary-300">
-                  {HighlightEnum[highlight as unknown as keyof typeof HighlightEnum] || highlight}
+                  {HighlightLabels[highlight as HighlightEnum] || highlight}
                 </span>
               </div>
             );

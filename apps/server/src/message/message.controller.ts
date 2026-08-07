@@ -7,6 +7,7 @@ import {
   Query,
   ParseIntPipe,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { MessageService } from './message.service';
@@ -15,9 +16,13 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { GetMessagesQueryDto } from './dto/get-messages.dto';
 import { GetConversationsQueryDto } from './dto/get-conversations.dto';
 import { MarkAsReadDto } from './dto/mark-as-read.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/get-user.decorator';
+import { CognitoUser } from '../auth/jwt-auth.guard';
 
 @ApiTags('Messages')
 @Controller('messages')
+@UseGuards(JwtAuthGuard)
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
 
@@ -27,13 +32,23 @@ export class MessageController {
   }
 
   @Get('conversations')
-  getConversations(@Query() dto: GetConversationsQueryDto) {
-    return this.messageService.getConversations(dto);
+  getConversations(
+    @Query() dto: GetConversationsQueryDto,
+    @CurrentUser() user: CognitoUser,
+  ) {
+    return this.messageService.getConversations({
+      ...dto,
+      userCognitoId: user.sub,
+    });
   }
 
   @Post()
-  sendMessage(@Body() dto: CreateMessageDto) {
-    return this.messageService.sendMessage(dto);
+  sendMessage(@Body() dto: CreateMessageDto, @CurrentUser() user: CognitoUser) {
+    // Always use the authenticated user as the sender
+    return this.messageService.sendMessage({
+      ...dto,
+      senderCognitoId: user.sub,
+    });
   }
 
   @Get()
@@ -44,11 +59,12 @@ export class MessageController {
   @Patch('conversations/:conversationId/read')
   markAsRead(
     @Param('conversationId', ParseIntPipe) conversationId: number,
+    @CurrentUser() user: CognitoUser,
     @Body() body: Pick<MarkAsReadDto, 'userCognitoId'>,
   ) {
     return this.messageService.markAsRead({
       conversationId,
-      userCognitoId: body.userCognitoId,
+      userCognitoId: user.sub || body.userCognitoId,
     });
   }
 }

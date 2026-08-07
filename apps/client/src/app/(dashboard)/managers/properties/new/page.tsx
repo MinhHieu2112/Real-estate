@@ -4,7 +4,16 @@ import { CustomFormField } from '@/components/FormField';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { AmenityEnum, HighlightEnum, PropertyTypeEnum } from '@shared/types';
+import {
+  AmenityEnum,
+  HighlightEnum,
+  PropertyTypeEnum,
+  PropertyTypeLabels,
+  AmenityLabels,
+  HighlightLabels,
+  PropertyStatusEnum,
+  PropertyStatusLabels,
+} from '@shared/types';
 import { PropertyFormData, propertySchema } from '@/lib/schemas';
 import { useCreatePropertyMutation, useGetAuthUserQuery } from '@/state/api';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -126,8 +135,8 @@ const NewProperty = () => {
 
             {/* Property Details */}
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold mb-4">Thông tin bất động sản</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <h2 className="text-lg font-semibold mb-4">Thông tin dự án</h2>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
                 <CustomFormField 
                   name="beds"
                   label="Số lượng giường"
@@ -145,11 +154,20 @@ const NewProperty = () => {
                 />
                 <CustomFormField 
                   name="propertyType"
-                  label="Loại bất động sản"
+                  label="Loại dự án"
                   type="select"
-                  options={Object.entries(PropertyTypeEnum).map(([key, label]) => ({
-                    value: key,
-                    label: label,
+                  options={Object.values(PropertyTypeEnum).map((type) => ({
+                    value: type,
+                    label: PropertyTypeLabels[type],
+                  }))}
+                />
+                <CustomFormField 
+                  name="status"
+                  label="Tình trạng"
+                  type="select"
+                  options={Object.values(PropertyStatusEnum).map((status) => ({
+                    value: status,
+                    label: PropertyStatusLabels[status],
                   }))}
                 />
               </div>
@@ -179,18 +197,18 @@ const NewProperty = () => {
                   name="amenities"
                   label="Dịch vụ"
                   type="multi-select"
-                  options={Object.entries(AmenityEnum).map(([key, label]) => ({
-                    value: key,
-                    label: label,
+                  options={Object.values(AmenityEnum).map((amenity) => ({
+                    value: amenity,
+                    label: AmenityLabels[amenity],
                   }))}
                 />
                 <CustomFormField 
                   name="highlights"
                   label="Điểm nổi bật"
                   type="multi-select"
-                  options={Object.entries(HighlightEnum).map(([key, label]) => ({
-                    value: key,
-                    label: label,
+                  options={Object.values(HighlightEnum).map((highlight) => ({
+                    value: highlight,
+                    label: HighlightLabels[highlight],
                   }))}
                 />
               </div>

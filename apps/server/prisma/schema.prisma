@@ -15,7 +15,9 @@ model Property {
   name              String
   description       String
   status            PropertyStatus @default(Available)
-  pricePerMonth     Float
+  rentType          RentType      @default(Monthly)
+  pricePerMonth     Float?
+  pricePerDay       Float?
   securityDeposit   Float
   applicationFee    Float
   photoUrls         String[]
@@ -28,6 +30,7 @@ model Property {
   squareFeet        Int
   propertyType      PropertyType
   postedDate        DateTime      @default(now())
+  availableFrom     DateTime?     @default(now())
   averageRating     Float?        @default(0)
   numberOfReviews   Int?          @default(0)
   locationId        Int
@@ -256,4 +259,9 @@ enum PropertyStatus {
   Available
   Rented
   Maintenance
+}
+
+enum RentType {
+  Daily    
+  Monthly  
 }

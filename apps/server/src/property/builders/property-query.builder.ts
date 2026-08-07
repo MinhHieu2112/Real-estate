@@ -74,7 +74,9 @@ export class PropertyQueryBuilder {
     return (
       amenities !== undefined &&
       amenities.forEach((amenity) => {
-        this.conditions.push(Prisma.sql`p.amenities @> ${amenity}`);
+        this.conditions.push(
+          Prisma.sql`p.amenities @> ARRAY[${amenity}::"Amenity"]`,
+        );
       })
     );
   }

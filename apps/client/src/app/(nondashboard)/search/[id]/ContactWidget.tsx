@@ -34,12 +34,12 @@ const ContactWidget = ({ onOpenModal, propertyId }: ContactWidgetProps) => {
     const managerCognitoId = property?.managerCognitoId;
 
     if (!managerCognitoId || !tenantCognitoId) {
-      toast.error("Không tìm thấy thông tin quản lý bất động sản.");
+      toast.error("Không tìm thấy thông tin quản lý dự án.");
       return;
     }
 
     if (tenantCognitoId === managerCognitoId) {
-      toast.info("Bạn là người quản lý bất động sản này.");
+      toast.info("Bạn là người quản lý dự án này.");
       return;
     }
 

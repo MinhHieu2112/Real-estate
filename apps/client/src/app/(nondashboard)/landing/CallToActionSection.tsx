@@ -26,12 +26,12 @@ const CallToActionSection = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0 md:mr-10">
             <h2 className="text-2xl font-bold text-white">
-              Tìm kiếm bất động sản cho thuê mơ ước của bạn
+              Tìm kiếm dự án cho thuê mơ ước của bạn
             </h2>
           </div>
           <div>
             <p className="text-white mb-3">
-              Khám phá danh sách đa dạng các bất động sản cho thuê tại vị trí bạn mong muốn.
+              Khám phá danh sách đa dạng các dự án cho thuê tại vị trí bạn mong muốn.
             </p>
             <div className="flex justify-center md:justify-start gap-4">
               <button

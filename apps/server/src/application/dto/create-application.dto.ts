@@ -22,6 +22,7 @@ export class CreateApplicationDto {
   propertyId!: number;
 
   @IsString()
+  @IsOptional()
   tenantCognitoId!: string;
 
   @IsString()

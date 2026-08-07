@@ -39,10 +39,10 @@ const DiscoverSection = () => {
                         Khám phá
                     </h2>
                     <p className="mt-4 text-lg text-gray-600">
-                        Tìm kiếm bất động sản cho thuê mơ ước ngay hôm nay!
+                        Tìm kiếm dự án cho thuê mơ ước ngay hôm nay!
                     </p>
                     <p className="mt-2 text-gray-500 max-w-3xl mx-auto">
-                        Tìm kiếm bất động sản mơ ước chưa bao giờ dễ dàng đến thế. Với 
+                        Tìm kiếm dự án mơ ước chưa bao giờ dễ dàng đến thế. Với 
                         tính năng tìm kiếm tiện lợi, bạn có thể nhanh chóng tìm thấy ngôi 
                         nhà lý tưởng đáp ứng mọi nhu cầu của mình.
                     </p>
@@ -51,9 +51,9 @@ const DiscoverSection = () => {
                     {[
                         {
                             imageSrc: "/landing-icon-wand.png",
-                            title: "Tìm kiếm bất động sản",
+                            title: "Tìm kiếm dự án",
                             description: 
-                                "Dễ dàng tìm kiếm các bất động sản cho thuê dựa trên sở thích và tiêu chí của bạn.",
+                                "Dễ dàng tìm kiếm các dự án cho thuê dựa trên sở thích và tiêu chí của bạn.",
                         },
                         {
                             imageSrc: "/landing-icon-calendar.png",
@@ -65,7 +65,7 @@ const DiscoverSection = () => {
                             imageSrc: "/landing-icon-heart.png",
                             title: "Tận hưởng không gian sống",
                             description: 
-                                "Lưu lại các bất động sản yêu thích để không bỏ lỡ những lựa chọn tuyệt vời nhất của bạn.",
+                                "Lưu lại các dự án yêu thích để không bỏ lỡ những lựa chọn tuyệt vời nhất của bạn.",
                         },
                     ].map((card, index) => (
                         <motion.div

@@ -92,7 +92,7 @@ const PropertyLocation = ({ propertyId }: PropertyDetailsProps) => {
 
   if (isLoading) return <>Đang tải...</>;
   if (isError || !property) {
-    return <>Không tìm thấy bất động sản</>;
+    return <>Không tìm thấy dự án</>;
   }
 
   const durationMin = directions?.duration
@@ -110,7 +110,7 @@ const PropertyLocation = ({ propertyId }: PropertyDetailsProps) => {
       <div className="flex justify-between items-center text-sm text-primary-500 mt-2">
         <div className="flex items-center text-gray-500">
           <MapPin className="w-4 h-4 mr-1 text-gray-700" />
-          Địa chỉ bất động sản:
+          Địa chỉ dự án:
           <span className="ml-2 font-semibold text-gray-700">
             {property.location?.address || "Địa chỉ không khả dụng"}
           </span>

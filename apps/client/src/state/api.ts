@@ -8,7 +8,7 @@ export interface SearchPlaceResult {
   placeId?: string;
   label: string;
   position: [number, number];
-  bbox?: [number, number, number, number]; // [west, south, east, north]
+  bbox?: [number, number, number, number];
 }
 
 export interface AutocompleteResult {
@@ -33,9 +33,14 @@ export const api = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
     prepareHeaders: async (headers) => {
       const session = await fetchAuthSession();
-      const { idToken } = session.tokens ?? {};
+      const { accessToken, idToken } = session.tokens ?? {};
+      if (accessToken) {
+        headers.set("Authorization", `Bearer ${accessToken.toString()}`)
+      }
+
       if (idToken) {
-        headers.set("Authorization", `Bearer ${idToken}`)
+        const role = (idToken.payload["custom:role"] as string) || "tenant";
+        headers.set("X-User-Role", role);
       }
       return headers;
     }
@@ -46,9 +51,12 @@ export const api = createApi({
     getAuthUser: build.query<User, void>({
       queryFn: async (_, _queryApi, _extraoptions, fetchWithBQ) => {
         try {
-          const session = await fetchAuthSession();
+          const [session, user] = await Promise.all([
+            fetchAuthSession(),
+            getCurrentUser()
+          ])
+
           const { idToken } = session.tokens ?? {};
-          const user = await getCurrentUser();
           const userRole = (idToken?.payload["custom:role"] as "manager" | "tenant") || "tenant";
 
           const endpoint = 
@@ -112,7 +120,7 @@ export const api = createApi({
       >({
         query: (filters) => {
           const params = cleanParams({
-            location: filters.location,
+            locationText: filters.location,
             priceMin: filters.priceRange?.[0],
             priceMax: filters.priceRange?.[1],
             beds: filters.beds,
@@ -120,7 +128,9 @@ export const api = createApi({
             propertyType: filters.propertyType,
             squareFeetMin: filters.squareFeet?.[0],
             squareFeetMax: filters.squareFeet?.[1],
-            amenities: filters.amenities?.join(","),
+            amenities: Array.isArray(filters.amenities)
+              ? filters.amenities.join(",")
+              : filters.amenities,
             availableFrom: filters.availableFrom,
             favoriteIds: filters.favorites?.join(","),
             latitude: filters.coordinates?.[1],
@@ -138,7 +148,7 @@ export const api = createApi({
           : [{ type: "Properties", id: "LIST" }],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Không thể tải danh sách bất động sản.",
+            error: "Không thể tải danh sách dự án.",
           });
         },
       }), 
@@ -148,7 +158,7 @@ export const api = createApi({
         providesTags: (result, error, id) => [{ type: "PropertyDetails", id}],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Không thể tải chi tiết bất động sản.",
+            error: "Không thể tải chi tiết dự án.",
           });
         }
       }),
@@ -173,7 +183,7 @@ export const api = createApi({
           : [{ type: "Properties", id: "LIST" }],
       async onQueryStarted(_, { queryFulfilled }) {
         await withToast(queryFulfilled, {
-          error: "Không thể tải bất động sản.",
+          error: "Không thể tải dự án.",
         });
       },
     }),
@@ -270,7 +280,7 @@ export const api = createApi({
         providesTags: ["Leases"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            error: "Không thể tải hợp đồng thuê bất động sản.",
+            error: "Không thể tải hợp đồng thuê dự án.",
           });
         },
       }),
@@ -323,8 +333,8 @@ export const api = createApi({
         ],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Tạo bất động sản thành công!",
-            error: "Không thể tạo bất động sản.",
+            success: "Tạo dự án thành công!",
+            error: "Không thể tạo dự án.",
           });
         },
       }),
@@ -345,8 +355,8 @@ export const api = createApi({
         ],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
-            success: "Cập nhật bất động sản thành công!",
-            error: "Không thể cập nhật bất động sản.",
+            success: "Cập nhật dự án thành công!",
+            error: "Không thể cập nhật dự án.",
           });
         },
       }),

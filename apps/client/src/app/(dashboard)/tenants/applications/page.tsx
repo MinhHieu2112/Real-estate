@@ -7,6 +7,7 @@ import { useGetApplicationsQuery, useGetAuthUserQuery } from '@/state/api';
 import { CircleCheckBig, Clock, Download, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
+import { toast } from 'sonner';
 
 const Applications = () => {
   const { data: authUser } = useGetAuthUserQuery();
@@ -20,13 +21,15 @@ const Applications = () => {
   });
 
   if (isLoading) return <Loading />
-  if (isError || !applications) return <div>Lỗi khi tải danh sách đơn đăng ký</div>;
+  if (isError || !applications) {
+    toast.error("Không tìm thấy đơn đăng ký.")
+  }
 
   return (
     <div className="dashboard-container">
         <Header 
             title="Đơn đăng ký"
-            subtitle="Theo dõi và quản lý các đơn đăng ký thuê bất động sản của bạn"
+            subtitle="Theo dõi và quản lý các đơn đăng ký thuê dự án của bạn"
         />
         <div className="w-full">
             {applications?.map((application) => (
@@ -63,7 +66,7 @@ const Applications = () => {
                 </div>
                 </ApplicationCard>
             ))}
-            {applications.length === 0 && (
+            {applications?.length === 0 && (
                 <div className="flex flex-col items-center">
                     <Image
                         src="/not-found.png"

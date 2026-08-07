@@ -23,7 +23,7 @@ export const HighlightIcons: Record<HighlightEnum, LucideIcon> = {
 
 export const PropertyTypeIcons: Record<PropertyTypeEnum, LucideIcon> = {
   [PropertyTypeEnum.Rooms]: Icons.Home,
-  [PropertyTypeEnum.Minihouse]: Icons.Warehouse,
+  [PropertyTypeEnum.Tinyhouse]: Icons.Warehouse,
   [PropertyTypeEnum.Apartment]: Icons.Building,
   [PropertyTypeEnum.Villa]: Icons.Castle,
   [PropertyTypeEnum.Townhouse]: Icons.Home,

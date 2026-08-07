@@ -1268,6 +1268,7 @@ export const PropertyScalarFieldEnum = {
   squareFeet: 'squareFeet',
   propertyType: 'propertyType',
   postedDate: 'postedDate',
+  availableFrom: 'availableFrom',
   averageRating: 'averageRating',
   numberOfReviews: 'numberOfReviews',
   locationId: 'locationId',

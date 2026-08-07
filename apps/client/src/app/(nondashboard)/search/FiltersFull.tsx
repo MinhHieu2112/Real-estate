@@ -10,7 +10,12 @@ import { useAppDispatch, useAppSelector } from '@/state/redux';
 import { debounce } from 'lodash';
 import { Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { AmenityEnum, PropertyTypeEnum } from '@shared/types';
+import {
+  AmenityEnum,
+  PropertyTypeEnum,
+  AmenityLabels,
+  PropertyTypeLabels,
+} from '@shared/types';
 import React, { useState } from 'react'
 
 const FiltersFull = () => {
@@ -90,6 +95,12 @@ const FiltersFull = () => {
                 location: localFilters.location,
                 coordinates: [lng, lat],
             }));
+        } else {
+            setLocalFilters((prev) => ({
+                ...prev,
+                location: localFilters.location,
+                coordinates: undefined,
+            }));
         }
     } catch (error) {
         console.error("Error fetching location:", error);
@@ -130,7 +141,7 @@ const FiltersFull = () => {
 
             {/* Property Type */}
             <div>
-                <h4 className="font-bold mb-2">Loại bất động sản</h4>
+                <h4 className="font-bold mb-2">Loại dự án</h4>
                 <div className="grid grid-cols-2 gap-4">
                     {Object.entries(PropertyTypeIcons).map(([type, Icon]) => (
                         <div
@@ -149,7 +160,7 @@ const FiltersFull = () => {
                             }
                             >
                                 <Icon className="w-6 h-6 mb-2"/>
-                                <span className="text-sm text-center">{PropertyTypeEnum[type as unknown as keyof typeof PropertyTypeEnum] || type}</span>
+                                <span className="text-sm text-center">{PropertyTypeLabels[type as PropertyTypeEnum] || type}</span>
                         </div>
                     ))}
                 </div>
@@ -278,7 +289,7 @@ const FiltersFull = () => {
                             >
                             <Icon className="w-5 h-5 hover:cursor-pointer" />
                             <Label className="hover:cursor-pointer">
-                                {AmenityEnum[amenity as unknown as keyof typeof AmenityEnum] || amenity}
+                                {AmenityLabels[amenity as AmenityEnum] || amenity}
                             </Label>
                         </div>
                     ))}

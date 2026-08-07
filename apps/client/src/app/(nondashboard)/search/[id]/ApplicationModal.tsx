@@ -8,16 +8,31 @@ import { ApplicationFormData, applicationSchema } from '@/lib/schemas';
 import { useCreateApplicationMutation, useGetAuthUserQuery } from '@/state/api'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApplicationStatus } from '@shared/types';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 const ApplicationModal = ({
     isOpen,
     onClose,
     propertyId
 }: ApplicationModalProps) => {
-  const [createApplication, { isLoading: isSubmitting }] = useCreateApplicationMutation();
+  const [createApplication, { isLoading: isSubmitting, isError, error }] = useCreateApplicationMutation();
   const { data: authUser } = useGetAuthUserQuery();
+  
+  useEffect(() => {
+    if (!isError) return;
+
+    const err = error as any;
+
+    if (err.data?.code === "MOVE_IN_DATE_TOO_SOON") {
+        toast.error(
+        `${err.data?.message}`
+        );
+    } else {
+        toast.error(err.data?.message || "Đăng ký thất bại.");
+    }
+   }, [isError, error]);
 
   const defaultStartDate = new Date().toISOString().split("T")[0];
   const defaultEndDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0];
@@ -36,7 +51,7 @@ const ApplicationModal = ({
 
   const onSubmit = async (data: ApplicationFormData) => {
     if (!authUser || authUser.userRole !== "tenant") {
-        console.error(
+        toast.error(
             "You must be logged in as a tenant to apply for a property"
         );
         return;

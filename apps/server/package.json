@@ -42,6 +42,7 @@
     "@prisma/driver-adapter-utils": "^7.8.0",
     "@shared/types": "workspace:*",
     "@terraformer/wkt": "^2.2.1",
+    "aws-jwt-verify": "^5.2.1",
     "axios": "^1.18.0",
     "body-parser": "^2.2.2",
     "class-transformer": "^0.5.1",

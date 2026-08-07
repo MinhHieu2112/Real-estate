@@ -5,8 +5,19 @@ import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { AmenityEnum, HighlightEnum, PropertyTypeEnum } from '@shared/types';
-import { EditPropertyFormData, editPropertySchema } from '@/lib/schemas';
+import {
+  AmenityEnum,
+  HighlightEnum,
+  PropertyTypeEnum,
+  PropertyTypeLabels,
+  AmenityLabels,
+  HighlightLabels,
+  PropertyStatusLabels,
+  PropertyStatusEnum,
+} from '@shared/types';
+import {
+  editPropertySchema,
+} from '@/lib/schemas';
 import {
   useGetAuthUserQuery,
   useGetPropertyQuery,
@@ -20,103 +31,112 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 const EditProperty = () => {
+  const params = useParams();
+  const id = Number(params.id);
   const router = useRouter();
-  const { id } = useParams();
-  const propertyId = Number(id);
 
+  const { data: user } = useGetAuthUserQuery();
   const { data: property, isLoading: isPropertyLoading } =
-    useGetPropertyQuery(propertyId);
+    useGetPropertyQuery(id);
   const [updateProperty, { isLoading: isUpdating }] =
     useUpdatePropertyMutation();
-  const { data: authUser } = useGetAuthUserQuery();
 
   const form = useForm({
     resolver: zodResolver(editPropertySchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
+      status: 'Available',
       pricePerMonth: 0,
       securityDeposit: 0,
       applicationFee: 0,
-      isPetsAllowed: true,
-      isParkingIncluded: true,
-      photoUrls: [],
-      amenities: [],
-      highlights: [],
+      isPetsAllowed: false,
+      isParkingIncluded: false,
       beds: 1,
       baths: 1,
-      squareFeet: 1000,
-      address: "",
-      city: "",
-      state: "",
-      country: "",
-      postalCode: "",
+      squareFeet: 0,
+      propertyType: PropertyTypeEnum.Rooms,
+      amenities: [],
+      highlights: [],
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      postalCode: '',
     },
   });
 
   useEffect(() => {
     if (property) {
       form.reset({
-        name: property.name || "",
-        description: property.description || "",
+        name: property.name || '',
+        description: property.description || '',
         pricePerMonth: property.pricePerMonth || 0,
         securityDeposit: property.securityDeposit || 0,
         applicationFee: property.applicationFee || 0,
-        isPetsAllowed: property.isPetsAllowed ?? true,
-        isParkingIncluded: property.isParkingIncluded ?? true,
-        photoUrls: [],
-        amenities: (property.amenities as any) || [],
-        highlights: (property.highlights as any) || [],
+        isPetsAllowed: property.isPetsAllowed ?? false,
+        isParkingIncluded: property.isParkingIncluded ?? false,
         beds: property.beds || 1,
         baths: property.baths || 1,
-        squareFeet: property.squareFeet || 1000,
-        address: property.location?.address || "",
-        city: property.location?.city || "",
-        state: property.location?.state || "",
-        country: property.location?.country || "",
-        postalCode: property.location?.postalCode || "",
+        squareFeet: property.squareFeet || 0,
+        propertyType: (property.propertyType as PropertyTypeEnum) || PropertyTypeEnum.Rooms,
+        amenities: (property.amenities as AmenityEnum[]) || [],
+        highlights: (property.highlights as HighlightEnum[]) || [],
+        address: property.location?.address || '',
+        city: property.location?.city || '',
+        state: property.location?.state || '',
+        country: property.location?.country || '',
+        postalCode: property.location?.postalCode || '',
       });
     }
   }, [property, form]);
 
-  if (isPropertyLoading) return <Loading />;
-
-  const onSubmit = async (data: EditPropertyFormData) => {
-    if (!authUser?.cognitoInfo?.userId) {
-      throw new Error("No manager ID found");
-    }
-
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === "photoUrls") {
-        const files = value as (File | string)[];
-        files?.forEach((file) => {
-          if (file instanceof File) {
-            formData.append("files", file);
-          }
-        });
-      } else if (Array.isArray(value)) {
-        formData.append(key, value.join(","));
-      } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-
-    formData.append("managerCognitoId", authUser.cognitoInfo.userId);
+  const onSubmit = async (data: any) => {
+    if (!user?.cognitoInfo?.userId) return;
 
     try {
-      await updateProperty({ id: propertyId, formData }).unwrap();
-      router.push(`/managers/properties/${propertyId}`);
-    } catch (err) {
-      console.error("Failed to update property:", err);
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('description', data.description);
+      formData.append('status', data.status);
+      formData.append('applicationFee', data.applicationFee.toString());
+      formData.append('pricePerMonth', data.pricePerMonth.toString());
+      formData.append('securityDeposit', data.securityDeposit.toString());
+      formData.append('isPetsAllowed', data.isPetsAllowed.toString());
+      formData.append('isParkingIncluded', data.isParkingIncluded.toString());
+      formData.append('beds', data.beds.toString());
+      formData.append('baths', data.baths.toString());
+      formData.append('squareFeet', data.squareFeet.toString());
+      formData.append('propertyType', data.propertyType);
+      formData.append('address', data.address);
+      formData.append('city', data.city);
+      formData.append('state', data.state);
+      formData.append('country', data.country);
+      formData.append('postalCode', data.postalCode);
+
+      formData.append('amenities', JSON.stringify(data.amenities));
+      formData.append('highlights', JSON.stringify(data.highlights));
+
+      if (data.photoUrls && data.photoUrls.length > 0) {
+        Array.from(data.photoUrls).forEach((file: any) => {
+          formData.append('files', file);
+        });
+      }
+
+      await updateProperty({ id, formData }).unwrap();
+      router.push(`/managers/properties`);
+    } catch (error) {
+      console.error('Failed to update property:', error);
     }
   };
+
+  if (isPropertyLoading) return <Loading />;
 
   return (
     <div className="dashboard-container">
       <Link
-        href={`/managers/properties/${propertyId}`}
-        className="flex items-center mb-4 text-gray-600 hover:text-primary-700"
+        href="/managers/properties"
+        className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
         scroll={false}
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -124,7 +144,7 @@ const EditProperty = () => {
       </Link>
 
       <Header
-        title={`${property?.propertyType} ${property?.name || ""}`}
+        title={`${PropertyTypeLabels[property?.propertyType as PropertyTypeEnum] || property?.propertyType || ''} ${property?.name || ''}`}
         subtitle="Chỉnh sửa thông tin chi tiết"
       />
       <div className="bg-white rounded-xl p-6 shadow-md mt-6">
@@ -139,7 +159,7 @@ const EditProperty = () => {
                 Thông tin cơ bản
               </h2>
               <div className="space-y-4">
-                <CustomFormField name="name" label="Tên bất động sản" />
+                <CustomFormField name="name" label="Tên dự án" />
                 <CustomFormField
                   name="description"
                   label="Mô tả"
@@ -153,7 +173,7 @@ const EditProperty = () => {
             {/* Fees */}
             <div className="space-y-6">
               <h2 className="text-lg font-semibold mb-4">Chi phí</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <CustomFormField
                   name="securityDeposit"
                   label="Phí đặt cọc"
@@ -177,7 +197,7 @@ const EditProperty = () => {
             {/* Property Details */}
             <div className="space-y-6">
               <h2 className="text-lg font-semibold mb-4">Chi tiết dự án</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
                 <CustomFormField
                   name="beds"
                   label="Số lượng giường"
@@ -195,11 +215,20 @@ const EditProperty = () => {
                 />
                 <CustomFormField
                   name="propertyType"
-                  label="Loại bất động sản"
+                  label="Loại dự án"
                   type="select"
-                  options={Object.keys(PropertyTypeEnum).map((type) => ({
+                  options={Object.values(PropertyTypeEnum).map((type) => ({
                     value: type,
-                    label: type,
+                    label: PropertyTypeLabels[type],
+                  }))}
+                />
+                <CustomFormField
+                  name="status"
+                  label="Tình trạng"
+                  type="select"
+                  options={Object.values(PropertyStatusEnum).map((status) => ({
+                    value: status,
+                    label: PropertyStatusLabels[status],
                   }))}
                 />
               </div>
@@ -229,18 +258,18 @@ const EditProperty = () => {
                   name="amenities"
                   label="Dịch vụ"
                   type="multi-select"
-                  options={Object.keys(AmenityEnum).map((amenity) => ({
+                  options={Object.values(AmenityEnum).map((amenity) => ({
                     value: amenity,
-                    label: amenity,
+                    label: AmenityLabels[amenity],
                   }))}
                 />
                 <CustomFormField
                   name="highlights"
                   label="Điểm nổi bật"
                   type="multi-select"
-                  options={Object.keys(HighlightEnum).map((highlight) => ({
+                  options={Object.values(HighlightEnum).map((highlight) => ({
                     value: highlight,
-                    label: highlight,
+                    label: HighlightLabels[highlight],
                   }))}
                 />
               </div>
@@ -253,7 +282,7 @@ const EditProperty = () => {
               <h2 className="text-lg font-semibold mb-4">Thêm ảnh mới</h2>
               <CustomFormField
                 name="photoUrls"
-                label="Ảnh bất động sản (Tùy chọn: tải lên để thêm ảnh)"
+                label="Ảnh dự án (Tùy chọn: tải lên để thêm ảnh)"
                 type="file"
                 accept="image/*"
               />

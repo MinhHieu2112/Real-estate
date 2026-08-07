@@ -109,14 +109,14 @@ const Navbar = () => {
                                 <>
                                     <Plus className="h-4 w-4" />
                                     <span className="hidden md:block ml-2">
-                                        Thêm bất động sản mới
+                                        Thêm dự án mới
                                     </span>
                                 </>
                             ) : (
                                 <>
                                     <Search className="h-4 w-4" />
                                     <span className="hidden md:block ml-2">
-                                        Tìm kiếm bất động sản
+                                        Tìm kiếm
                                     </span>
                                 </>
                             )}

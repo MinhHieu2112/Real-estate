@@ -11,7 +11,7 @@ const AppSidebar = ({ userType }: AppSidebarProps) => {
   const { toggleSidebar, open } = useSidebar();
   const navLinks =
     userType === "manager"
-    ? [{ icon: Building, label: "Bất động sản của tôi", href: "/managers/properties" },
+    ? [{ icon: Building, label: "Dự án của tôi", href: "/managers/properties" },
        { icon: FileText, label: "Đơn đăng ký thuê", href: "/managers/applications" },
        { icon: Settings, label: "Cài đặt tài khoản", href: "/managers/settings" }]
     : [{ icon: Heart, label: "Danh sách yêu thích", href: "/tenants/favorites" },

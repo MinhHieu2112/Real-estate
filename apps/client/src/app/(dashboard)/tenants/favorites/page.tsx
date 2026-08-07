@@ -31,8 +31,8 @@ const Favorites = () => {
   return (
     <div className="dashboard-container">
       <Header
-        title="Bất động sản yêu thích"
-        subtitle="Xem và quản lý các bất động sản yêu thích của bạn"
+        title="Dự án yêu thích"
+        subtitle="Xem và quản lý các dự án yêu thích của bạn"
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {favoriteProperties?.map((property) => (

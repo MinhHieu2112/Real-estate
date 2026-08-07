@@ -44,7 +44,7 @@ const Applications = () => {
     <div className="dashboard-container">
         <Header
             title="Đơn đăng ký"
-            subtitle="Xem và quản lý các đơn đăng ký thuê bất động sản của bạn"
+            subtitle="Xem và quản lý các đơn đăng ký thuê dự án của bạn"
         />
         <Tabs 
             value={activeTab}
@@ -112,7 +112,7 @@ const Applications = () => {
                                             scroll={false}
                                         >
                                             <Hospital className="w-4 h-4 mr-1.5" />
-                                            Chi tiết bất động sản
+                                            Chi tiết dự án
                                         </Link>
                                         {application.status === "Approved" && (
                                             <button

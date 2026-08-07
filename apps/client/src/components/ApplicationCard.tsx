@@ -18,9 +18,6 @@ const ApplicationCard = ({
       ? "bg-red-100 text-red-700 border-red-200"
       : "bg-amber-100 text-amber-700 border-amber-200";
 
-  const contactPerson =
-    userType === "manager" ? application.tenant : application.manager;
-
   return (
     <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white mb-5 transition-all hover:shadow-md">
       <div className="grid grid-cols-1 lg:grid-cols-12 p-5 gap-6 items-stretch">
@@ -105,20 +102,20 @@ const ApplicationCard = ({
           <div className="flex items-center gap-3">
             <Image
               src="/landing-i1.png"
-              alt={contactPerson?.name || "Người liên hệ"}
+              alt={application.name || "Người liên hệ"}
               width={38}
               height={38}
               className="rounded-full shrink-0 border border-gray-200"
             />
             <div className="min-w-0 text-xs space-y-0.5">
-              <div className="font-bold text-gray-900 truncate">{contactPerson?.name || "Không xác định"}</div>
+              <div className="font-medium text-gray-800 truncate">{application.name || "Người liên hệ"}</div>
               <div className="flex items-center text-gray-500 truncate">
                 <PhoneCall className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
-                <span className="truncate">{contactPerson?.phoneNumber || "Không xác định"}</span>
+                <span className="truncate">{application.phoneNumber || "Không xác định"}</span>
               </div>
               <div className="flex items-center text-gray-500 truncate">
                 <Mail className="w-3.5 h-3.5 mr-1 shrink-0 text-gray-400" />
-                <span className="truncate">{contactPerson?.email || "Không xác định"}</span>
+                <span className="truncate">{application.email || "Không xác định"}</span>
               </div>
             </div>
           </div>

@@ -64,24 +64,27 @@ export class LocationService {
     return defaultCoords;
   }
 
-  // Searches for a place by text query and returns its centroid + bbox.
-  // The bbox is used for administrative boundary filtering in PostGIS (ST_Intersects).
-  async searchPlaceByText(
-    query: string,
-    countryCode = 'VNM',
-  ): Promise<SearchPlaceResult | null> {
+  async searchPlaceByText(query: string): Promise<SearchPlaceResult | null> {
     try {
       const command = new SearchTextCommand({
         QueryText: query,
-        Filter: {
-          IncludeCountries: [countryCode],
-        },
         MaxResults: 1,
+        BiasPosition: [106.6297, 10.8231], // HCM bias
+        Filter: {
+          IncludeCountries: ['VNM'],
+        },
       });
+
       const response = await this.geoPlacesClient.send(command);
       const item = response.ResultItems?.[0];
 
       if (!item?.Position) return null;
+
+      if (item.Address?.Country?.Code3 !== 'VNM') {
+        throw new Error(
+          'Không tìm thấy địa điểm phù hợp tại Việt Nam. Vui lòng thử lại với địa chỉ khác.',
+        );
+      }
 
       const result: SearchPlaceResult = {
         placeId: item.PlaceId ?? undefined,
@@ -92,10 +95,10 @@ export class LocationService {
       // MapView bounding box format: [west, south, east, north]
       if (item.MapView && item.MapView.length === 4) {
         result.bbox = [
-          item.MapView[0], // West
-          item.MapView[1], // South
-          item.MapView[2], // East
-          item.MapView[3], // North
+          item.MapView[0],
+          item.MapView[1],
+          item.MapView[2],
+          item.MapView[3],
         ];
       }
 

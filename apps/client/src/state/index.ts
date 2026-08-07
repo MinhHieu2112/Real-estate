@@ -9,7 +9,7 @@ export interface FiltersState {
   availableFrom: string;
   priceRange: [number, number] | [null, null];
   squareFeet: [number, number] | [null, null];
-  coordinates: [number, number];
+  coordinates?: [number, number];
 }
 
 interface InitialStateTypes {

@@ -11,8 +11,16 @@ import { Server, Socket } from 'socket.io';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Inject, forwardRef } from '@nestjs/common';
+import { verifyWsToken } from '../auth/ws-jwt.helper';
 
-@WebSocketGateway({ cors: { origin: '*' }, namespace: '/chat' })
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : ['http://localhost:3000'];
+
+@WebSocketGateway({
+  cors: { origin: allowedOrigins, credentials: true },
+  namespace: '/chat',
+})
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -23,13 +31,17 @@ export class MessageGateway
     private readonly messageService: MessageService,
   ) {}
 
-  handleConnection(client: Socket) {
-    const cognitoId = client.handshake.query.cognitoId as string;
-    if (!cognitoId) {
+  async handleConnection(client: Socket) {
+    // Verify JWT before allowing connection
+    const user = await verifyWsToken(client);
+    if (!user) {
+      client.emit('error', { message: 'Unauthorized: invalid token' });
       client.disconnect();
       return;
     }
-    client.data = { cognitoId };
+
+    // Store verified identity from JWT — not from client-supplied query
+    client.data = { cognitoId: user.sub, role: user.role };
   }
 
   handleDisconnect(client: Socket) {
@@ -57,6 +69,7 @@ export class MessageGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: Pick<CreateMessageDto, 'conversationId' | 'content'>,
   ) {
+    // senderCognitoId always comes from verified JWT, not from client
     const senderCognitoId: string = client.data?.cognitoId;
     if (!senderCognitoId)
       return client.emit('error', { message: 'Unauthorized' });
@@ -72,7 +85,7 @@ export class MessageGateway
     }
   }
 
-  // Phát sóng tin nhắn mới đến tất cả client trong room `conv:${conversationId}`
+  // Broadcast new message to all clients in the conversation room
   broadcastNewMessage(message: any) {
     if (this.server) {
       this.server

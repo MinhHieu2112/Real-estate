@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PropertyTypeIcons, PRICE_RANGES_MIN, PRICE_RANGES_MAX } from '@/lib/constants';
-import { PropertyTypeEnum } from '@shared/types';
+import { PropertyTypeEnum, PropertyTypeLabels } from '@shared/types';
 import { useAutocompleteAddressQuery, api } from '@/state/api';
 
 const FiltersBar = () => {
@@ -253,7 +253,7 @@ const FiltersBar = () => {
           }
         >
           <SelectTrigger className="w-36 rounded-xl border-primary-400">
-            <SelectValue placeholder="Loại bất động sản" />
+            <SelectValue placeholder="Loại dự án" />
           </SelectTrigger>
           <SelectContent className="bg-white">
             <SelectItem value="any">Tất cả loại</SelectItem>
@@ -261,7 +261,7 @@ const FiltersBar = () => {
               <SelectItem key={type} value={type}>
                 <div className="flex items-center">
                   <Icon className="w-4 h-4 mr-2" />
-                  <span>{PropertyTypeEnum[type as unknown as keyof typeof PropertyTypeEnum] || type}</span>
+                  <span>{PropertyTypeLabels[type as PropertyTypeEnum] || type}</span>
                 </div>
               </SelectItem>
             ))}

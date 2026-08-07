@@ -1,14 +1,27 @@
-import { Controller, Post, Get, Patch, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ManagerResponseDto } from './dto/manager-response.dto';
 import { UpdateManagerDto } from './dto/update-manager.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 
 @Controller('managers')
+@UseGuards(JwtAuthGuard)
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) {}
 
+  // Create manager — public for first-time registration via Cognito
+  @Public()
   @Post()
   @ApiOperation({
     summary: 'Create a new manager',

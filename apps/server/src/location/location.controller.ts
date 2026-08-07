@@ -30,11 +30,8 @@ export class LocationController {
   }
 
   @Get('search')
-  searchPlace(
-    @Query('query') query: string,
-    @Query('countryCode') countryCode?: string,
-  ) {
-    return this.locationService.searchPlaceByText(query, countryCode);
+  searchPlace(@Query('query') query: string) {
+    return this.locationService.searchPlaceByText(query);
   }
 
   // Autocomplete address suggestions (debounced from FE search input).

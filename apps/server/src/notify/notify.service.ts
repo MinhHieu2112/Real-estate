@@ -33,7 +33,7 @@ export class NotifyService {
     subject: string;
     content: string;
   }) {
-    const senderEmail = process.env.SES_SENDER_EMAIL || '';
+    const senderEmail = process.env.AWS_SES_SENDER_EMAIL || '';
     if (!senderEmail) {
       this.logger.error('SES_SENDER_EMAIL is not configured');
       return;
@@ -131,7 +131,7 @@ export class NotifyService {
       receiverEmail: data.managerEmail,
       type: NotificationType.New_application,
       title: 'Đơn đăng ký thuê mới',
-      content: `Người dùng ${data.tenantName} đã gửi đơn đăng ký thuê bất động sản "${data.propertyName}".`,
+      content: `Người dùng ${data.tenantName} đã gửi đơn đăng ký thuê dự án "${data.propertyName}".`,
       applicationId: data.applicationId,
     });
   }
@@ -153,8 +153,8 @@ export class NotifyService {
         : NotificationType.Application_denied,
       title: isApproved ? 'Đơn thuê được chấp nhận' : 'Đơn thuê bị từ chối',
       content: isApproved
-        ? `Đơn đăng ký thuê bất động sản "${data.propertyName}" của bạn đã được duyệt.`
-        : `Đơn đăng ký thuê bất động sản "${data.propertyName}" hiện chưa được chấp thuận. Bạn có thể tham khảo các bất động sản khác phù hợp.`,
+        ? `Đơn đăng ký thuê dự án "${data.propertyName}" của bạn đã được duyệt.`
+        : `Đơn đăng ký thuê dự án "${data.propertyName}" hiện chưa được chấp thuận. Bạn có thể tham khảo các dự án khác phù hợp.`,
       applicationId: data.applicationId,
     });
   }

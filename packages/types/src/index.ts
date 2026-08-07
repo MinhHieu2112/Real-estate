@@ -1,3 +1,17 @@
+export * from "./enums/amenity.enum";
+export * from "./enums/highlight.enum";
+export * from "./enums/property-type.enum";
+export * from "./enums/property-status.enum";
+
+export * from "./constants/amenity-label";
+export * from "./constants/highlight-label";
+export * from "./constants/property-type-label";
+export * from "./constants/property-status-label";
+
+import { AmenityEnum } from "./enums/amenity.enum";
+import { HighlightEnum } from "./enums/highlight.enum";
+import { PropertyTypeEnum } from "./enums/property-type.enum";
+
 export interface Tenant {
   id: number;
   cognitoId: string;
@@ -48,6 +62,7 @@ export interface Property {
   baths: number;
   squareFeet: number;
   propertyType: PropertyTypeEnum;
+  availableFrom: string | Date;
   postedDate: string | Date;
   averageRating?: number | null;
   numberOfReviews?: number | null;
@@ -185,53 +200,4 @@ export enum PropertyStatus {
   Available = "Available",
   Rented = "Rented",
   Maintenance = "Maintenance"
-}
-
-export enum PropertyTypeEnum {
-  Rooms = "Phòng trọ",
-  Minihouse = "Nhà mini",
-  Apartment = "Căn hộ chung cư",
-  Villa = "Biệt thự",
-  Townhouse = "Nhà phố",
-  Cottage = "Nhà vườn",
-}
-
-export enum AmenityEnum {
-  AirConditioning = "Điều hòa",
-  Washer = "Máy giặt",
-  Dryer = "Máy sấy",
-  Refrigerator = "Tủ lạnh",
-  Microwave = "Lò vi sóng",
-  Dishwasher = "Máy rửa bát",
-  Oven = "Lò nướng",
-  Kitchen = "Nhà bếp đầy đủ",
-  WiFi = "Wi-Fi",
-  Television = "TV",
-  Parking = "Chỗ đậu xe",
-  Elevator = "Thang máy",
-  SwimmingPool = "Hồ bơi",
-  Gym = "Phòng gym",
-  Balcony = "Ban công",
-  Garden = "Sân vườn",
-  CCTV = "Camera an ninh",
-  Furnished = "Đầy đủ nội thất",
-}
-
-export enum HighlightEnum {
-    NewlyRenovated = "Mới được cải tạo",
-    NewlyBuilt = "Mới xây dựng",
-    PrimeLocation = "Vị trí đắc địa",
-    CityView = "View thành phố",
-    SeaView = "View biển",
-    MountainView = "View núi",
-    RiverView = "View sông",
-    QuietNeighborhood = "Khu dân cư yên tĩnh",
-    NearSchool = "Gần trường học",
-    NearHospital = "Gần bệnh viện",
-    NearSupermarket = "Gần siêu thị",
-    NearPublicTransport = "Gần phương tiện công cộng",
-    HighSecurityArea = "Khu vực an ninh cao",
-    SpaciousLayout = "Thiết kế rộng rãi",
-    NaturalLight = "Ánh sáng tự nhiên",
-    PetFriendlyCommunity = "Cộng đồng thân thiện với thú cưng",
 }

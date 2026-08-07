@@ -45,7 +45,7 @@ const FeatureSections = () => {
                             imageSrc={`/landing-search${3 - index}.png`}
                             title={
                                 [
-                                    "Danh sách bất động sản uy tín và đã xác minh", 
+                                    "Danh sách dự án uy tín và đã xác minh", 
                                     "Duyệt danh sách cho thuê một cách dễ dàng", 
                                     "Tối ưu hóa tìm kiếm với bộ lọc nâng cao"
                                 ][index]

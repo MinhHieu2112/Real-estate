@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
@@ -14,8 +15,11 @@ import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { TenantResponseDto } from './dto/tenant-response.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PropertyResponseDto } from './dto/property-response.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 
 @Controller('tenants')
+@UseGuards(JwtAuthGuard)
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
@@ -40,7 +44,8 @@ export class TenantController {
     return await this.tenantService.findByCognitoId(cognitoId);
   }
 
-  // Create tenant
+  // Create tenant — public because it's called during first-time registration
+  @Public()
   @Post()
   @ApiOperation({ summary: 'Create tenant' })
   @ApiResponse({
