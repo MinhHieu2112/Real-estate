@@ -24,6 +24,12 @@ import { Public } from '../auth/public.decorator';
 import { CurrentUser } from '../auth/get-user.decorator';
 import { CognitoUser } from '../auth/jwt-auth.guard';
 
+const MULTER_LIMITS = {
+  fileSize: 5 * 1024 * 1024,
+};
+
+const MAX_FILE_COUNT = 10;
+
 @Controller('properties')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
@@ -61,7 +67,9 @@ export class PropertyController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(
+    FilesInterceptor('files', MAX_FILE_COUNT, { limits: MULTER_LIMITS }),
+  )
   @ApiOperation({ summary: 'Create property' })
   @ApiResponse({ status: 201, description: 'Upload property successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -70,7 +78,6 @@ export class PropertyController {
     @CurrentUser() user: CognitoUser,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    // Always use managerCognitoId from verified JWT, never from request body
     return await this.propertyService.createProperty(
       { ...createPropertyDto, managerCognitoId: user.sub },
       files,
@@ -80,7 +87,9 @@ export class PropertyController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('manager')
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(
+    FilesInterceptor('files', MAX_FILE_COUNT, { limits: MULTER_LIMITS }),
+  )
   @ApiOperation({ summary: 'Update property' })
   @ApiResponse({ status: 200, description: 'Update property successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
