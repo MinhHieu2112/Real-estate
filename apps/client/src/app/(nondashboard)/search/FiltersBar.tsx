@@ -17,6 +17,7 @@ import {
 import { PropertyTypeIcons, PRICE_RANGES_MIN, PRICE_RANGES_MAX } from '@/lib/constants';
 import { PropertyTypeEnum, PropertyTypeLabels } from '@shared/types';
 import { useAutocompleteAddressQuery, api } from '@/state/api';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const FiltersBar = () => {
   const dispatch = useAppDispatch();
@@ -30,9 +31,10 @@ const FiltersBar = () => {
   const [searchInput, setSearchInput] = useState(filters.location);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Fetch address autocomplete suggestions from NestJS backend (AWS Places)
+  const debouncedSearchInput = useDebounce(searchInput, 500);
+
   const { data: suggestions = [] } = useAutocompleteAddressQuery(
-    searchInput,
+    debouncedSearchInput,
     { skip: searchInput.trim().length < 2 },
   );
 
