@@ -7,46 +7,125 @@ import {
 } from "@/state/api";
 import {
   AlertTriangle,
-  Building,
-  Calendar,
   CheckCircle2,
   Clock,
   Download,
-  FileCheck,
+  Eraser,
   FileText,
   Lock,
-  MapPin,
+  PenTool,
   ShieldCheck,
-  User,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import SignatureCanvas from "react-signature-canvas";
 
 function SigningContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useGetSigningPageQuery(token, {
+  const { data, isLoading, isError } = useGetSigningPageQuery(token, {
     skip: !token,
   });
 
   const [signContract, { isLoading: isSigning }] = useSignContractMutation();
 
+  const sigCanvasRef = useRef<SignatureCanvas | null>(null);
+  const [activeTab, setActiveTab] = useState<"draw" | "upload">("draw");
+  const [uploadedSignatureUrl, setUploadedSignatureUrl] = useState<string | null>(null);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [penColor, setPenColor] = useState<string>("#1e3a8a"); // Navy Blue
   const [agreed, setAgreed] = useState(false);
   const [signedSuccess, setSignedSuccess] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<string>("");
+
+  useEffect(() => {
+    if (!data?.expiresAt) return;
+
+    const interval = setInterval(() => {
+      const expTime = new Date(data.expiresAt).getTime();
+      const now = new Date().getTime();
+      const diff = expTime - now;
+
+      if (diff <= 0) {
+        setTimeLeft("Đã hết hạn");
+        clearInterval(interval);
+      } else {
+        const minutes = Math.floor(diff / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${minutes}m ${seconds < 10 ? "0" : ""}${seconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [data?.expiresAt]);
+
+  // Handle signature upload image file
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng tải lên tập tin hình ảnh (PNG, JPG)");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setUploadedSignatureUrl(base64);
+      setSignatureDataUrl(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Save drawn canvas signature
+  const saveDrawnSignature = () => {
+    if (sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) {
+      const base64 = sigCanvasRef.current.getTrimmedCanvas().toDataURL("image/png");
+      setSignatureDataUrl(base64);
+    }
+  };
+
+  // Clear canvas
+  const clearCanvas = () => {
+    if (sigCanvasRef.current) {
+      sigCanvasRef.current.clear();
+      setSignatureDataUrl(null);
+    }
+  };
+
+  const handleSign = async () => {
+    if (!agreed) return;
+
+    // Get final signature data URL
+    let finalSignature = signatureDataUrl;
+    if (activeTab === "draw" && sigCanvasRef.current && !sigCanvasRef.current.isEmpty()) {
+      finalSignature = sigCanvasRef.current.getTrimmedCanvas().toDataURL("image/png");
+    }
+
+    try {
+      await signContract({
+        token,
+        signatureBase64: finalSignature || undefined,
+      }).unwrap();
+      setSignedSuccess(true);
+    } catch (err) {
+      console.error("Lỗi khi ký hợp đồng", err);
+    }
+  };
 
   if (!token) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <AlertTriangle className="w-12 h-12 text-amber-500 mb-3" />
+        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-4">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Thiếu mã xác nhận ký hợp đồng</h2>
-        <p className="text-sm text-gray-500 mt-1 max-w-md">
+        <p className="text-sm text-gray-500 mt-2 max-w-md">
           Vui lòng kiểm tra email của bạn và nhấp vào liên kết ký hợp đồng được gửi từ hệ thống.
         </p>
       </div>
@@ -58,7 +137,7 @@ function SigningContent() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
         <Clock className="w-10 h-10 text-primary-600 animate-spin mb-3" />
         <p className="text-base font-medium text-gray-700">
-          Đang xác thực liên kết ký hợp đồng (30 phút)...
+          Đang tải nội dung hợp đồng và kiểm tra mã xác thực bảo mật...
         </p>
       </div>
     );
@@ -67,10 +146,12 @@ function SigningContent() {
   if (isError || !data?.lease) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <AlertTriangle className="w-12 h-12 text-rose-500 mb-3" />
+        <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 mb-4">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Liên kết đã hết hạn hoặc không hợp lệ</h2>
-        <p className="text-sm text-gray-500 mt-1 max-w-md">
-          Liên kết ký hợp đồng này chỉ có hiệu lực trong vòng 30 phút. Vui lòng liên hệ với Quản lý bất động sản để nhận liên kết mới.
+        <p className="text-sm text-gray-500 mt-2 max-w-md">
+          Liên kết ký hợp đồng này chỉ có hiệu lực trong vòng <strong>15 phút</strong>. Vui lòng liên hệ với Quản lý bất động sản để nhận liên kết mới.
         </p>
       </div>
     );
@@ -78,35 +159,38 @@ function SigningContent() {
 
   const { lease } = data;
 
-  const handleSign = async () => {
-    if (!agreed) return;
-    try {
-      await signContract(token).unwrap();
-      setSignedSuccess(true);
-    } catch (err) {
-      console.error("Lỗi khi ký hợp đồng", err);
-    }
-  };
-
   if (signedSuccess || lease.status === "Pending_payment" || lease.status === "Active") {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-4 animate-bounce">
-          <CheckCircle2 className="w-10 h-10" />
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-6 shadow-lg animate-pulse">
+          <CheckCircle2 className="w-12 h-12" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
           Ký hợp đồng trực tuyến thành công!
         </h1>
-        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-          Bạn đã hoàn tất ký hợp đồng thuê dự án <strong>{lease.property?.name}</strong>.
-          Quản lý bất động sản đã nhận được thông báo và sẽ liên hệ xác nhận khoản thanh toán.
+        <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+          Bạn đã hoàn tất ký điện tử hợp đồng thuê cho bất động sản <strong>{lease.property?.name}</strong>. Bản PDF đã được nhúng chữ ký & mã băm SHA-256 bảo mật.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+
+        {lease.leaseAgreementUrl && (
+          <div className="mt-6">
+            <a
+              href={lease.leaseAgreementUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-50 text-primary-700 text-sm font-bold rounded-xl border border-primary-200 hover:bg-primary-100 transition-colors"
+            >
+              <Download className="w-4 h-4" /> Tải bản hợp đồng đã ký (PDF)
+            </a>
+          </div>
+        )}
+
+        <div className="mt-8">
           <Link
             href="/tenants/applications"
-            className="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
+            className="px-6 py-3 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 transition-all shadow-md"
           >
-            Về trang Quản lý đơn thuê
+            Quản lý đơn thuê của tôi
           </Link>
         </div>
       </div>
@@ -114,142 +198,279 @@ function SigningContent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10 my-6">
-      {/* Contract Banner */}
-      <div className="bg-gradient-to-r from-primary-900 via-primary-800 to-indigo-900 text-white rounded-3xl p-6 md:p-8 shadow-xl mb-8">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-200 mb-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Xác thực chữ ký điện tử an toàn
+    <div className="max-w-6xl mx-auto p-4 md:p-8 my-4">
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-primary-900 to-indigo-950 text-white rounded-3xl p-6 md:p-8 shadow-xl mb-8 relative overflow-hidden">
+        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+            <ShieldCheck className="w-4 h-4" /> Xác thực chữ ký điện tử an toàn (E-Sign)
+          </div>
+          {timeLeft && (
+            <div className="flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Thời gian còn lại: {timeLeft}</span>
+            </div>
+          )}
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-          Hợp đồng thuê Bất động sản
+          Hợp đồng thuê: {lease.property?.name}
         </h1>
-        <p className="text-sm text-primary-100 mt-2 max-w-2xl">
-          Vui lòng kiểm tra kỹ các điều khoản hợp đồng bên dưới trước khi xác nhận ký trực tuyến.
+        <p className="text-sm text-gray-300 mt-2 max-w-3xl">
+          Vui lòng kiểm tra file PDF bên dưới, ký tên trực tuyến (vẽ chữ ký hoặc tải ảnh) để hoàn tất thủ tục pháp lý.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Main Document Details */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-base font-bold text-gray-900 border-b pb-3 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary-600" /> Nội dung hợp đồng thuê
-            </h2>
-
-            <div className="space-y-4 text-sm text-gray-700">
-              <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Mã hợp đồng: #{lease.id}</span>
-                  <span>Trạng thái: CHỜ KÝ</span>
-                </div>
-                <p className="font-semibold text-gray-900 text-base">
-                  Bên cho thuê (Quản lý): {lease.property?.manager?.name || "Bất động sản"}
-                </p>
-                <p className="font-semibold text-gray-900 text-base">
-                  Bên thuê (Khách thuê): {lease.tenant?.name} ({lease.tenant?.email})
-                </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Web PDF Viewer */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col h-[600px]">
+            <div className="flex items-center justify-between border-b pb-3 mb-3">
+              <div className="flex items-center gap-2 font-bold text-gray-900 text-sm">
+                <FileText className="w-4 h-4 text-primary-600" />
+                <span>Nội dung tài liệu PDF</span>
               </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="border border-gray-100 p-3.5 rounded-xl">
-                  <span className="text-xs text-gray-500 block mb-1">Ngày bắt đầu</span>
-                  <span className="font-bold text-gray-900">
-                    {new Date(lease.startDate).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
-                <div className="border border-gray-100 p-3.5 rounded-xl">
-                  <span className="text-xs text-gray-500 block mb-1">Ngày kết thúc</span>
-                  <span className="font-bold text-gray-900">
-                    {new Date(lease.endDate).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border border-gray-100 p-3.5 rounded-xl">
-                  <span className="text-xs text-gray-500 block mb-1">Tiền thuê hàng tháng</span>
-                  <span className="font-bold text-primary-700 text-base">
-                    {lease.rent?.toLocaleString("vi-VN")} VNĐ
-                  </span>
-                </div>
-                <div className="border border-gray-100 p-3.5 rounded-xl">
-                  <span className="text-xs text-gray-500 block mb-1">Tiền cọc an toàn</span>
-                  <span className="font-bold text-gray-900 text-base">
-                    {lease.deposit?.toLocaleString("vi-VN")} VNĐ
-                  </span>
-                </div>
-              </div>
-
-              {lease.leaseAgreementUrl && (
-                <div className="pt-2">
+              <div className="flex items-center gap-2">
+                {lease.leaseAgreementUrl && (
                   <a
                     href={lease.leaseAgreementUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 px-4 py-2.5 rounded-xl transition-colors"
+                    className="inline-flex items-center gap-1 text-xs text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg hover:bg-primary-100 font-medium transition-colors"
                   >
-                    <Download className="w-4 h-4" /> Tải bản hợp đồng đầy đủ (PDF)
+                    <Download className="w-3.5 h-3.5" /> Tải về PDF
                   </a>
+                )}
+              </div>
+            </div>
+
+            {/* Web Inline PDF Viewer via Object / iframe */}
+            <div className="flex-1 bg-gray-100 rounded-xl overflow-hidden relative border border-gray-200">
+              {lease.leaseAgreementUrl ? (
+                <iframe
+                  src={`${lease.leaseAgreementUrl}#toolbar=0&navpanes=0`}
+                  className="w-full h-full border-none"
+                  title="Contract PDF Preview"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-6 text-center text-gray-500">
+                  <FileText className="w-12 h-12 text-gray-400 mb-2" />
+                  <p className="text-sm font-medium">Tài liệu PDF đang được chuẩn bị trên S3...</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Signature Action Box */}
-          <div className="bg-gradient-to-br from-primary-50 to-white border-2 border-primary-200 rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-primary-600" /> Xác nhận chữ ký điện tử
-            </h3>
-
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded text-primary-600 focus:ring-primary-500 border-gray-300"
-              />
-              <span className="text-xs text-gray-700 leading-relaxed group-hover:text-gray-900">
-                Tôi xác nhận rằng thông tin trên là chính xác và tôi đồng ý ký điện tử hợp đồng thuê này theo các điều khoản được quy định.
-              </span>
-            </label>
-
-            <button
-              onClick={handleSign}
-              disabled={!agreed || isSigning}
-              className="w-full py-3.5 px-6 text-sm font-bold text-white bg-primary-600 rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <ShieldCheck className="w-5 h-5" />
-              {isSigning ? "Đang xử lý chữ ký..." : "Ký hợp đồng ngay"}
-            </button>
+          {/* Quick Summary Info */}
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-600 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <span className="text-gray-400 block">Bên cho thuê</span>
+              <strong className="text-gray-800 text-sm truncate block">
+                {lease.property?.manager?.name || "Bất động sản"}
+              </strong>
+            </div>
+            <div>
+              <span className="text-gray-400 block">Bên thuê</span>
+              <strong className="text-gray-800 text-sm truncate block">
+                {lease.tenant?.name}
+              </strong>
+            </div>
+            <div>
+              <span className="text-gray-400 block">Tiền thuê / tháng</span>
+              <strong className="text-primary-700 text-sm block font-bold">
+                {lease.rent?.toLocaleString("vi-VN")} VNĐ
+              </strong>
+            </div>
+            <div>
+              <span className="text-gray-400 block">Tiền cọc</span>
+              <strong className="text-gray-800 text-sm block font-bold">
+                {lease.deposit?.toLocaleString("vi-VN")} VNĐ
+              </strong>
+            </div>
           </div>
         </div>
 
-        {/* Sidebar Info */}
-        <div className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Bất động sản thuê
-            </h3>
-            <div className="flex items-start gap-3">
-              <Building className="w-5 h-5 text-primary-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-gray-900 text-sm">
-                  {lease.property?.name}
-                </p>
-                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />{" "}
-                  {lease.property?.location?.address}
-                </p>
+        {/* Right Column: E-Signature Canvas & Controls */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white border-2 border-primary-200 rounded-3xl p-6 shadow-md space-y-5">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <PenTool className="w-5 h-5 text-primary-600" /> Ký điện tử hợp đồng
+              </h2>
+              <span className="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full">
+                Audit Trail SHA-256
+              </span>
+            </div>
+
+            {/* Signature Method Tabs */}
+            <div className="flex bg-gray-100 p-1 rounded-xl gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("draw")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === "draw"
+                    ? "bg-white text-primary-700 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <PenTool className="w-3.5 h-3.5" /> Vẽ chữ ký
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("upload")}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === "upload"
+                    ? "bg-white text-primary-700 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <UploadCloud className="w-3.5 h-3.5" /> Tải ảnh chữ ký
+              </button>
+            </div>
+
+            {/* Tab 1: Draw Signature Canvas */}
+            {activeTab === "draw" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500 font-medium">Vẽ chữ ký của bạn trong khung bên dưới:</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPenColor("#1e3a8a")}
+                      className={`w-4 h-4 rounded-full bg-blue-900 border ${
+                        penColor === "#1e3a8a" ? "ring-2 ring-primary-600" : ""
+                      }`}
+                      title="Màu xanh đậm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPenColor("#000000")}
+                      className={`w-4 h-4 rounded-full bg-black border ${
+                        penColor === "#000000" ? "ring-2 ring-primary-600" : ""
+                      }`}
+                      title="Màu đen"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearCanvas}
+                      className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 ml-2 font-medium"
+                    >
+                      <Eraser className="w-3.5 h-3.5" /> Xóa vẽ lại
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border-2 border-dashed border-gray-300 rounded-2xl bg-slate-50 relative overflow-hidden h-44 hover:border-primary-400 transition-colors">
+                  <SignatureCanvas
+                    ref={sigCanvasRef}
+                    penColor={penColor}
+                    canvasProps={{
+                      className: "w-full h-full cursor-crosshair",
+                    }}
+                    onEnd={saveDrawnSignature}
+                  />
+                  <span className="absolute bottom-2 right-3 text-[10px] text-gray-400 pointer-events-none select-none">
+                    Chữ ký điện tử hợp pháp
+                  </span>
+                </div>
               </div>
+            )}
+
+            {/* Tab 2: Upload Signature Image */}
+            {activeTab === "upload" && (
+              <div className="space-y-3">
+                <span className="text-xs text-gray-500 font-medium block">
+                  Tải lên file ảnh chữ ký của bạn (PNG, JPG nền trắng/trong suốt):
+                </span>
+                <label className="border-2 border-dashed border-gray-300 hover:border-primary-500 rounded-2xl bg-slate-50 p-6 flex flex-col items-center justify-center cursor-pointer transition-colors group">
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <UploadCloud className="w-8 h-8 text-gray-400 group-hover:text-primary-600 mb-2 transition-colors" />
+                  <span className="text-xs font-bold text-gray-700 group-hover:text-primary-700">
+                    Nhấp để chọn ảnh chữ ký
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1">PNG hoặc JPG (tối đa 5MB)</span>
+                </label>
+
+                {uploadedSignatureUrl && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={uploadedSignatureUrl}
+                        alt="Signature Preview"
+                        className="h-10 max-w-[120px] object-contain border bg-white rounded p-1"
+                      />
+                      <span className="text-xs text-emerald-800 font-semibold">
+                        Đã nạp hình ảnh chữ ký
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadedSignatureUrl(null);
+                        setSignatureDataUrl(null);
+                      }}
+                      className="text-gray-400 hover:text-rose-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Live Preview Box */}
+            {signatureDataUrl && (
+              <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 space-y-1">
+                <span className="text-[11px] font-bold text-gray-600 block">Xem trước chữ ký sẽ nhúng vào PDF:</span>
+                <div className="bg-white p-2 rounded border border-gray-200 flex items-center justify-center">
+                  <img
+                    src={signatureDataUrl}
+                    alt="Current Signature Preview"
+                    className="h-10 object-contain"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Legal Agreement Checkbox */}
+            <div className="pt-2 border-t space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-primary-600 focus:ring-primary-500 border-gray-300"
+                />
+                <span className="text-xs text-gray-700 leading-relaxed group-hover:text-gray-900">
+                  Tôi xác nhận là <strong>{lease.tenant?.name}</strong>, đồng ý với toàn bộ điều khoản hợp đồng và ủy quyền nhúng chữ ký & thông tin Audit (IP, thời gian, SHA-256) vào file PDF.
+                </span>
+              </label>
+
+              {/* Submit Button */}
+              <button
+                type="button"
+                onClick={handleSign}
+                disabled={!agreed || isSigning}
+                className="w-full py-3.5 px-6 text-sm font-extrabold text-white bg-primary-600 hover:bg-primary-700 rounded-2xl disabled:opacity-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <ShieldCheck className="w-5 h-5" />
+                {isSigning ? "Đang nhúng chữ ký & sinh mã SHA-256..." : "Ký & Hoàn tất hợp đồng"}
+              </button>
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-xs text-amber-800 space-y-2">
-            <div className="font-bold flex items-center gap-1.5 text-amber-900">
-              <Clock className="w-4 h-4" /> Thời gian hiệu lực liên kết
+          {/* Security & Audit Info Footer */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 space-y-2">
+            <div className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Lock className="w-4 h-4 text-emerald-600" /> Quy trình ký bảo mật chuẩn PDF-Lib & AWS S3
             </div>
-            <p>
-              Liên kết ký hợp đồng này được mã hóa bảo mật và chỉ tồn tại trong 30 phút kể từ khi khởi tạo.
+            <p className="leading-relaxed">
+              Mọi hoạt động ký kết đều ghi nhận dấu vết pháp lý (Audit Trail): địa chỉ IP, mốc thời gian chuẩn UTC+7 và mã băm mật mã SHA-256 được lưu vết vĩnh viễn trên S3.
             </p>
           </div>
         </div>
@@ -262,7 +483,7 @@ export default function TenantSignPage() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       <Navbar />
-      <Suspense fallback={<div className="p-8 text-center">Đang tải...</div>}>
+      <Suspense fallback={<div className="p-8 text-center text-gray-500">Đang nạp hệ thống ký hợp đồng...</div>}>
         <SigningContent />
       </Suspense>
     </div>

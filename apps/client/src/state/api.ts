@@ -383,11 +383,11 @@ export const api = createApi({
         query: (token) => `leases/sign/${token}`,
       }),
 
-      signContract: build.mutation<Lease, string>({
-        query: (token) => ({
+      signContract: build.mutation<Lease, { token: string; signatureBase64?: string }>({
+        query: (data) => ({
           url: `leases/sign`,
           method: "POST",
-          body: { token },
+          body: data,
         }),
         invalidatesTags: ["Contracts", "Leases", "Properties", "Applications", "Payments"],
         async onQueryStarted(_, { queryFulfilled }) {

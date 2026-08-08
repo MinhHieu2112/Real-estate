@@ -16,6 +16,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Public } from '../auth/public.decorator';
 import { UpdateLeaseContentDto } from './dto/update-lease-content.dto';
+import { SignContractDto } from './dto/sign-contract.dto';
 
 @ApiTags('leases')
 @Controller('leases')
@@ -46,11 +47,11 @@ export class LeaseController {
 
   @Public()
   @Post('sign')
-  @ApiOperation({ summary: 'Tenant signs contract with token' })
-  async signContract(@Body('token') token: string, @Req() req: any) {
+  @ApiOperation({ summary: 'Tenant signs contract with token & signature' })
+  async signContract(@Body() dto: SignContractDto, @Req() req: any) {
     const ipAddress =
       req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-    return await this.leaseService.signContract(token, String(ipAddress));
+    return await this.leaseService.signContract(dto, String(ipAddress));
   }
 
   @Get(':id')

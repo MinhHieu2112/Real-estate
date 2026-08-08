@@ -9,6 +9,7 @@ import { ListApplicationDto } from './dto/list-application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { NotifyService } from '../notify/notify.service';
+import { calculateTotalRent } from '../common/utils/calculate-rent';
 
 @Injectable()
 export class ApplicationService {
@@ -296,12 +297,20 @@ export class ApplicationService {
           });
         }
 
-        // Tạo Lease mới với thuộc tính status: 'Active' bắt buộc bởi Prisma schema
+        // Tính tiền thuê tự động từ ngày bắt đầu -> ngày kết thúc dựa trên giá thuê
+        const pricePerDay = application.property.pricePerDay || 0;
+        const { totalRent } = calculateTotalRent(
+          leaseStartDate,
+          leaseEndDate,
+          pricePerDay,
+        );
+
+        // Tạo Lease mới với thuộc tính status: 'Draft'
         const newLease = await tx.lease.create({
           data: {
             startDate: leaseStartDate,
             endDate: leaseEndDate,
-            rent: application.property.pricePerDay,
+            rent: totalRent > 0 ? totalRent : pricePerDay,
             deposit: application.property.securityDeposit,
             propertyId: application.propertyId,
             tenantCognitoId: application.tenantCognitoId,
