@@ -11,6 +11,7 @@ import { LocationModule } from './location/location.module';
 import { MessageModule } from './message/message.module';
 import { NotifyModule } from './notify/notify.module';
 import { AuthModule } from './auth/auth.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthModule } from './auth/auth.module';
     LocationModule,
     MessageModule,
     NotifyModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

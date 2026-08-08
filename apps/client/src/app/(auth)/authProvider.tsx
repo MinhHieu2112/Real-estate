@@ -49,7 +49,7 @@ const components = {
                         >
                             Forgot your password?
                     </button>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                         Don&apos;t have an account?{" "}
                         <button
                             onClick={toSignUp}
@@ -87,7 +87,7 @@ const components = {
             const { toSignIn } = useAuthenticator();
             return (
                 <View className="mt-4 mb-7">
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                         Already have an account?{" "}
                         <button
                             onClick={toSignIn}

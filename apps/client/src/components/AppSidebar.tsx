@@ -2,7 +2,7 @@ import { NAVBAR_HEIGHT } from '@/lib/constants'
 import Link  from 'next/link'
 import { usePathname } from 'next/navigation'
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, useSidebar, Sidebar, SidebarContent, SidebarMenuButton } from './ui/sidebar'
-import { Building, FileText, Settings, Heart, Home, Menu, X } from 'lucide-react'
+import { Building, FileText, Settings, Heart, Home, Menu, X, ScrollText, CreditCard } from 'lucide-react'
 import { cn } from "@/lib/utils";
 import React from 'react'
 
@@ -13,6 +13,8 @@ const AppSidebar = ({ userType }: AppSidebarProps) => {
     userType === "manager"
     ? [{ icon: Building, label: "Dự án của tôi", href: "/managers/properties" },
        { icon: FileText, label: "Đơn đăng ký thuê", href: "/managers/applications" },
+       { icon: ScrollText, label: "Quản lý hợp đồng", href: "/managers/contracts" },
+       { icon: CreditCard, label: "Quản lý thanh toán", href: "/managers/payments" },
        { icon: Settings, label: "Cài đặt tài khoản", href: "/managers/settings" }]
     : [{ icon: Heart, label: "Danh sách yêu thích", href: "/tenants/favorites" },
        { icon: FileText, label: "Đơn đã gửi", href: "/tenants/applications" },

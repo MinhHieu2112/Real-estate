@@ -50,7 +50,7 @@ export interface Property {
   name: string;
   description: string;
   status: PropertyStatus;
-  pricePerMonth: number;
+  pricePerDay: number;
   securityDeposit: number;
   applicationFee: number;
   photoUrls: string[];
@@ -98,11 +98,17 @@ export interface Lease {
   nextPaymentDate?: string | Date;
   rent: number;
   deposit: number;
+  leaseAgreementUrl?: string | null;
+  tenantSignedAt?: string | Date | null;
+  tenantSignedIp?: string | null;
+  managerSignedAt?: string | Date | null;
+  managerSignedIp?: string | null;
   propertyId: number;
   status: LeaseStatus;
   tenantCognitoId: string;
   property?: Property;
   tenant?: Tenant;
+  application?: Application;
   payments?: Payment[];
 }
 
@@ -134,7 +140,7 @@ export interface Notification {
   id: number;
   receiverCognitoId: string;
   senderCognitoId?: string | null;
-  type: "New_application" | "Application_approved" | "Application_denied" | "New_message";
+  type: NotificationType;
   title: string;
   content: string;
   isRead: boolean;
@@ -182,22 +188,32 @@ export enum PaymentStatus {
   Overdue = "Overdue",
 }
 
-export enum LeaseStatus {
-  Draft = "Draft",
-  Active = "Active",
-  Terminated = "Terminated",
-  Expired = "Expired",
-}
-
 export enum NotificationType {
   New_application = "New_application",
   Application_approved = "Application_approved",
   Application_denied = "Application_denied",
-  New_message = "New_message"
+  New_message = "New_message",
+  Contract_sent = "Contract_sent",
+  Contract_signed = "Contract_signed",
+  Payment_confirmed = "Payment_confirmed",
 }
 
 export enum PropertyStatus {
   Available = "Available",
   Rented = "Rented",
   Maintenance = "Maintenance"
+}
+
+export enum LeaseStatus {
+  Draft = "Draft",
+  Pending_signature = "Pending_signature",
+  Pending_payment = "Pending_payment",
+  Active = "Active",
+  Expired = "Expired",
+  Terminated = "Terminated"
+}
+
+enum RentType {
+  Daily = "Daily",
+  Monthly = "Monthly"
 }

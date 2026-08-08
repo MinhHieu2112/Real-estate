@@ -95,17 +95,18 @@ const PropertyTenants = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Khách hàng</TableHead>
-                  <TableHead>Thời gian thuê</TableHead>
-                  <TableHead>Chi phí</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Liên hệ</TableHead>
-                  <TableHead>Hành động</TableHead>
+                  <TableHead className="w-[250px]">Khách hàng</TableHead>
+                  <TableHead className="w-[200px]">Thời gian thuê</TableHead>
+                  <TableHead className="w-[200px]">Chi phí</TableHead>
+                  <TableHead className="w-[200px]">Trạng thái</TableHead>
+                  <TableHead className="w-[200px]">Liên hệ</TableHead>
+                  <TableHead className="w-[100px]">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {leases?.map((lease) => (
                   <TableRow key={lease.id} className="h-24">
+                    {/* Khách hàng */}
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Image
@@ -125,35 +126,42 @@ const PropertyTenants = () => {
                         </div>
                       </div>
                     </TableCell>
+
+                    {/* Thời gian thuê */}
                     <TableCell>
-                      <div>
-                        {new Date(lease.startDate).toLocaleDateString()} -
-                      </div>
-                      <div>{new Date(lease.endDate).toLocaleDateString()}</div>
+                        {new Date(lease.startDate).toLocaleDateString("vi-VN")} - {new Date(lease.endDate).toLocaleDateString("vi-VN")}
                     </TableCell>
-                    <TableCell>${lease.rent.toFixed(2)}</TableCell>
+
+                    {/* Chi phí */}
+                    <TableCell>
+                      {lease.rent.toLocaleString("vi-VN")}
+                    </TableCell>
+
+                    {/* Trạng thái */}
                     <TableCell>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          getCurrentMonthPaymentStatus(lease.id) === "Paid"
-                            ? "bg-green-100 text-green-800 border-green-300"
-                            : "bg-red-100 text-red-800 border-red-300"
-                        }`}
+                        className={`${
+                          lease.status === "Active"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        } w-fit text-white px-3 py-1 rounded-full text-xs font-semibold`}
                       >
-                        {getCurrentMonthPaymentStatus(lease.id) === "Paid" && (
-                          <Check className="w-4 h-4 inline-block mr-1" />
-                        )}
-                        {getCurrentMonthPaymentStatus(lease.id)}
+                        {lease.status}
                       </span>
                     </TableCell>
-                    <TableCell>{lease.tenant?.phoneNumber}</TableCell>
+
+                    {/* Liên hệ */}
+                    <TableCell>
+                      {lease.tenant?.phoneNumber}
+                    </TableCell>
+
+                    {/* Hành động */}
                     <TableCell>
                       <button
                         className={`border border-gray-300 text-gray-700 py-2 px-4 rounded-md flex 
                       items-center justify-center font-semibold hover:bg-primary-700 hover:text-primary-50`}
                       >
                         <ArrowDownToLine className="w-4 h-4 mr-1" />
-                        Download Agreement
                       </button>
                     </TableCell>
                   </TableRow>

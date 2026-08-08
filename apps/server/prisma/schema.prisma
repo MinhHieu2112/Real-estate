@@ -15,8 +15,6 @@ model Property {
   name              String
   description       String
   status            PropertyStatus @default(Available)
-  rentType          RentType      @default(Monthly)
-  pricePerMonth     Float?
   pricePerDay       Float?
   securityDeposit   Float
   applicationFee    Float
@@ -96,18 +94,34 @@ model Application {
 }
 
 model Lease {
-  id              Int          @id @default(autoincrement())
-  startDate       DateTime
-  endDate         DateTime
-  rent            Float
-  deposit         Float
-  propertyId      Int
-  tenantCognitoId String
-  status          LeaseStatus
-  application     Application?
-  property        Property     @relation(fields: [propertyId], references: [id])
-  tenant          Tenant       @relation(fields: [tenantCognitoId], references: [cognitoId])
-  payments        Payment[]
+  id                Int         @id @default(autoincrement())
+  startDate         DateTime
+  endDate           DateTime
+  rent              Float?
+  deposit           Float?
+  
+  // --- Quản lý File trên S3 Object Lock ---
+  leaseAgreementUrl String?     @db.Text
+  s3VersionId       String?     // ID phiên bản cụ thể được khóa trên S3 Object Lock
+
+  // --- Vết ký điện tử (Audit Trail cho giá trị pháp lý) ---
+  tenantSignedAt    DateTime?   
+  tenantSignedIp    String?     
+  managerSignedAt   DateTime?   
+  managerSignedIp   String?     
+
+  // --- Quan hệ & Trạng thái ---
+  propertyId        Int
+  tenantCognitoId   String
+  status            LeaseStatus
+  
+  application       Application?
+  property          Property    @relation(fields: [propertyId], references: [id])
+  tenant            Tenant      @relation(fields: [tenantCognitoId], references: [cognitoId])
+  payments          Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Payment {
@@ -223,6 +237,9 @@ enum NotificationType {
   Application_approved
   Application_denied
   New_message
+  Contract_sent
+  Contract_signed
+  Payment_confirmed
 }
 
 enum PropertyType {
@@ -243,6 +260,8 @@ enum ApplicationStatus {
 
 enum LeaseStatus {
   Draft
+  Pending_signature
+  Pending_payment
   Active
   Expired
   Terminated
@@ -259,9 +278,4 @@ enum PropertyStatus {
   Available
   Rented
   Maintenance
-}
-
-enum RentType {
-  Daily    
-  Monthly  
 }

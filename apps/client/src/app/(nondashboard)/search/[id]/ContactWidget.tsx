@@ -76,11 +76,14 @@ const ContactWidget = ({ onOpenModal, propertyId }: ContactWidgetProps) => {
             <Phone className="text-white w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-500 mb-0.5 truncate">
+            <p className="text-sm font-medium text-gray-700 mb-0.5 truncate">
               Liên hệ 
             </p>
-            <div className="text-base font-bold text-primary-900 tracking-tight">
-              {property?.manager?.phoneNumber || "(123) 456-7899"}
+            <div className="text-xs text-primary-500 tracking-tight">
+              Email: {property?.manager?.email || "Chưa cập nhật"}
+            </div>
+            <div className="text-xs text-primary-500 tracking-tight">
+              Phone: {property?.manager?.phoneNumber || "Chưa cập nhật"}
             </div>
           </div>
         </div>

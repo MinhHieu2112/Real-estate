@@ -19,11 +19,13 @@ export interface AutocompleteResult {
 export interface DirectionsResult {
   duration: number;
   distance: number;
+  geometry: [number, number][]; // full route polyline [lng, lat][]
   legs: {
     startPosition: [number, number];
     endPosition: [number, number];
     distance: number;
     duration: number;
+    geometry: [number, number][];
     steps: { startPosition: [number, number]; endPosition: [number, number]; distance: number; duration: number; }[];
   }[];
 }
@@ -46,7 +48,7 @@ export const api = createApi({
     }
   }),
   reducerPath: "api",
-  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments", "Conversations", "Messages", "Notifications"],
+  tagTypes: ["Managers", "Tenants", "Properties", "PropertyDetails", "Applications", "Leases", "Payments", "Conversations", "Messages", "Notifications", "Contracts"],
   endpoints: (build) => ({
     getAuthUser: build.query<User, void>({
       queryFn: async (_, _queryApi, _extraoptions, fetchWithBQ) => {
@@ -286,7 +288,7 @@ export const api = createApi({
       }),
 
       getPayments: build.query<Payment[], number>({
-        query: (leaseId) => `leases/${leaseId}/payments`,
+        query: (leaseId) => `payments/lease/${leaseId}`,
         providesTags: ["Payments"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
@@ -311,12 +313,133 @@ export const api = createApi({
         },
       }),
 
-      getLeases: build.query<Lease[], number>({
+      getLeases: build.query<Lease[], void>({
         query: () => "leases",
-        providesTags: ["Leases"],
+        providesTags: ["Leases", "Contracts"],
         async onQueryStarted(_, { queryFulfilled }) {
           await withToast(queryFulfilled, {
             error: "Không thể tải danh sách hợp đồng thuê.",
+          });
+        },
+      }),
+
+      getManagerLeases: build.query<Lease[], void>({
+        query: () => "leases/manager",
+        providesTags: ["Contracts", "Leases"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            error: "Không thể tải danh sách hợp đồng quản lý.",
+          });
+        },
+      }),
+
+      getLeaseDetail: build.query<Lease, number>({
+        query: (id) => `leases/${id}`,
+        providesTags: (result, error, id) => [{ type: "Contracts", id }],
+      }),
+
+      updateLeaseContent: build.mutation<
+        Lease,
+        { id: number; startDate?: string; endDate?: string; rent?: number; deposit?: number }
+      >({
+        query: ({ id, ...body }) => ({
+          url: `leases/${id}/content`,
+          method: "PUT",
+          body,
+        }),
+        invalidatesTags: (result, error, { id }) => [
+          { type: "Contracts", id },
+          "Contracts",
+          "Leases",
+        ],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Cập nhật thông tin hợp đồng thành công!",
+            error: "Không thể cập nhật hợp đồng.",
+          });
+        },
+      }),
+
+      sendContract: build.mutation<{ lease: Lease; signUrl: string }, number>({
+        query: (id) => ({
+          url: `leases/${id}/send`,
+          method: "POST",
+        }),
+        invalidatesTags: (result, error, id) => [
+          { type: "Contracts", id },
+          "Contracts",
+          "Leases",
+          "Applications",
+        ],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Đã gửi hợp đồng cho người thuê qua Email!",
+            error: "Không thể gửi hợp đồng.",
+          });
+        },
+      }),
+
+      getSigningPage: build.query<{ lease: Lease; expiresAt: string }, string>({
+        query: (token) => `leases/sign/${token}`,
+      }),
+
+      signContract: build.mutation<Lease, string>({
+        query: (token) => ({
+          url: `leases/sign`,
+          method: "POST",
+          body: { token },
+        }),
+        invalidatesTags: ["Contracts", "Leases", "Properties", "Applications", "Payments"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Xác nhận ký hợp đồng thành công!",
+            error: "Không thể ký hợp đồng.",
+          });
+        },
+      }),
+
+      getManagerPayments: build.query<Lease[], void>({
+        query: () => "payments/manager",
+        providesTags: ["Payments", "Contracts", "Leases"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            error: "Không thể tải danh sách thanh toán.",
+          });
+        },
+      }),
+
+      createPaymentRecord: build.mutation<
+        Payment,
+        { leaseId: number; amountDue: number; amountPaid: number; dueDate: string; paymentStatus: string }
+      >({
+        query: ({ leaseId, ...body }) => ({
+          url: `payments/lease/${leaseId}`,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Payments", "Contracts", "Leases"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Tạo khoản thanh toán mới thành công!",
+            error: "Không thể tạo khoản thanh toán.",
+          });
+        },
+      }),
+
+      confirmPayment: build.mutation<
+        Payment,
+        { leaseId: number; paymentId: number; paymentStatus: string; amountPaid?: number }
+      >({
+        query: ({ leaseId: _leaseId, paymentId, ...body }) => ({
+          url: `payments/${paymentId}/confirm`,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Payments", "Contracts", "Leases", "Properties"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Xác nhận trạng thái thanh toán thành công!",
+            error: "Không thể cập nhật trạng thái thanh toán.",
           });
         },
       }),
@@ -470,6 +593,16 @@ export const {
   useGetMessagesQuery,
   useSendMessageMutation,
   useMarkAsReadMutation,
+  // Contract & Payment hooks
+  useGetManagerLeasesQuery,
+  useGetLeaseDetailQuery,
+  useUpdateLeaseContentMutation,
+  useSendContractMutation,
+  useGetSigningPageQuery,
+  useSignContractMutation,
+  useGetManagerPaymentsQuery,
+  useCreatePaymentRecordMutation,
+  useConfirmPaymentMutation,
   // Notifications
   useGetNotificationsQuery,
   useMarkNotificationAsReadMutation,

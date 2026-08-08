@@ -6,14 +6,6 @@ export interface WsUser {
   role: string;
 }
 
-/**
- * Verify JWT for WebSocket connections.
- * Expects token in:
- *   - client.handshake.auth.token  (preferred)
- *   - client.handshake.headers.authorization (Bearer ...)
- *
- * Returns verified user or null on failure.
- */
 export async function verifyWsToken(client: Socket): Promise<WsUser | null> {
   const authToken =
     (client.handshake.auth?.token as string) ||

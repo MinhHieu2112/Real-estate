@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 export function cleanParams(params: Record<string, any>): Record<string, any> {
   return Object.fromEntries(
     Object.entries(params).filter(
-      ([_, value]) => 
+      ([_, value]) =>
         value !== undefined &&
         value !== "any" &&
         value !== "" &&
@@ -27,7 +27,7 @@ export const withToast = async <T>(
   mutationFn: Promise<T>,
   messages: Partial<MutationMessages>
 ) => {
-  const  { success, error } = messages;
+  const { success, error } = messages;
 
   try {
     const result = await mutationFn;

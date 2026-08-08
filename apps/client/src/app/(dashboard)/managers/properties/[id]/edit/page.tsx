@@ -47,7 +47,7 @@ const EditProperty = () => {
       name: '',
       description: '',
       status: 'Available',
-      pricePerMonth: 0,
+      pricePerDay: 0,
       securityDeposit: 0,
       applicationFee: 0,
       isPetsAllowed: false,
@@ -71,7 +71,7 @@ const EditProperty = () => {
       form.reset({
         name: property.name || '',
         description: property.description || '',
-        pricePerMonth: property.pricePerMonth || 0,
+        pricePerDay: property.pricePerDay || 0,
         securityDeposit: property.securityDeposit || 0,
         applicationFee: property.applicationFee || 0,
         isPetsAllowed: property.isPetsAllowed ?? false,
@@ -100,7 +100,7 @@ const EditProperty = () => {
       formData.append('description', data.description);
       formData.append('status', data.status);
       formData.append('applicationFee', data.applicationFee.toString());
-      formData.append('pricePerMonth', data.pricePerMonth.toString());
+      formData.append('pricePerDay', data.pricePerDay.toString());
       formData.append('securityDeposit', data.securityDeposit.toString());
       formData.append('isPetsAllowed', data.isPetsAllowed.toString());
       formData.append('isParkingIncluded', data.isParkingIncluded.toString());
@@ -185,7 +185,7 @@ const EditProperty = () => {
                   type="number"
                 />
                 <CustomFormField
-                  name="pricePerMonth"
+                  name="pricePerDay"
                   label="Phí qua đêm"
                   type="number"
                 />

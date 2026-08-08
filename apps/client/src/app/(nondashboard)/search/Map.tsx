@@ -31,9 +31,11 @@ const Map = () => {
     isError,
   } = useGetPropertiesQuery(filters);
 
+  // Map initialization - runs once when component mounts and container ref is ready
   useEffect(() => {
     if (!mapContainerRef.current || !MAP_STYLE_URL) return;
-    
+    if (mapRef.current) return;
+
     // Tạo bản đồ mới
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
@@ -43,6 +45,8 @@ const Map = () => {
         : [106.6297, 10.8231],
       zoom: 11,
     });
+
+    mapRef.current = map;
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
@@ -61,7 +65,7 @@ const Map = () => {
     };
   }, []);
 
-  // Tự động di chuyển bản đồ
+  // Tự động di chuyển bản đồ khi tọa độ thay đổi
   useEffect(() => {
     if (!mapRef.current || !filters.coordinates) return;
 
@@ -84,7 +88,7 @@ const Map = () => {
 
     // Tạo lại marker mới
     properties.forEach((property) => {
-      const marker = createPropertyMarker(property, map)
+      const marker = createPropertyMarker(property, map);
       if (marker) {
         markersRef.current.push(marker);
       }
@@ -100,22 +104,6 @@ const Map = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="basis-5/12 grow relative rounded-xl flex items-center justify-center bg-gray-100">
-        <p className="text-gray-500 text-sm">Đang tải...</p>
-      </div>
-    );
-  }
-
-  if (isError || !properties) {
-    return (
-      <div className="basis-5/12 grow relative rounded-xl flex items-center justify-center bg-gray-100">
-        <p className="text-red-500 text-sm">Không thể tải!</p>
-      </div>
-    );
-  }
-
   return (
     <div className="basis-5/12 grow h-full relative rounded-xl overflow-hidden">
       <div
@@ -123,6 +111,16 @@ const Map = () => {
         className="map-container rounded-xl"
         style={{ height: "100%", width: "100%" }}
       />
+      {isLoading && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+          <p className="text-gray-600 text-sm font-medium">Đang tải bản đồ...</p>
+        </div>
+      )}
+      {isError && (
+        <div className="absolute inset-0 bg-red-50/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+          <p className="text-red-500 text-sm font-medium">Không thể tải dữ liệu bản đồ!</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -144,7 +142,7 @@ const createPropertyMarker = (property: Property, map: maplibregl.Map): maplibre
     whiteSpace: "nowrap",
     transition: "transform 0.15s ease",
   });
-  markerEl.textContent = `${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ/tháng`;
+  markerEl.textContent = `${property.pricePerDay?.toLocaleString("vi-VN")} VNĐ/ngày`;
 
   markerEl.addEventListener("mouseenter", () => {
     markerEl.style.transform = "scale(1.1)";
@@ -169,7 +167,7 @@ const createPropertyMarker = (property: Property, map: maplibregl.Map): maplibre
         ${property.name}
       </a>
       <p style="margin: 0; font-size: 13px; color: #555;">
-        <strong>${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ</strong> / tháng
+        <strong>${property.pricePerDay?.toLocaleString("vi-VN")} VNĐ</strong> / ngày
       </p>
       <p style="margin: 4px 0 0; font-size: 12px; color: #888;">
         ${property.beds} phòng ngủ · ${property.baths} WC

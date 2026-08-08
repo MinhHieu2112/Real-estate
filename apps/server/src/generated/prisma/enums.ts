@@ -58,7 +58,10 @@ export const NotificationType = {
   New_application: 'New_application',
   Application_approved: 'Application_approved',
   Application_denied: 'Application_denied',
-  New_message: 'New_message'
+  New_message: 'New_message',
+  Contract_sent: 'Contract_sent',
+  Contract_signed: 'Contract_signed',
+  Payment_confirmed: 'Payment_confirmed'
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -88,6 +91,8 @@ export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof Applicat
 
 export const LeaseStatus = {
   Draft: 'Draft',
+  Pending_signature: 'Pending_signature',
+  Pending_payment: 'Pending_payment',
   Active: 'Active',
   Expired: 'Expired',
   Terminated: 'Terminated'

@@ -31,7 +31,7 @@ const NewProperty = () => {
     defaultValues: {
       name: "",
       description: "",
-      pricePerMonth: 1,
+      pricePerDay: 1,
       securityDeposit: 1,
       applicationFee: 1,
       isPetsAllowed: true,
@@ -114,7 +114,7 @@ const NewProperty = () => {
               <h2 className="text-lg font-semibold mb-4">Chi phí</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <CustomFormField 
-                name="pricePerMonth"
+                name="pricePerDay"
                 label="Phí qua đêm"
                 type="number"
                 />

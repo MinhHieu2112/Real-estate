@@ -61,7 +61,7 @@ export class CreatePropertyDto {
   @IsNumber()
   @Type(() => Number)
   @IsNotEmpty()
-  pricePerMonth!: number;
+  pricePerDay!: number;
 
   @IsNumber()
   @Type(() => Number)

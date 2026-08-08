@@ -21,7 +21,7 @@ CREATE TABLE "Property" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "pricePerMonth" DOUBLE PRECISION NOT NULL,
+    "pricePerDay" DOUBLE PRECISION NOT NULL,
     "securityDeposit" DOUBLE PRECISION NOT NULL,
     "applicationFee" DOUBLE PRECISION NOT NULL,
     "photoUrls" TEXT[],

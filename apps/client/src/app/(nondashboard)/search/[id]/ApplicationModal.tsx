@@ -29,7 +29,7 @@ const ApplicationModal = ({
         toast.error(
         `${err.data?.message}`
         );
-    } else {
+    } else if (err.data?.code === "INVALID_END_DATE")     {
         toast.error(err.data?.message || "Đăng ký thất bại.");
     }
    }, [isError, error]);

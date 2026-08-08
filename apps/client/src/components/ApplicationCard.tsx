@@ -46,8 +46,8 @@ const ApplicationCard = ({
               </div>
             </div>
             <div className="text-base font-bold text-primary-700">
-              {application.property?.pricePerMonth?.toLocaleString("vi-VN")}{" "}
-              <span className="text-xs font-normal text-gray-500">VNĐ / tháng</span>
+              {application.property?.pricePerDay?.toLocaleString("vi-VN")}{" "}
+              <span className="text-xs font-normal text-gray-500">VNĐ / ngày</span>
             </div>
           </div>
         </div>

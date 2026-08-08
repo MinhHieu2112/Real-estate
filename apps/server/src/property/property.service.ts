@@ -6,7 +6,7 @@ import {
 import { Prisma, PropertyStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LocationService } from '../location/location.service';
-import { ObjectCannedACL, S3Client } from '@aws-sdk/client-s3';
+import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { PropertyQueryBuilder } from './builders/property-query.builder';
 import { CreatePropertyDto } from './dto/create-property.dto';
@@ -32,10 +32,6 @@ export class PropertyService {
 
     this.s3Client = new S3Client({
       region: AWS_REGION,
-      credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID,
-        secretAccessKey: AWS_SECRET_ACCESS_KEY,
-      },
     });
   }
 
@@ -63,7 +59,6 @@ export class PropertyService {
           Key: key,
           Body: file.buffer,
           ContentType: file.mimetype,
-          ACL: ObjectCannedACL.public_read,
         };
 
         const uploadResult = await new Upload({
@@ -139,10 +134,22 @@ export class PropertyService {
             'latitude', ST_Y(l.coordinates::geometry),
             'longitude', ST_X(l.coordinates::geometry)
           )
-        ) as location
+        ) as location,
+        CASE 
+          WHEN m.id IS NOT NULL THEN json_build_object(
+            'id', m.id,
+            'cognitoId', m."cognitoId",
+            'name', m.name,
+            'email', m.email,
+            'phoneNumber', m."phoneNumber"
+          )
+          ELSE NULL 
+        END as manager
       FROM "Property" p
       JOIN "Location" l 
         ON p."locationId" = l.id
+      LEFT JOIN "Manager" m
+        ON p."managerCognitoId" = m."cognitoId"
       ${
         whereConditions.length > 0
           ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
@@ -157,6 +164,7 @@ export class PropertyService {
       where: { id },
       include: {
         location: true,
+        manager: true,
       },
     });
 

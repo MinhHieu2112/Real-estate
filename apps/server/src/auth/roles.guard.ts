@@ -18,7 +18,6 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    // If no @Roles() specified, any authenticated user is allowed
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     const request: Request = context.switchToHttp().getRequest();
@@ -28,7 +27,7 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // 💡 LẤY ROLE: Ưu tiên user.role từ JwtStrategy, nếu không có sẽ lấy từ Header 'x-user-role'
+    // Ưu tiên user.role từ JwtStrategy, nếu không có sẽ lấy từ Header 'x-user-role'
     const headerRole = request.headers['x-user-role'] as string | undefined;
     const currentRole = user.role || headerRole;
 

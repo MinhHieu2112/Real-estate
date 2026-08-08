@@ -61,9 +61,9 @@ const Card = ({
         <div className="absolute bottom-3 right-3 z-10">
           <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl px-3 py-1.5">
             <span className="text-white font-bold text-sm">
-              {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
+              {property.pricePerDay?.toLocaleString("vi-VN")} VNĐ
             </span>
-            <span className="text-white/80 text-[10px] ml-0.5">/tháng</span>
+            <span className="text-white/80 text-[10px] ml-0.5">/ngày</span>
           </div>
         </div>
       </div>

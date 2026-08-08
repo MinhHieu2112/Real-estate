@@ -16,10 +16,6 @@ export class NotifyService {
   private readonly logger = new Logger(NotifyService.name);
   private readonly sesClient = new SESClient({
     region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-    },
   });
 
   constructor(
@@ -44,6 +40,18 @@ export class NotifyService {
       return;
     }
 
+    const isHtml = params.content.trim().startsWith('<');
+    const htmlBody = isHtml
+      ? params.content
+      : `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2>${params.subject}</h2>
+          <p>${params.content}</p>
+          <hr/>
+          <small>Đây là email tự động, vui lòng không phản hồi.</small>
+        </div>
+      `;
+
     try {
       await this.sesClient.send(
         new SendEmailCommand({
@@ -58,14 +66,7 @@ export class NotifyService {
             },
             Body: {
               Html: {
-                Data: `
-                  <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                    <h2>${params.subject}</h2>
-                    <p>${params.content}</p>
-                    <hr/>
-                    <small>Đây là email tự động, vui lòng không phản hồi.</small>
-                  </div>
-                `,
+                Data: htmlBody,
                 Charset: 'UTF-8',
               },
               Text: {
@@ -159,7 +160,86 @@ export class NotifyService {
     });
   }
 
-  // 4. Lấy danh sách thông báo của người dùng
+  // 4. Thông báo Tenant: Hợp đồng đã được gửi
+  async notifyContractSent(data: {
+    tenantCognitoId: string;
+    tenantEmail?: string;
+    propertyName: string;
+    applicationId: number;
+    signUrl: string;
+  }): Promise<any> {
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2>Hợp đồng thuê bất động sản "${data.propertyName}" đã sẵn sàng</h2>
+        <p>Kính gửi quý khách,</p>
+        <p>Quản lý bất động sản đã chuẩn bị và gửi hợp đồng thuê cho dự án <strong>${data.propertyName}</strong>.</p>
+        <p>Vui lòng nhấp vào nút bên dưới để xem chi tiết và thực hiện ký trực tuyến (liên kết có hiệu lực trong 30 phút):</p>
+        <div style="margin: 25px 0;">
+          <a href="${data.signUrl}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Ký hợp đồng ngay</a>
+        </div>
+        <p style="font-size: 12px; color: #666;">Hoặc truy cập qua liên kết: <a href="${data.signUrl}">${data.signUrl}</a></p>
+        <hr/>
+        <small>Đây là email tự động từ hệ thống quản lý bất động sản.</small>
+      </div>
+    `;
+
+    const notification = await this.createNotification({
+      receiverCognitoId: data.tenantCognitoId,
+      receiverEmail: data.tenantEmail,
+      type: NotificationType.Contract_sent,
+      title: 'Hợp đồng thuê đã sẵn sàng để ký',
+      content: `Hợp đồng thuê dự án "${data.propertyName}" đã được gửi. Vui lòng kiểm tra và ký trực tuyến.`,
+      applicationId: data.applicationId,
+    });
+
+    if (data.tenantEmail) {
+      void this.sendSesEmail({
+        toEmail: data.tenantEmail,
+        subject: `[Hợp đồng] Mời bạn ký hợp đồng thuê dự án ${data.propertyName}`,
+        content: htmlContent,
+      });
+    }
+
+    return notification;
+  }
+
+  // 5. Thông báo Manager: Tenant đã ký hợp đồng
+  async notifyContractSigned(data: {
+    managerCognitoId: string;
+    managerEmail?: string;
+    tenantName: string;
+    propertyName: string;
+    applicationId: number;
+  }): Promise<any> {
+    return await this.createNotification({
+      receiverCognitoId: data.managerCognitoId,
+      receiverEmail: data.managerEmail,
+      type: NotificationType.Contract_signed,
+      title: 'Hợp đồng đã được ký trực tuyến',
+      content: `Người dùng ${data.tenantName} đã ký hợp đồng cho dự án "${data.propertyName}". Vui lòng kiểm tra và xác nhận thanh toán.`,
+      applicationId: data.applicationId,
+    });
+  }
+
+  // 6. Thông báo Tenant: Thanh toán đã được xác nhận
+  async notifyPaymentConfirmed(data: {
+    tenantCognitoId: string;
+    tenantEmail?: string;
+    propertyName: string;
+    applicationId: number;
+    amountPaid: number;
+  }): Promise<any> {
+    return await this.createNotification({
+      receiverCognitoId: data.tenantCognitoId,
+      receiverEmail: data.tenantEmail,
+      type: NotificationType.Payment_confirmed,
+      title: 'Xác nhận thanh toán hợp đồng',
+      content: `Thanh toán số tiền ${data.amountPaid.toLocaleString('vi-VN')} VNĐ cho dự án "${data.propertyName}" đã được xác nhận thành công. Hợp đồng hiện đang có hiệu lực.`,
+      applicationId: data.applicationId,
+    });
+  }
+
+  // 7. Lấy danh sách thông báo của người dùng
   async getUserNotifications(receiverCognitoId: string): Promise<any> {
     return await this.prisma.notification.findMany({
       where: { receiverCognitoId },
@@ -167,7 +247,7 @@ export class NotifyService {
     });
   }
 
-  // 5. Đánh dấu 1 thông báo đã đọc
+  // 8. Đánh dấu 1 thông báo đã đọc
   async markAsRead(id: number): Promise<any> {
     const notification = await this.prisma.notification.findUnique({
       where: { id },
@@ -180,7 +260,7 @@ export class NotifyService {
     });
   }
 
-  // 6. Đánh dấu tất cả thông báo của người dùng là đã đọc
+  // 9. Đánh dấu tất cả thông báo của người dùng là đã đọc
   async markAllAsRead(receiverCognitoId: string): Promise<any> {
     return await this.prisma.notification.updateMany({
       where: { receiverCognitoId, isRead: false },

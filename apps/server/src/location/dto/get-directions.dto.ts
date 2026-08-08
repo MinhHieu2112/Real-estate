@@ -30,8 +30,9 @@ export class GetDirectionsDto {
 }
 
 export interface DirectionsResult {
-  duration: number; // seconds
-  distance: number; // meters
+  duration: number;
+  distance: number;
+  geometry: [number, number][];
   legs: DirectionLeg[];
 }
 
@@ -40,6 +41,7 @@ export interface DirectionLeg {
   endPosition: [number, number];
   distance: number;
   duration: number;
+  geometry: [number, number][];
   steps: DirectionStep[];
 }
 

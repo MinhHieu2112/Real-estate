@@ -1,144 +1,71 @@
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { AmenityIcons, PropertyTypeIcons } from '@/lib/constants';
-import { cleanParams, cn } from '@/lib/utils';
-import { FiltersState, initialState, setFilters } from '@/state';
+import { cn } from '@/lib/utils';
+import { initialState, setFilters } from '@/state';
 import { useAppDispatch, useAppSelector } from '@/state/redux';
-import { debounce } from 'lodash';
-import { Search } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
 import {
   AmenityEnum,
   PropertyTypeEnum,
   AmenityLabels,
   PropertyTypeLabels,
 } from '@shared/types';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { useFilterUrlSync } from '@/hooks/useFilterUrlSync';
 
 const FiltersFull = () => {
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [localFilters, setLocalFilters] = useState(initialState.filters);
+  const filters = useAppSelector((state) => state.global.filters);
   const isFiltersFullOpen = useAppSelector(
     (state) => state.global.isFiltersFullOpen
   );
-  const updateURL = debounce((newFilters: FiltersState) => {
-    const cleanFilters = cleanParams(newFilters);
-    const updatedSearchParams = new URLSearchParams();
+  
+  // 1. Tạo local state khởi tạo từ filters
+  const [localFilters, setLocalFilters] = useState(filters);
 
-    Object.entries(cleanFilters).forEach(([key, value]) => {
-        updatedSearchParams.set(
-            key,
-            Array.isArray(value) ? value.join(",") : value.toString()
-        );
-    });
+  // 2. Lưu vết trạng thái cũ để so sánh trực tiếp trong render
+  const [prevFilters, setPrevFilters] = useState(filters);
+  const [prevIsOpen, setPrevIsOpen] = useState(isFiltersFullOpen);
 
-    router.push(`${pathname}?${updatedSearchParams.toString()}`);
-  });
+  const { updateURL } = useFilterUrlSync();
+
+  // 3. Đồng bộ State trực tiếp trong lúc Render
+  if (filters !== prevFilters || (isFiltersFullOpen && !prevIsOpen)) {
+    setPrevFilters(filters);
+    setPrevIsOpen(isFiltersFullOpen);
+    setLocalFilters(filters);
+  } else if (!isFiltersFullOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   const handleSubmit = () => {
     dispatch(setFilters(localFilters));
     updateURL(localFilters);
-  }
+  };
 
   const handleReset = () => {
     setLocalFilters(initialState.filters);
     dispatch(setFilters(initialState.filters));
     updateURL(initialState.filters);
-  }
+  };
 
   const handleAmenityChange = (amenity: AmenityEnum) => {
     setLocalFilters((prev) => ({
-        ...prev,
-        amenities: prev.amenities.includes(amenity)
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
         ? prev.amenities.filter((a) => a !== amenity)
         : [...prev.amenities, amenity],
     }));
   };
 
-  const handleLocationSearch = async () => {
-    try {
-        const response = await fetch(
-            `https://places.geo.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/v2/search-text?key=${process.env.NEXT_PUBLIC_AWS_LOCATION_API_KEY}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    QueryText: localFilters.location,
-                    MaxResults: 1,
-                    Language: "vi",
-                    BiasPosition: [106.6297, 10.8231], // Ho Chi Minh City center
-                    Filter: {
-                        IncludeCountries: ["VNM"],
-                    },
-                }),
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const data = await response.json();
-        const place = data.ResultItems?.[0];
-
-        if (place?.Position) {
-            const [lng, lat] = place.Position;
-            setLocalFilters((prev) => ({
-                ...prev,
-                location: localFilters.location,
-                coordinates: [lng, lat],
-            }));
-        } else {
-            setLocalFilters((prev) => ({
-                ...prev,
-                location: localFilters.location,
-                coordinates: undefined,
-            }));
-        }
-    } catch (error) {
-        console.error("Error fetching location:", error);
-    }
-  }
-
-  if (!isFiltersFullOpen) {
-    return null;
-  }
-  
   return (
     <div className="bg-white rounded-lg px-4 h-full overflow-auto pb-10">
         <div className="flex flex-col space-y-6">
-            {/* Location */}
-            <div>
-                <h4 className="font-bold mb-2">Vị trí</h4>
-                <div className="flex items-center">
-                    <Input 
-                        placeholder="Nhập vị trí"
-                        value={localFilters.location}
-                        onChange={(e) => 
-                            setLocalFilters((prev) => ({
-                                ...prev,
-                                location: e.target.value
-                            }))
-                        }
-                        onKeyDown={(e) => e.key === 'Enter' && handleLocationSearch()}
-                        className="rounded-l-xl rounded-r-none border-r-0"
-                    />
-                    <Button 
-                        onClick={handleLocationSearch}
-                        className="rounded-r-xl rounded-l-none border-l-none border-black shadow-none border hover:bg-primary-700 hover:text-primary-50"
-                    >
-                        <Search className="w-4 h-4"/>
-                    </Button>
-                </div>
-            </div>
-
             {/* Property Type */}
             <div>
                 <h4 className="font-bold mb-2">Loại dự án</h4>
@@ -168,13 +95,13 @@ const FiltersFull = () => {
 
             {/* Price Range */}
             <div>
-                <h4 className="font-bold mb-2">Khoảng giá (VNĐ/tháng)</h4>
+                <h4 className="font-bold mb-2">Khoảng giá (VNĐ/ngày)</h4>
                 <div className="flex gap-2 mb-3">
                   <div className="flex-1">
                     <Label className="text-xs text-gray-500 mb-1 block">Giá tối thiểu (VNĐ)</Label>
                     <Input
                       type="number"
-                      placeholder="1,000,000"
+                      placeholder="Nhập giá tối thiểu"
                       value={localFilters.priceRange[0] ?? ''}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : null;
@@ -190,7 +117,7 @@ const FiltersFull = () => {
                     <Label className="text-xs text-gray-500 mb-1 block">Giá tối đa (VNĐ)</Label>
                     <Input
                       type="number"
-                      placeholder="5,000,000"
+                      placeholder="Nhập giá tối đa"
                       value={localFilters.priceRange[1] ?? ''}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : null;
@@ -228,7 +155,7 @@ const FiltersFull = () => {
             <div className="flex gap-4">
                 <div className="flex-1">
                     <Select
-                        value={localFilters.beds || "any"}
+                        value={localFilters.beds || "Tất cả phòng ngủ"}
                         onValueChange={(value) => 
                             setLocalFilters((prev) => ({ ...prev, beds: value || "" }))
                         }
@@ -236,12 +163,31 @@ const FiltersFull = () => {
                         <SelectTrigger className="w-full rounded-xl">
                             <SelectValue placeholder="Phòng ngủ" />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="any">Tất cả phòng ngủ</SelectItem>
+                        <SelectContent className="bg-white">
+                            <SelectItem value="Tất cả phòng ngủ">Tất cả phòng ngủ</SelectItem>
                             <SelectItem value="1">1+ phòng ngủ</SelectItem>
                             <SelectItem value="2">2+ phòng ngủ</SelectItem>
                             <SelectItem value="3">3+ phòng ngủ</SelectItem>
                             <SelectItem value="4">4+ phòng ngủ</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex-1">
+                    <Select
+                        value={localFilters.baths || "Tất cả phòng tắm"}
+                        onValueChange={(value) => 
+                            setLocalFilters((prev) => ({ ...prev, baths: value || "" }))
+                        }
+                    >
+                        <SelectTrigger className="w-full rounded-xl">
+                            <SelectValue placeholder="Phòng tắm" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                            <SelectItem value="Tất cả phòng tắm">Tất cả phòng tắm</SelectItem>
+                            <SelectItem value="1">1+ phòng tắm</SelectItem>
+                            <SelectItem value="2">2+ phòng tắm</SelectItem>
+                            <SelectItem value="3">3+ phòng tắm</SelectItem>
+                            <SelectItem value="4">4+ phòng tắm</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -266,9 +212,9 @@ const FiltersFull = () => {
                     }
                     className="[&>.bar]:bg-primary-700"
                 />
-                <div className="flex justify-between mt-2">
-                    <span>{localFilters.squareFeet[0] ?? 0} sq ft</span>
-                    <span>{localFilters.squareFeet[1] ?? 10000} sq ft</span>
+                <div className="flex justify-between mt-2 text-sm">
+                    <span>{localFilters.squareFeet[0] ?? 0} m²</span>
+                    <span>{localFilters.squareFeet[1] ?? 10000} m²</span>
                 </div>
             </div>
 
@@ -334,4 +280,4 @@ const FiltersFull = () => {
   )
 }
 
-export default FiltersFull
+export default FiltersFull;

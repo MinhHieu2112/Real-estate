@@ -33,7 +33,7 @@ export class LocationService {
     private readonly geoRoutesClient: GeoRoutesClient,
   ) {}
 
-  // Geocodes a structured address using AWS geo-places (replaces Nominatim OSM).
+  // Tìm kiếm địa điểm bằng AWS geo-places
   async geocodeAddress(
     address: string,
     city: string,
@@ -150,6 +150,7 @@ export class LocationService {
       Origin: [originLng, originLat],
       Destination: [destinationLng, destinationLat],
       TravelMode: travelMode ?? TravelMode.Car,
+      LegGeometryFormat: 'Simple',
     });
 
     try {
@@ -157,10 +158,11 @@ export class LocationService {
       const route = response.Routes?.[0];
 
       if (!route) {
-        return { duration: 0, distance: 0, legs: [] };
+        return { duration: 0, distance: 0, geometry: [], legs: [] };
       }
 
       const totalSummary = route.Summary;
+
       const legs = (route.Legs ?? []).map((leg) => {
         const travelSteps =
           leg.VehicleLegDetails?.TravelSteps ??
@@ -179,11 +181,18 @@ export class LocationService {
           summary?.Duration ??
           travelSteps.reduce((sum, s) => sum + (s.Duration ?? 0), 0);
 
+        const rawGeometry: number[][] = leg.Geometry?.LineString ?? [];
+
+        const legGeometry: [number, number][] = rawGeometry.map(
+          (pt) => [pt[0], pt[1]] as [number, number],
+        );
+
         return {
           startPosition: [originLng, originLat] as [number, number],
           endPosition: [destinationLng, destinationLat] as [number, number],
           distance,
           duration,
+          geometry: legGeometry,
           steps: travelSteps.map((step) => ({
             startPosition: [0, 0] as [number, number],
             endPosition: [0, 0] as [number, number],
@@ -193,9 +202,22 @@ export class LocationService {
         };
       });
 
+      // Combine all leg geometries into one full-route polyline
+      const fullGeometry: [number, number][] = legs.flatMap((l) => l.geometry);
+
+      // Fallback straight line chỉ dùng khi AWS hoàn toàn không tìm thấy tuyến đường
+      const geometry: [number, number][] =
+        fullGeometry.length > 0
+          ? fullGeometry
+          : [
+              [originLng, originLat],
+              [destinationLng, destinationLat],
+            ];
+
       return {
         duration: totalSummary?.Duration ?? 0,
         distance: totalSummary?.Distance ?? 0,
+        geometry,
         legs,
       };
     } catch (err: any) {
@@ -206,7 +228,7 @@ export class LocationService {
       } else {
         this.logger.error('AWS CalculateRoutes failed:', err);
       }
-      return { duration: 0, distance: 0, legs: [] };
+      return { duration: 0, distance: 0, geometry: [], legs: [] };
     }
   }
 

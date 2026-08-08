@@ -25,9 +25,9 @@ export class PropertyQueryBuilder {
 
     return (
       priceMin !== undefined &&
-        this.conditions.push(Prisma.sql`p."pricePerMonth" >= ${priceMin}`),
+        this.conditions.push(Prisma.sql`p."pricePerDay" >= ${priceMin}`),
       priceMax !== undefined &&
-        this.conditions.push(Prisma.sql`p."pricePerMonth" <= ${priceMax}`)
+        this.conditions.push(Prisma.sql`p."pricePerDay" <= ${priceMax}`)
     );
   }
 

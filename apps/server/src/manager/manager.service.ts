@@ -10,7 +10,7 @@ import { wktToGeoJSON } from '@terraformer/wkt';
 export class ManagerService {
   constructor(private prisma: PrismaService) {}
 
-  // Create a new manager
+  // Tạo manager
   async createManager(createManagerDto: CreateManagerDto) {
     const { cognitoId, name, email, phoneNumber } = createManagerDto;
     return await this.prisma.manager.create({
@@ -23,7 +23,7 @@ export class ManagerService {
     });
   }
 
-  // Get manager
+  // Lấy thông tin manager
   async getManager(cognitoId: string): Promise<ManagerResponseDto> {
     const manager = await this.prisma.manager.findUnique({
       where: { cognitoId },
@@ -34,7 +34,7 @@ export class ManagerService {
     return manager;
   }
 
-  // Update manager
+  // Cập nhật thông tin manager
   async updateManager(
     cognitoId: string,
     updateManagerDto: UpdateManagerDto,
@@ -45,9 +45,8 @@ export class ManagerService {
     });
   }
 
-  // Get manager properties
+  // Lấy thông tin các bđs của manager
   async getManagerProperties(cognitoId: string) {
-    // Get manager properties base on cognitoId
     const properties = await this.prisma.property.findMany({
       where: { managerCognitoId: cognitoId },
       include: {
@@ -59,7 +58,7 @@ export class ManagerService {
       return [];
     }
 
-    // Get locationID
+    // Lấy vị trí bđs
     const locationIds = properties.map((p) => p.location.id);
     const locations = await this.prisma.$queryRaw<
       {

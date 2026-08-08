@@ -20,7 +20,6 @@ import { Public } from '../auth/public.decorator';
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) {}
 
-  // Create manager — public for first-time registration via Cognito
   @Public()
   @Post()
   @ApiOperation({

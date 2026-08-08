@@ -45,9 +45,9 @@ const FeatureSections = () => {
                             imageSrc={`/landing-search${3 - index}.png`}
                             title={
                                 [
-                                    "Danh sách dự án uy tín và đã xác minh", 
-                                    "Duyệt danh sách cho thuê một cách dễ dàng", 
-                                    "Tối ưu hóa tìm kiếm với bộ lọc nâng cao"
+                                    "Danh sách dự án uy tín đã xác minh", 
+                                    "Duyệt danh sách cho thuê dễ dàng", 
+                                    "Tối ưu tìm kiếm với bộ lọc nâng cao"
                                 ][index]
                             }
                             description={
@@ -57,7 +57,7 @@ const FeatureSections = () => {
                                     "Tìm kiếm căn hộ lý tưởng nhờ bộ lọc mạnh mẽ và các gợi ý phù hợp nhất với bạn."
                                 ][index]
                             }
-                            linkText={["Khám phá", "Tìm kiếm", "Trải nghiệm"][index]}
+                            linkText={["Khám phá", "Trải nghiệm", "Tìm kiếm"][index]}
                             linkHref={["/search", "/search", "/search"][index]}
                             />
                         </motion.div>

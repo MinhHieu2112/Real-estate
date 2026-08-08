@@ -1,28 +1,17 @@
 import { setFilters, setViewMode, toggleFiltersFullOpen } from '@/state';
 import { useAppDispatch, useAppSelector } from '@/state/redux';
-import { usePathname, useRouter } from 'next/navigation';
-import { debounce } from 'lodash';
 import React, { useState } from 'react';
-import { cleanParams, cn, formatPriceValue } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Filter, Grid, List, MapPin, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PropertyTypeIcons, PRICE_RANGES_MIN, PRICE_RANGES_MAX } from '@/lib/constants';
-import { PropertyTypeEnum, PropertyTypeLabels } from '@shared/types';
-import { useAutocompleteAddressQuery, api } from '@/state/api';
+import { useAutocompleteAddressQuery } from '@/state/api';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useFilterUrlSync } from '@/hooks/useFilterUrlSync';
+import { usePlaceSearch } from '@/hooks/usePlaceSearch';
 
 const FiltersBar = () => {
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const pathname = usePathname();
   const filters = useAppSelector((state) => state.global.filters);
   const isFiltersFullOpen = useAppSelector(
     (state) => state.global.isFiltersFullOpen,
@@ -31,6 +20,9 @@ const FiltersBar = () => {
   const [searchInput, setSearchInput] = useState(filters.location);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const { updateURL } = useFilterUrlSync();
+  const { searchPlace } = usePlaceSearch();
+
   const debouncedSearchInput = useDebounce(searchInput, 500);
 
   const { data: suggestions = [] } = useAutocompleteAddressQuery(
@@ -38,68 +30,22 @@ const FiltersBar = () => {
     { skip: searchInput.trim().length < 2 },
   );
 
-  const updateURL = debounce((newFilters) => {
-    const cleanFilters = cleanParams(newFilters);
-    const updatedSearchParams = new URLSearchParams();
-
-    Object.entries(cleanFilters).forEach(([key, value]) => {
-      updatedSearchParams.set(
-        key,
-        Array.isArray(value) ? value.join(',') : value.toString(),
-      );
-    });
-
-    router.push(`${pathname}?${updatedSearchParams.toString()}`);
-  }, 300);
-
-  const handleFilterChange = (
-    key: string,
-    value: any,
-    isMin: boolean | null,
-  ) => {
-    let newValue = value;
-
-    if (key === 'priceRange' || key === 'squareFeet') {
-      const currentArrayRange = [...filters[key]];
-      if (isMin !== null) {
-        const index = isMin ? 0 : 1;
-        currentArrayRange[index] = value === 'any' ? null : Number(value);
-      }
-      newValue = currentArrayRange;
-    } else if (key === 'coordinates') {
-      newValue = value === 'any' ? [0, 0] : value.map(Number);
-    } else {
-      newValue = value === 'any' ? 'any' : value;
-    }
-
-    const newFilters = { ...filters, [key]: newValue };
-    dispatch(setFilters(newFilters));
-    updateURL(newFilters);
-  };
-
   const executeSearch = async (queryText: string) => {
     if (!queryText.trim()) return;
     setShowSuggestions(false);
 
-    try {
-      // Resolve queryText to centroid position via NestJS LocationService
-      const result = await dispatch(
-        api.endpoints.searchPlace.initiate(queryText),
-      ).unwrap();
+    const result = await searchPlace(queryText);
 
-      const newFilters = {
-        ...filters,
-        location: queryText,
-        coordinates: result?.position
-          ? (result.position as [number, number])
-          : filters.coordinates,
-      };
+    const newFilters = {
+      ...filters,
+      location: queryText,
+      coordinates: result?.position
+        ? (result.position as [number, number])
+        : filters.coordinates,
+    };
 
-      dispatch(setFilters(newFilters));
-      updateURL(newFilters);
-    } catch (err) {
-      console.error('Failed to search place:', err);
-    }
+    dispatch(setFilters(newFilters));
+    updateURL(newFilters);
   };
 
   return (
@@ -164,111 +110,6 @@ const FiltersBar = () => {
             </div>
           )}
         </div>
-
-        {/* Price Range */}
-        <div className="flex gap-1">
-          {/* Minimum Price Selector */}
-          <Select
-            value={filters.priceRange[0]?.toString() || 'any'}
-            onValueChange={(value) =>
-              handleFilterChange('priceRange', value, true)
-            }
-          >
-            <SelectTrigger className="w-28 rounded-xl border-primary-400">
-              <SelectValue>
-                {formatPriceValue(filters.priceRange[0], true)}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="any">Giá tối thiểu</SelectItem>
-              {PRICE_RANGES_MIN.map((price) => (
-                <SelectItem key={price} value={price.toString()}>
-                  {formatPriceValue(price, true)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Maximum Price Selector */}
-          <Select
-            value={filters.priceRange[1]?.toString() || 'any'}
-            onValueChange={(value) =>
-              handleFilterChange('priceRange', value, false)
-            }
-          >
-            <SelectTrigger className="w-28 rounded-xl border-primary-400">
-              <SelectValue>
-                {formatPriceValue(filters.priceRange[1], false)}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="any">Giá tối đa</SelectItem>
-              {PRICE_RANGES_MAX.map((price) => (
-                <SelectItem key={price} value={price.toString()}>
-                  {formatPriceValue(price, false)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Beds and Baths */}
-        <div className="flex gap-1">
-          <Select
-            value={filters.beds}
-            onValueChange={(value) => handleFilterChange('beds', value, null)}
-          >
-            <SelectTrigger className="w-26 rounded-xl border-primary-400">
-              <SelectValue placeholder="Phòng ngủ" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="any">Tất cả phòng ngủ</SelectItem>
-              <SelectItem value="1">1+ phòng ngủ</SelectItem>
-              <SelectItem value="2">2+ phòng ngủ</SelectItem>
-              <SelectItem value="3">3+ phòng ngủ</SelectItem>
-              <SelectItem value="4">4+ phòng ngủ</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={filters.baths}
-            onValueChange={(value) => handleFilterChange('baths', value, null)}
-          >
-            <SelectTrigger className="w-26 rounded-xl border-primary-400">
-              <SelectValue placeholder="Phòng tắm" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectItem value="any">Tất cả phòng tắm</SelectItem>
-              <SelectItem value="1">1+ phòng tắm</SelectItem>
-              <SelectItem value="2">2+ phòng tắm</SelectItem>
-              <SelectItem value="3">3+ phòng tắm</SelectItem>
-              <SelectItem value="4">4+ phòng tắm</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Property Type */}
-        <Select
-          value={filters.propertyType}
-          onValueChange={(value) =>
-            handleFilterChange('propertyType', value, null)
-          }
-        >
-          <SelectTrigger className="w-36 rounded-xl border-primary-400">
-            <SelectValue placeholder="Loại dự án" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            <SelectItem value="any">Tất cả loại</SelectItem>
-            {Object.entries(PropertyTypeIcons).map(([type, Icon]) => (
-              <SelectItem key={type} value={type}>
-                <div className="flex items-center">
-                  <Icon className="w-4 h-4 mr-2" />
-                  <span>{PropertyTypeLabels[type as PropertyTypeEnum] || type}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* View Mode */}

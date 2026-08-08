@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetApplicationsQuery, useGetAuthUserQuery, useUpdateApplicationStatusMutation } from '@/state/api'
-import { CircleCheckBig, Download, File, Hospital } from 'lucide-react';
+import { CircleCheckBig, File, Hospital, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react'
@@ -119,8 +119,8 @@ const Applications = () => {
                                                 className="bg-white border border-gray-200 text-gray-700 py-2 px-3.5
                                                             rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-gray-50 transition-all shadow-sm"
                                             >
-                                                <Download className="w-4 h-4 mr-1.5" />
-                                                Tải hợp đồng
+                                                <Upload className="w-4 h-4 mr-1.5" />
+                                                Gửi hợp đồng
                                             </button>
                                         )}
                                         {application.status === "Pending" && (

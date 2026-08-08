@@ -48,7 +48,7 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
           <div>
             <div className="text-sm text-gray-500">Giá thuê hàng tháng</div>
             <div className="font-semibold text-primary-700">
-              {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
+              {property.pricePerDay?.toLocaleString("vi-VN")} VNĐ
             </div>
           </div>
           <div className="border-l border-gray-300 h-10"></div>
@@ -65,7 +65,7 @@ const PropertyOverview = ({ propertyId }: PropertyOverviewProps) => {
           <div>
             <div className="text-sm text-gray-500">Diện tích</div>
             <div className="font-semibold">
-              {property.squareFeet.toLocaleString()} sq ft
+              {property.squareFeet.toLocaleString()} m²
             </div>
           </div>
         </div>

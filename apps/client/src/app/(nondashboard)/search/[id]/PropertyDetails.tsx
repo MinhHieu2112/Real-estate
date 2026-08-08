@@ -106,12 +106,12 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
           </TabsContent>
           <TabsContent value="pets">
             <p className="font-semibold mt-5 mb-2">
-              Quy định thú cưng: {property.isPetsAllowed ? "Cho phép nuôi thú cưng" : "Không cho phép nuôi thú cưng"}
+              {property.isPetsAllowed ? "Cho phép nuôi thú cưng" : "Không cho phép nuôi thú cưng"}
             </p>
           </TabsContent>
           <TabsContent value="parking">
             <p className="font-semibold mt-5 mb-2">
-              Chỗ đỗ xe:{" "}
+              {" "}
               {property.isParkingIncluded ? "Đã bao gồm chỗ đỗ xe" : "Không bao gồm chỗ đỗ xe"}
             </p>
           </TabsContent>

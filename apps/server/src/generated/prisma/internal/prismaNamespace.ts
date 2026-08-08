@@ -1255,7 +1255,7 @@ export const PropertyScalarFieldEnum = {
   name: 'name',
   description: 'description',
   status: 'status',
-  pricePerMonth: 'pricePerMonth',
+  pricePerDay: 'pricePerDay',
   securityDeposit: 'securityDeposit',
   applicationFee: 'applicationFee',
   photoUrls: 'photoUrls',
@@ -1336,9 +1336,17 @@ export const LeaseScalarFieldEnum = {
   endDate: 'endDate',
   rent: 'rent',
   deposit: 'deposit',
+  leaseAgreementUrl: 'leaseAgreementUrl',
+  s3VersionId: 's3VersionId',
+  tenantSignedAt: 'tenantSignedAt',
+  tenantSignedIp: 'tenantSignedIp',
+  managerSignedAt: 'managerSignedAt',
+  managerSignedIp: 'managerSignedIp',
   propertyId: 'propertyId',
   tenantCognitoId: 'tenantCognitoId',
-  status: 'status'
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type LeaseScalarFieldEnum = (typeof LeaseScalarFieldEnum)[keyof typeof LeaseScalarFieldEnum]

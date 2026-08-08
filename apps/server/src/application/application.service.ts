@@ -8,7 +8,6 @@ import { PrismaService } from '../prisma.service';
 import { ListApplicationDto } from './dto/list-application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
-import { calculateNextPaymentDate } from '../common/utils/date.util';
 import { NotifyService } from '../notify/notify.service';
 
 @Injectable()
@@ -19,7 +18,7 @@ export class ApplicationService {
   ) {}
 
   async listApplication(listApplicationDto: ListApplicationDto) {
-    // Set up filters
+    // Cấu hình bộ lọc
     let whereClause = {};
     if (listApplicationDto.userId && listApplicationDto.userType) {
       if (listApplicationDto.userType === 'tenant') {
@@ -37,7 +36,7 @@ export class ApplicationService {
       }
     }
 
-    // Get all applications
+    // Lấy tất cả đơn đăng ký
     const applications = await this.prisma.application.findMany({
       where: whereClause,
       include: {
@@ -51,7 +50,7 @@ export class ApplicationService {
       },
     });
 
-    // Collect IDs to query in a single batch.
+    // Lấy tất cả hợp đồng cơ sở dữ liệu
     const propertyIds = applications.map((app) => app.propertyId);
     const tenantCognitoIds = applications.map((app) => app.tenantCognitoId);
 
@@ -65,7 +64,7 @@ export class ApplicationService {
       orderBy: { startDate: 'desc' },
     });
 
-    // Create a map of leaseId to lease
+    // Tạo map cơ sở dữ liệu dự án
     const leaseMap = new Map<string, (typeof allLeases)[0]>();
 
     for (const lease of allLeases) {
@@ -76,7 +75,7 @@ export class ApplicationService {
       }
     }
 
-    // Format applications
+    // Chuẩn hóa dữ liệu đơn đăng ký, phẳng hóa địa chỉ BĐS và ánh xạ thông tin hợp đồng đi kèm.
     const formattedApplications = applications.map((app) => {
       const key = `${app.tenantCognitoId}_${app.propertyId}`;
       const lease = leaseMap.get(key);
@@ -88,18 +87,13 @@ export class ApplicationService {
           address: app.property.location.address,
         },
         manager: app.property.manager,
-        lease: lease
-          ? {
-              ...lease,
-              nextPaymentDate: calculateNextPaymentDate(lease.startDate),
-            }
-          : null,
+        lease: lease || null,
       };
     });
     return formattedApplications;
   }
 
-  // Create a new application
+  // Tạo đơn đăng ký
   async createApplication(createApplication: CreateApplicationDto) {
     const {
       applicationDate,
@@ -114,25 +108,31 @@ export class ApplicationService {
       tenantCognitoId,
     } = createApplication;
 
-    // 1. Lấy thông tin Property (Bao gồm giá và availableFrom)
+    // Lấy thông tin Property (Bao gồm giá và availableFrom)
     const property = await this.prisma.property.findUnique({
       where: {
         id: propertyId,
       },
       select: {
-        pricePerMonth: true,
+        pricePerDay: true,
         securityDeposit: true,
         availableFrom: true,
       },
     });
 
     if (!property) {
-      throw new NotFoundException('Property not found');
+      throw new NotFoundException({
+        code: `NOT_FOUND`,
+        message: `Danh sách trống`,
+      });
     }
 
-    // 2. Validate endDate phải sau startDate
+    // Validate endDate phải sau startDate
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-      throw new BadRequestException('End date must be after start date');
+      throw new BadRequestException({
+        code: `INVALID_END_DATE`,
+        message: 'Ngày chuyển đi phải sau ngày chuyển vào !',
+      });
     }
 
     const LEAD_TIME_DAYS = 2;
@@ -171,7 +171,7 @@ export class ApplicationService {
       }
     }
 
-    // 4. Ngăn tạo mới nếu đang có người thuê
+    // Ngăn tạo mới nếu đang có người thuê
     const activeLease = await this.prisma.lease.findFirst({
       where: {
         propertyId,
@@ -181,12 +181,13 @@ export class ApplicationService {
     });
 
     if (activeLease) {
-      throw new ConflictException(
-        'You already have an active lease for this property.',
-      );
+      throw new ConflictException({
+        code: `ACTIVE_LEASE`,
+        message: `Đang có người thuê !`,
+      });
     }
 
-    // 5. Tạo đơn ứng tuyển (Upsert)
+    // Tạo đơn ứng tuyển (Upsert)
     const application = (await this.prisma.application.upsert({
       where: {
         tenantCognitoId_propertyId_status: {
@@ -219,13 +220,16 @@ export class ApplicationService {
       },
     })) as any;
 
-    // 6. Thông báo cho Manager
+    // Thông báo cho Manager
     const manager = await this.prisma.manager.findUnique({
       where: { cognitoId: application.property.managerCognitoId },
     });
 
     if (!manager) {
-      throw new NotFoundException(`Manager not found`);
+      throw new NotFoundException({
+        code: `MANAGER_NOT_FOUND`,
+        message: `Không tìm thấy Manager !`,
+      });
     }
 
     if (application.status === 'Pending') {
@@ -262,7 +266,10 @@ export class ApplicationService {
       });
 
       if (!application) {
-        throw new NotFoundException('Application not found');
+        throw new NotFoundException({
+          code: `NOT_FOUND`,
+          message: `Không tìm thấy đơn đăng ký !`,
+        });
       }
 
       if (status === 'Approved') {
@@ -283,9 +290,10 @@ export class ApplicationService {
         });
 
         if (activeLease) {
-          throw new ConflictException(
-            'Cannot approve application: Property already has an active lease overlapping with requested dates.',
-          );
+          throw new BadRequestException({
+            code: `CONFLICT_LEASE`,
+            message: `Đang có người thuê trong khoaảng thời gian này !`,
+          });
         }
 
         // Tạo Lease mới với thuộc tính status: 'Active' bắt buộc bởi Prisma schema
@@ -293,7 +301,7 @@ export class ApplicationService {
           data: {
             startDate: leaseStartDate,
             endDate: leaseEndDate,
-            rent: application.property.pricePerMonth,
+            rent: application.property.pricePerDay,
             deposit: application.property.securityDeposit,
             propertyId: application.propertyId,
             tenantCognitoId: application.tenantCognitoId,

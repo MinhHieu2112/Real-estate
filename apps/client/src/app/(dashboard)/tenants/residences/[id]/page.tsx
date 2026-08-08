@@ -95,7 +95,7 @@ const ResidenceCard = ({
           </div>
           <div className="text-xl font-bold text-primary-700">
             {currentLease.rent?.toLocaleString("vi-VN")}{" "}
-            <span className="text-gray-500 text-sm font-normal">VNĐ / tháng</span>
+            <span className="text-gray-500 text-sm font-normal">VNĐ / ngày</span>
           </div>
         </div>
       </div>
@@ -218,10 +218,7 @@ const Residence = () => {
     error: propertyError,
   } = useGetPropertyQuery(Number(id));
 
-  const { data: leases, isLoading: leasesLoading } = useGetLeasesQuery(
-    parseInt(authUser?.cognitoInfo?.userId || "0"),
-    { skip: !authUser?.cognitoInfo?.userId }
-  );
+  const { data: leases, isLoading: leasesLoading } = useGetLeasesQuery();
   const { data: payments, isLoading: paymentsLoading } = useGetPaymentsQuery(
     leases?.[0]?.id || 0,
     { skip: !leases?.[0]?.id }
