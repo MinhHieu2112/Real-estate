@@ -7,13 +7,11 @@ import { Prisma, PropertyStatus } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LocationService } from '../location/location.service';
 import { S3Client } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
 import { PropertyQueryBuilder } from './builders/property-query.builder';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { GetPropertyDto } from './dto/get-property.dto';
-import pLimit from 'p-limit';
 import { UpdatePropertyDto } from './dto/update-property.dto';
-import { processImage } from '../common/utils/image-processor';
+import { uploadFileToS3 } from '../common/utils/image-processor';
 
 @Injectable()
 export class PropertyService {
@@ -33,47 +31,6 @@ export class PropertyService {
     this.s3Client = new S3Client({
       region: AWS_REGION,
     });
-  }
-
-  private async uploadFileToS3(
-    files: Express.Multer.File[],
-    managerCognitoId: string,
-  ): Promise<string[]> {
-    if (!files || files.length === 0) return [];
-
-    // Nén tất cả ảnh qua Sharp trước khi upload
-    const optimizedFiles = await processImage(files);
-
-    // Giới hạn số lần tải lên ảnh
-    const limit = pLimit(10);
-
-    // Upload song song lên S3
-    const uploadPromises = optimizedFiles.map((file) =>
-      limit(async () => {
-        const fileExtension = file.mimetype === 'image/jpeg' ? 'jpg' : '';
-        const cleanFileName = file.originalname.replace(/\.[^/.]+$/, '');
-        const key = `properties/${managerCognitoId}/${cleanFileName}.${fileExtension}`;
-
-        const uploadParams = {
-          Bucket: process.env.AWS_S3_BUCKET_NAME!,
-          Key: key,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        };
-
-        const uploadResult = await new Upload({
-          client: this.s3Client,
-          params: uploadParams,
-        }).done();
-
-        if (!uploadResult.Location) {
-          throw new Error('Failed to upload file to S3');
-        }
-
-        return uploadResult.Location;
-      }),
-    );
-    return Promise.all(uploadPromises);
   }
 
   async getProperties(favoriteIds: number[], dto: GetPropertyDto) {
@@ -211,16 +168,6 @@ export class PropertyService {
       throw new ConflictException('A property with this name already exists.');
     }
 
-    // Upload ảnh lên S3
-    let photoUrls: string[] = [];
-    if (files && files.length > 0) {
-      try {
-        photoUrls = await this.uploadFileToS3(files, managerCognitoId);
-      } catch (err) {
-        console.error('Failed to upload images to S3:', err);
-      }
-    }
-
     // Tạo vị trí
     const location = await this.locationService.createLocationWithCoordinates({
       address,
@@ -230,13 +177,12 @@ export class PropertyService {
       postalCode,
     });
 
-    // Lưu CSDL
-    return await this.prisma.property.create({
+    const property = await this.prisma.property.create({
       data: {
         ...propertyData,
         name,
         status,
-        photoUrls,
+        photoUrls: [],
         locationId: location.id,
         managerCognitoId,
       },
@@ -245,6 +191,23 @@ export class PropertyService {
         manager: true,
       },
     });
+
+    let photoUrls: string[] = [];
+
+    // Upload ảnh lên S3
+    if (files?.length) {
+      photoUrls = await uploadFileToS3(files, managerCognitoId, property.id);
+
+      await this.prisma.property.update({
+        where: { id: property.id },
+        data: { photoUrls },
+      });
+    }
+
+    return {
+      ...property,
+      location,
+    };
   }
 
   async getPropertyLeases(propertyId: number) {
@@ -286,14 +249,33 @@ export class PropertyService {
       status,
       ...propertyData
     } = updatePropertyDto;
-    delete (propertyData as any).managerCognitoId;
 
-    // Upload ảnh mới nếu có
+    const { existingPhotoUrls } = updatePropertyDto as any;
+    delete (propertyData as any).managerCognitoId;
+    delete (propertyData as any).existingPhotoUrls;
+
+    // Xử lý danh sách ảnh hiện tại (nếu người dùng xóa bớt trên frontend)
     let photoUrls = existingProperty.photoUrls;
+    if (existingPhotoUrls !== undefined) {
+      try {
+        const parsed =
+          typeof existingPhotoUrls === 'string'
+            ? JSON.parse(existingPhotoUrls)
+            : existingPhotoUrls;
+        if (Array.isArray(parsed)) {
+          photoUrls = parsed;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    // Upload ảnh mới bổ sung nếu có
     if (files && files.length > 0) {
-      const newPhotoUrls = await this.uploadFileToS3(
+      const newPhotoUrls = await uploadFileToS3(
         files,
         existingProperty.managerCognitoId,
+        existingProperty.id,
       );
       photoUrls = [...photoUrls, ...newPhotoUrls];
     }

@@ -8,7 +8,6 @@ import {
 import { Lease, Payment, PaymentStatus } from "@shared/types";
 import {
   AlertCircle,
-  Building,
   CheckCircle2,
   Clock,
   CreditCard,
@@ -31,7 +30,8 @@ const ManagerPaymentsPage = () => {
     setSelectedLease(lease);
     setSelectedPayment(payment);
     setNewStatus(PaymentStatus.Paid);
-    setAmountPaid(payment.amountDue);
+    const remainingAmount = payment.amountDue - (payment.amountPaid || 0);
+    setAmountPaid(remainingAmount > 0 ? remainingAmount : payment.amountDue);
   };
 
   const handleConfirmPayment = async (e: React.FormEvent) => {

@@ -40,11 +40,6 @@ export class CreateApplicationDto {
   startDate!: Date;
 
   @IsOptional()
-  @Type(() => Date)
-  @IsDate()
-  endDate?: Date;
-
-  @IsOptional()
   @IsString()
   message?: string | null;
 }

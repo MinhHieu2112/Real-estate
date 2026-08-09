@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Sunny Downtown Apartment",
     "description": "A beautiful apartment in the heart of downtown with plenty of natural light.",
-    "pricePerDay": 1500.0,
+    "pricePerMonth": 1500.0,
     "securityDeposit": 1500.0,
     "applicationFee": 50.0,
     "photoUrls": [
@@ -28,7 +28,7 @@
     "id": 2,
     "name": "Cozy Beach House",
     "description": "A charming beach house with stunning ocean views.",
-    "pricePerDay": 2000.0,
+    "pricePerMonth": 2000.0,
     "securityDeposit": 2000.0,
     "applicationFee": 75.0,
     "photoUrls": [
@@ -53,7 +53,7 @@
     "id": 3,
     "name": "Modern City Loft",
     "description": "Sleek and stylish loft in the heart of the city.",
-    "pricePerDay": 2200.0,
+    "pricePerMonth": 2200.0,
     "securityDeposit": 2200.0,
     "applicationFee": 60.0,
     "photoUrls": [
@@ -78,7 +78,7 @@
     "id": 4,
     "name": "Spacious Family Home",
     "description": "Large family home with a beautiful backyard and modern amenities.",
-    "pricePerDay": 2500.0,
+    "pricePerMonth": 2500.0,
     "securityDeposit": 2500.0,
     "applicationFee": 80.0,
     "photoUrls": [
@@ -103,7 +103,7 @@
     "id": 5,
     "name": "Luxury Penthouse",
     "description": "Stunning penthouse with panoramic city views and high-end finishes.",
-    "pricePerDay": 5000.0,
+    "pricePerMonth": 5000.0,
     "securityDeposit": 5000.0,
     "applicationFee": 100.0,
     "photoUrls": [
@@ -128,7 +128,7 @@
     "id": 6,
     "name": "Cozy Studio Apartment",
     "description": "Efficient studio apartment perfect for students or young professionals.",
-    "pricePerDay": 1200.0,
+    "pricePerMonth": 1200.0,
     "securityDeposit": 1200.0,
     "applicationFee": 40.0,
     "photoUrls": [
@@ -153,7 +153,7 @@
     "id": 7,
     "name": "Historic Brownstone",
     "description": "Charming brownstone with original features and modern updates.",
-    "pricePerDay": 3000.0,
+    "pricePerMonth": 3000.0,
     "securityDeposit": 3000.0,
     "applicationFee": 70.0,
     "photoUrls": [
@@ -178,7 +178,7 @@
     "id": 8,
     "name": "Urban Micro-Apartment",
     "description": "Compact and efficient living space in the heart of the city.",
-    "pricePerDay": 1000.0,
+    "pricePerMonth": 1000.0,
     "securityDeposit": 1000.0,
     "applicationFee": 30.0,
     "photoUrls": [
@@ -203,7 +203,7 @@
     "id": 9,
     "name": "Mountain View Cabin",
     "description": "Rustic cabin with breathtaking mountain views and modern amenities.",
-    "pricePerDay": 1800.0,
+    "pricePerMonth": 1800.0,
     "securityDeposit": 1800.0,
     "applicationFee": 60.0,
     "photoUrls": [
@@ -228,7 +228,7 @@
     "id": 10,
     "name": "Eco-Friendly Tiny House",
     "description": "Sustainable living in a compact, well-designed tiny house.",
-    "pricePerDay": 900.0,
+    "pricePerMonth": 900.0,
     "securityDeposit": 900.0,
     "applicationFee": 35.0,
     "photoUrls": [

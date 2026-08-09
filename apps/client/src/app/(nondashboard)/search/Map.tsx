@@ -142,7 +142,7 @@ const createPropertyMarker = (property: Property, map: maplibregl.Map): maplibre
     whiteSpace: "nowrap",
     transition: "transform 0.15s ease",
   });
-  markerEl.textContent = `${property.pricePerDay?.toLocaleString("vi-VN")} VNĐ/ngày`;
+  markerEl.textContent = `${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ / tháng`;
 
   markerEl.addEventListener("mouseenter", () => {
     markerEl.style.transform = "scale(1.1)";
@@ -167,7 +167,7 @@ const createPropertyMarker = (property: Property, map: maplibregl.Map): maplibre
         ${property.name}
       </a>
       <p style="margin: 0; font-size: 13px; color: #555;">
-        <strong>${property.pricePerDay?.toLocaleString("vi-VN")} VNĐ</strong> / ngày
+        <strong>${property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ</strong> / ngày
       </p>
       <p style="margin: 4px 0 0; font-size: 12px; color: #888;">
         ${property.beds} phòng ngủ · ${property.baths} WC

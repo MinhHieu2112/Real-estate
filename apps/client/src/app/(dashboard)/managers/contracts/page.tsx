@@ -7,8 +7,6 @@ import {
 } from "@/state/api";
 import { LeaseStatus } from "@shared/types";
 import {
-  Building,
-  Calendar,
   CheckCircle2,
   Clock,
   Download,

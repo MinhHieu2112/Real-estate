@@ -41,7 +41,6 @@ export type ApplicationMinAggregateOutputType = {
   id: number | null
   applicationDate: Date | null
   startDate: Date | null
-  endDate: Date | null
   status: $Enums.ApplicationStatus | null
   propertyId: number | null
   tenantCognitoId: string | null
@@ -56,7 +55,6 @@ export type ApplicationMaxAggregateOutputType = {
   id: number | null
   applicationDate: Date | null
   startDate: Date | null
-  endDate: Date | null
   status: $Enums.ApplicationStatus | null
   propertyId: number | null
   tenantCognitoId: string | null
@@ -71,7 +69,6 @@ export type ApplicationCountAggregateOutputType = {
   id: number
   applicationDate: number
   startDate: number
-  endDate: number
   status: number
   propertyId: number
   tenantCognitoId: number
@@ -100,7 +97,6 @@ export type ApplicationMinAggregateInputType = {
   id?: true
   applicationDate?: true
   startDate?: true
-  endDate?: true
   status?: true
   propertyId?: true
   tenantCognitoId?: true
@@ -115,7 +111,6 @@ export type ApplicationMaxAggregateInputType = {
   id?: true
   applicationDate?: true
   startDate?: true
-  endDate?: true
   status?: true
   propertyId?: true
   tenantCognitoId?: true
@@ -130,7 +125,6 @@ export type ApplicationCountAggregateInputType = {
   id?: true
   applicationDate?: true
   startDate?: true
-  endDate?: true
   status?: true
   propertyId?: true
   tenantCognitoId?: true
@@ -232,7 +226,6 @@ export type ApplicationGroupByOutputType = {
   id: number
   applicationDate: Date
   startDate: Date | null
-  endDate: Date | null
   status: $Enums.ApplicationStatus
   propertyId: number
   tenantCognitoId: string
@@ -270,7 +263,6 @@ export type ApplicationWhereInput = {
   id?: Prisma.IntFilter<"Application"> | number
   applicationDate?: Prisma.DateTimeFilter<"Application"> | Date | string
   startDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
-  endDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
   status?: Prisma.EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFilter<"Application"> | number
   tenantCognitoId?: Prisma.StringFilter<"Application"> | string
@@ -288,7 +280,6 @@ export type ApplicationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   applicationDate?: Prisma.SortOrder
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder
-  endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
@@ -311,7 +302,6 @@ export type ApplicationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ApplicationWhereInput | Prisma.ApplicationWhereInput[]
   applicationDate?: Prisma.DateTimeFilter<"Application"> | Date | string
   startDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
-  endDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
   status?: Prisma.EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFilter<"Application"> | number
   tenantCognitoId?: Prisma.StringFilter<"Application"> | string
@@ -328,7 +318,6 @@ export type ApplicationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   applicationDate?: Prisma.SortOrder
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder
-  endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
@@ -351,7 +340,6 @@ export type ApplicationScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Application"> | number
   applicationDate?: Prisma.DateTimeWithAggregatesFilter<"Application"> | Date | string
   startDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Application"> | Date | string | null
-  endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Application"> | Date | string | null
   status?: Prisma.EnumApplicationStatusWithAggregatesFilter<"Application"> | $Enums.ApplicationStatus
   propertyId?: Prisma.IntWithAggregatesFilter<"Application"> | number
   tenantCognitoId?: Prisma.StringWithAggregatesFilter<"Application"> | string
@@ -365,7 +353,6 @@ export type ApplicationScalarWhereWithAggregatesInput = {
 export type ApplicationCreateInput = {
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   name: string
   email: string
@@ -380,7 +367,6 @@ export type ApplicationUncheckedCreateInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   propertyId: number
   tenantCognitoId: string
@@ -394,7 +380,6 @@ export type ApplicationUncheckedCreateInput = {
 export type ApplicationUpdateInput = {
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
@@ -409,7 +394,6 @@ export type ApplicationUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -424,7 +408,6 @@ export type ApplicationCreateManyInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   propertyId: number
   tenantCognitoId: string
@@ -438,7 +421,6 @@ export type ApplicationCreateManyInput = {
 export type ApplicationUpdateManyMutationInput = {
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
@@ -450,7 +432,6 @@ export type ApplicationUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -481,7 +462,6 @@ export type ApplicationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   applicationDate?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
-  endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
@@ -502,7 +482,6 @@ export type ApplicationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   applicationDate?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
-  endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
@@ -517,7 +496,6 @@ export type ApplicationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   applicationDate?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
-  endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   tenantCognitoId?: Prisma.SortOrder
@@ -666,7 +644,6 @@ export type ApplicationUncheckedUpdateOneWithoutLeaseNestedInput = {
 export type ApplicationCreateWithoutPropertyInput = {
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   name: string
   email: string
@@ -680,7 +657,6 @@ export type ApplicationUncheckedCreateWithoutPropertyInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   tenantCognitoId: string
   name: string
@@ -723,7 +699,6 @@ export type ApplicationScalarWhereInput = {
   id?: Prisma.IntFilter<"Application"> | number
   applicationDate?: Prisma.DateTimeFilter<"Application"> | Date | string
   startDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
-  endDate?: Prisma.DateTimeNullableFilter<"Application"> | Date | string | null
   status?: Prisma.EnumApplicationStatusFilter<"Application"> | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFilter<"Application"> | number
   tenantCognitoId?: Prisma.StringFilter<"Application"> | string
@@ -737,7 +712,6 @@ export type ApplicationScalarWhereInput = {
 export type ApplicationCreateWithoutTenantInput = {
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   name: string
   email: string
@@ -751,7 +725,6 @@ export type ApplicationUncheckedCreateWithoutTenantInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   propertyId: number
   name: string
@@ -790,7 +763,6 @@ export type ApplicationUpdateManyWithWhereWithoutTenantInput = {
 export type ApplicationCreateWithoutLeaseInput = {
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   name: string
   email: string
@@ -804,7 +776,6 @@ export type ApplicationUncheckedCreateWithoutLeaseInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   propertyId: number
   tenantCognitoId: string
@@ -833,7 +804,6 @@ export type ApplicationUpdateToOneWithWhereWithoutLeaseInput = {
 export type ApplicationUpdateWithoutLeaseInput = {
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
@@ -847,7 +817,6 @@ export type ApplicationUncheckedUpdateWithoutLeaseInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -861,7 +830,6 @@ export type ApplicationCreateManyPropertyInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   tenantCognitoId: string
   name: string
@@ -874,7 +842,6 @@ export type ApplicationCreateManyPropertyInput = {
 export type ApplicationUpdateWithoutPropertyInput = {
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
@@ -888,7 +855,6 @@ export type ApplicationUncheckedUpdateWithoutPropertyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -902,7 +868,6 @@ export type ApplicationUncheckedUpdateManyWithoutPropertyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   tenantCognitoId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -916,7 +881,6 @@ export type ApplicationCreateManyTenantInput = {
   id?: number
   applicationDate: Date | string
   startDate?: Date | string | null
-  endDate?: Date | string | null
   status: $Enums.ApplicationStatus
   propertyId: number
   name: string
@@ -929,7 +893,6 @@ export type ApplicationCreateManyTenantInput = {
 export type ApplicationUpdateWithoutTenantInput = {
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
@@ -943,7 +906,6 @@ export type ApplicationUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -957,7 +919,6 @@ export type ApplicationUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   applicationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   propertyId?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -973,7 +934,6 @@ export type ApplicationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   applicationDate?: boolean
   startDate?: boolean
-  endDate?: boolean
   status?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
@@ -991,7 +951,6 @@ export type ApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   applicationDate?: boolean
   startDate?: boolean
-  endDate?: boolean
   status?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
@@ -1009,7 +968,6 @@ export type ApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   applicationDate?: boolean
   startDate?: boolean
-  endDate?: boolean
   status?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
@@ -1027,7 +985,6 @@ export type ApplicationSelectScalar = {
   id?: boolean
   applicationDate?: boolean
   startDate?: boolean
-  endDate?: boolean
   status?: boolean
   propertyId?: boolean
   tenantCognitoId?: boolean
@@ -1038,7 +995,7 @@ export type ApplicationSelectScalar = {
   leaseId?: boolean
 }
 
-export type ApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "applicationDate" | "startDate" | "endDate" | "status" | "propertyId" | "tenantCognitoId" | "name" | "email" | "phoneNumber" | "message" | "leaseId", ExtArgs["result"]["application"]>
+export type ApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "applicationDate" | "startDate" | "status" | "propertyId" | "tenantCognitoId" | "name" | "email" | "phoneNumber" | "message" | "leaseId", ExtArgs["result"]["application"]>
 export type ApplicationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lease?: boolean | Prisma.Application$leaseArgs<ExtArgs>
   property?: boolean | Prisma.PropertyDefaultArgs<ExtArgs>
@@ -1066,7 +1023,6 @@ export type $ApplicationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     applicationDate: Date
     startDate: Date | null
-    endDate: Date | null
     status: $Enums.ApplicationStatus
     propertyId: number
     tenantCognitoId: string
@@ -1504,7 +1460,6 @@ export interface ApplicationFieldRefs {
   readonly id: Prisma.FieldRef<"Application", 'Int'>
   readonly applicationDate: Prisma.FieldRef<"Application", 'DateTime'>
   readonly startDate: Prisma.FieldRef<"Application", 'DateTime'>
-  readonly endDate: Prisma.FieldRef<"Application", 'DateTime'>
   readonly status: Prisma.FieldRef<"Application", 'ApplicationStatus'>
   readonly propertyId: Prisma.FieldRef<"Application", 'Int'>
   readonly tenantCognitoId: Prisma.FieldRef<"Application", 'String'>

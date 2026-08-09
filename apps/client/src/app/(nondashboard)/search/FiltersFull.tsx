@@ -95,7 +95,7 @@ const FiltersFull = () => {
 
             {/* Price Range */}
             <div>
-                <h4 className="font-bold mb-2">Khoảng giá (VNĐ/ngày)</h4>
+                <h4 className="font-bold mb-2">Khoảng giá (VNĐ / tháng)</h4>
                 <div className="flex gap-2 mb-3">
                   <div className="flex-1">
                     <Label className="text-xs text-gray-500 mb-1 block">Giá tối thiểu (VNĐ)</Label>

@@ -15,7 +15,7 @@ model Property {
   name              String
   description       String
   status            PropertyStatus @default(Available)
-  pricePerDay       Float?
+  pricePerMonth       Float?
   securityDeposit   Float
   applicationFee    Float
   photoUrls         String[]
@@ -77,7 +77,6 @@ model Application {
   id              Int               @id @default(autoincrement())
   applicationDate DateTime
   startDate       DateTime?
-  endDate         DateTime?
   status          ApplicationStatus
   propertyId      Int
   tenantCognitoId String

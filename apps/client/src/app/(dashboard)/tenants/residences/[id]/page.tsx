@@ -2,44 +2,15 @@
 
 import Loading from '@/components/Loading';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useGetAuthUserQuery, useGetLeasesQuery, useGetPaymentsQuery, useGetPropertyQuery } from '@/state/api';
+import { useGetLeasesQuery, useGetPaymentsQuery, useGetPropertyQuery } from '@/state/api';
 import { Lease, Payment, Property } from '@shared/types';
-import { ArrowDownToLineIcon, Check, CreditCard, Download, Edit, FileText, Mail, MapPin, User } from 'lucide-react'
+import { ArrowDownToLineIcon, Check, Edit, FileText, MapPin, User } from 'lucide-react'
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import React from 'react'
 
 const PaymentMethod = () => {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mt-10 md:mt-0 flex-1 flex flex-col justify-between">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">Phương thức thanh toán</h2>
-        <p className="text-sm text-gray-500 mb-6">Thay đổi cách bạn thanh toán cho gói dịch vụ.</p>
-        
-        {/* Card Info */}
-        <div className="flex gap-6 items-center">
-          <div className="w-32 h-20 bg-blue-600 flex items-center justify-center rounded-xl shadow-sm text-white font-bold text-xl tracking-wider">
-            VISA
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-semibold">VISA</h3>
-              <span className="text-xs font-medium border border-primary-700 text-primary-700 px-2.5 py-0.5 rounded-full">
-                Default
-              </span>
-            </div>
-            <div className="text-sm text-gray-500 flex items-center gap-1.5">
-              <CreditCard className="w-4 h-4" />
-              <span>Ngày hết hạn: 12/2026</span>
-            </div>
-            <div className="text-sm text-gray-500 flex items-center gap-1.5">
-              <Mail className="w-4 h-4" />
-              <span>billing@baseclup.com</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div>
         <hr className="my-4 border-gray-200" />
         <div className="flex justify-end">
@@ -49,7 +20,6 @@ const PaymentMethod = () => {
           </button>
         </div>
       </div>
-    </div>
   );
 };
 
@@ -211,7 +181,6 @@ const BillingHistory = ({ payments }: { payments: Payment[] }) => {
 
 const Residence = () => {
   const { id } = useParams();
-  const { data: authUser } = useGetAuthUserQuery();
   const {
     data: property,
     isLoading: propertyLoading,

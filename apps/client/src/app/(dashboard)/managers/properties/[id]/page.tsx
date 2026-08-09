@@ -11,11 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useGetPaymentsQuery,
   useGetPropertyLeasesQuery,
   useGetPropertyQuery,
 } from "@/state/api";
-import { ArrowDownToLine, ArrowLeft, Check, Download, Edit } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, Download, Edit } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -24,26 +23,29 @@ import React from "react";
 const PropertyTenants = () => {
   const { id } = useParams();
   const propertyId = Number(id);
+  const isInvalidId = isNaN(propertyId) || propertyId <= 0;
 
   const { data: property, isLoading: propertyLoading } =
-    useGetPropertyQuery(propertyId);
+    useGetPropertyQuery(propertyId, { skip: isInvalidId });
   const { data: leases, isLoading: leasesLoading } =
-    useGetPropertyLeasesQuery(propertyId);
-  const { data: payments, isLoading: paymentsLoading } =
-    useGetPaymentsQuery(propertyId);
+    useGetPropertyLeasesQuery(propertyId, { skip: isInvalidId });
 
-  if (propertyLoading || leasesLoading || paymentsLoading) return <Loading />;
-
-  const getCurrentMonthPaymentStatus = (leaseId: number) => {
-    const currentDate = new Date();
-    const currentMonthPayment = payments?.find(
-      (payment) =>
-        payment.leaseId === leaseId &&
-        new Date(payment.dueDate).getMonth() === currentDate.getMonth() &&
-        new Date(payment.dueDate).getFullYear() === currentDate.getFullYear()
+  if (isInvalidId) {
+    return (
+      <div className="dashboard-container p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Đường dẫn không hợp lệ</h2>
+        <p className="text-gray-500 mb-4">Mã dự án (ID) phải là số nguyên, không phải mã định danh người dùng (Cognito ID).</p>
+        <Link
+          href="/managers/properties"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-700 text-white rounded-lg hover:bg-primary-800 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Trở về danh sách dự án
+        </Link>
+      </div>
     );
-    return currentMonthPayment?.paymentStatus || "Not Paid";
-  };
+  }
+
+  if (propertyLoading || leasesLoading ) return <Loading />;
 
   return (
     <div className="dashboard-container">

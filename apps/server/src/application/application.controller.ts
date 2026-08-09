@@ -48,7 +48,6 @@ export class ApplicationController {
     @Body() createApplication: CreateApplicationDto,
     @CurrentUser() user: CognitoUser,
   ) {
-    // Always use tenantCognitoId from verified JWT
     return await this.applicationService.createApplication({
       ...createApplication,
       tenantCognitoId: user.sub,

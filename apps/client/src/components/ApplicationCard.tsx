@@ -46,7 +46,7 @@ const ApplicationCard = ({
               </div>
             </div>
             <div className="text-base font-bold text-primary-700">
-              {application.property?.pricePerDay?.toLocaleString("vi-VN")}{" "}
+              {application.property?.pricePerMonth?.toLocaleString("vi-VN")}{" "}
               <span className="text-xs font-normal text-gray-500">VNĐ / ngày</span>
             </div>
           </div>
@@ -76,9 +76,7 @@ const ApplicationCard = ({
               <span className="font-medium text-gray-800">
                 {application.lease?.endDate
                   ? new Date(application.lease.endDate).toLocaleDateString('vi-VN')
-                  : application.endDate
-                  ? new Date(application.endDate).toLocaleDateString('vi-VN')
-                  : "Không xác định"}
+                  : "Cuối tháng"}
               </span>
             </div>
             <div className="flex justify-between items-center">

@@ -31,7 +31,7 @@ const NewProperty = () => {
     defaultValues: {
       name: "",
       description: "",
-      pricePerDay: 1,
+      pricePerMonth: 1,
       securityDeposit: 1,
       applicationFee: 1,
       isPetsAllowed: true,
@@ -74,7 +74,7 @@ const NewProperty = () => {
 
     try {
       await createProperty(formData).unwrap();
-      router.push('/managers/properties');
+      router.push(`/managers/properties`);
     } catch (err) {
       console.error("Failed to create property:", err);
     }
@@ -114,8 +114,8 @@ const NewProperty = () => {
               <h2 className="text-lg font-semibold mb-4">Chi phí</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <CustomFormField 
-                name="pricePerDay"
-                label="Phí qua đêm"
+                name="pricePerMonth"
+                label="Phí trong tháng"
                 type="number"
                 />
                 <CustomFormField 
@@ -139,7 +139,7 @@ const NewProperty = () => {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
                 <CustomFormField 
                   name="beds"
-                  label="Số lượng giường"
+                  label="Số lượng phòng ngủ"
                   type="number"
                 />
                 <CustomFormField 

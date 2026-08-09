@@ -24,22 +24,33 @@ import {
   useUpdatePropertyMutation,
 } from '@/state/api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 
 const EditProperty = () => {
   const params = useParams();
   const id = Number(params.id);
+  const isInvalidId = isNaN(id) || id <= 0;
   const router = useRouter();
 
   const { data: user } = useGetAuthUserQuery();
   const { data: property, isLoading: isPropertyLoading } =
-    useGetPropertyQuery(id);
+    useGetPropertyQuery(id, { skip: isInvalidId });
   const [updateProperty, { isLoading: isUpdating }] =
     useUpdatePropertyMutation();
+
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [loadedPropertyId, setLoadedPropertyId] = useState<number | null>(null);
+
+  // Khởi tạo existingPhotos trực tiếp trong lúc render theo chuẩn React (tránh cascading render trong useEffect)
+  if (property && property.id !== loadedPropertyId) {
+    setLoadedPropertyId(property.id);
+    setExistingPhotos(property.photoUrls || []);
+  }
 
   const form = useForm({
     resolver: zodResolver(editPropertySchema),
@@ -47,7 +58,7 @@ const EditProperty = () => {
       name: '',
       description: '',
       status: 'Available',
-      pricePerDay: 0,
+      pricePerMonth: 0,
       securityDeposit: 0,
       applicationFee: 0,
       isPetsAllowed: false,
@@ -58,6 +69,7 @@ const EditProperty = () => {
       propertyType: PropertyTypeEnum.Rooms,
       amenities: [],
       highlights: [],
+      photoUrls: [],
       address: '',
       city: '',
       state: '',
@@ -71,7 +83,7 @@ const EditProperty = () => {
       form.reset({
         name: property.name || '',
         description: property.description || '',
-        pricePerDay: property.pricePerDay || 0,
+        pricePerMonth: property.pricePerMonth || 0,
         securityDeposit: property.securityDeposit || 0,
         applicationFee: property.applicationFee || 0,
         isPetsAllowed: property.isPetsAllowed ?? false,
@@ -82,6 +94,7 @@ const EditProperty = () => {
         propertyType: (property.propertyType as PropertyTypeEnum) || PropertyTypeEnum.Rooms,
         amenities: (property.amenities as AmenityEnum[]) || [],
         highlights: (property.highlights as HighlightEnum[]) || [],
+        photoUrls: property.photoUrls || [],
         address: property.location?.address || '',
         city: property.location?.city || '',
         state: property.location?.state || '',
@@ -90,6 +103,10 @@ const EditProperty = () => {
       });
     }
   }, [property, form]);
+
+  const handleRemoveExistingPhoto = (indexToRemove: number) => {
+    setExistingPhotos((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
 
   const onSubmit = async (data: any) => {
     if (!user?.cognitoInfo?.userId) return;
@@ -100,7 +117,7 @@ const EditProperty = () => {
       formData.append('description', data.description);
       formData.append('status', data.status);
       formData.append('applicationFee', data.applicationFee.toString());
-      formData.append('pricePerDay', data.pricePerDay.toString());
+      formData.append('pricePerMonth', data.pricePerMonth.toString());
       formData.append('securityDeposit', data.securityDeposit.toString());
       formData.append('isPetsAllowed', data.isPetsAllowed.toString());
       formData.append('isParkingIncluded', data.isParkingIncluded.toString());
@@ -116,6 +133,7 @@ const EditProperty = () => {
 
       formData.append('amenities', JSON.stringify(data.amenities));
       formData.append('highlights', JSON.stringify(data.highlights));
+      formData.append('existingPhotoUrls', JSON.stringify(existingPhotos));
 
       if (data.photoUrls && data.photoUrls.length > 0) {
         Array.from(data.photoUrls).forEach((file: any) => {
@@ -185,8 +203,8 @@ const EditProperty = () => {
                   type="number"
                 />
                 <CustomFormField
-                  name="pricePerDay"
-                  label="Phí qua đêm"
+                  name="pricePerMonth"
+                  label="Phí trong tháng"
                   type="number"
                 />
               </div>
@@ -200,7 +218,7 @@ const EditProperty = () => {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
                 <CustomFormField
                   name="beds"
-                  label="Số lượng giường"
+                  label="Số lượng phòng ngủ"
                   type="number"
                 />
                 <CustomFormField
@@ -279,10 +297,42 @@ const EditProperty = () => {
 
             {/* Photos */}
             <div>
-              <h2 className="text-lg font-semibold mb-4">Thêm ảnh mới</h2>
+              <h2 className="text-lg font-semibold mb-4">Quản lý hình ảnh</h2>
+
+              {/* Danh sách ảnh hiện có */}
+              {existingPhotos.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm text-gray-500 mb-3">Hình ảnh hiện tại của dự án ({existingPhotos.length} ảnh):</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {existingPhotos.map((url, index) => (
+                      <div key={index} className="relative group w-full h-32 rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                        <Image
+                          src={url}
+                          alt={`Ảnh dự án ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          onError={(e) => {
+                            // Báo lỗi hoặc hiển thị fallback nếu URL hỏng
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExistingPhoto(index)}
+                          className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-90 hover:opacity-100 hover:scale-110 transition-all shadow-md"
+                          title="Xóa ảnh này"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <CustomFormField
                 name="photoUrls"
-                label="Ảnh dự án (Tùy chọn: tải lên để thêm ảnh)"
+                label="Tải lên ảnh mới (Tùy chọn: chọn để thêm ảnh mới vào dự án)"
                 type="file"
                 accept="image/*"
               />

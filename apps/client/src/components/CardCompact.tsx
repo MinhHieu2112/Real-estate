@@ -98,8 +98,8 @@ const CardCompact = ({
           </div>
 
           <p className="text-base font-bold text-primary-700">
-            {property.pricePerDay?.toLocaleString("vi-VN")} VNĐ
-            <span className="text-gray-600 text-xs font-normal"> /ngày</span>
+            {property.pricePerMonth?.toLocaleString("vi-VN")} VNĐ
+            <span className="text-gray-600 text-xs font-normal"> tháng</span>
           </p>
         </div>
       </div>

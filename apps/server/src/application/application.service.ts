@@ -9,7 +9,6 @@ import { ListApplicationDto } from './dto/list-application.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { NotifyService } from '../notify/notify.service';
-import { calculateTotalRent } from '../common/utils/calculate-rent';
 
 @Injectable()
 export class ApplicationService {
@@ -99,7 +98,6 @@ export class ApplicationService {
     const {
       applicationDate,
       startDate,
-      endDate,
       status,
       propertyId,
       name,
@@ -115,7 +113,7 @@ export class ApplicationService {
         id: propertyId,
       },
       select: {
-        pricePerDay: true,
+        pricePerMonth: true,
         securityDeposit: true,
         availableFrom: true,
       },
@@ -125,14 +123,6 @@ export class ApplicationService {
       throw new NotFoundException({
         code: `NOT_FOUND`,
         message: `Danh sách trống`,
-      });
-    }
-
-    // Validate endDate phải sau startDate
-    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-      throw new BadRequestException({
-        code: `INVALID_END_DATE`,
-        message: 'Ngày chuyển đi phải sau ngày chuyển vào !',
       });
     }
 
@@ -201,7 +191,6 @@ export class ApplicationService {
       create: {
         applicationDate: new Date(applicationDate),
         startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : undefined,
         status: status || 'Pending',
         name,
         email,
@@ -246,7 +235,6 @@ export class ApplicationService {
           console.error(`Bắn thông báo tạo đơn thất bại: ${err.message}`);
         });
     }
-
     return application;
   }
 
@@ -257,104 +245,107 @@ export class ApplicationService {
   ) {
     const { status } = updateApplication;
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      const application = await tx.application.findUnique({
-        where: { id: Number(applicationId) },
-        include: {
-          property: true,
-          tenant: true,
-        },
-      });
-
-      if (!application) {
-        throw new NotFoundException({
-          code: `NOT_FOUND`,
-          message: `Không tìm thấy đơn đăng ký !`,
-        });
-      }
-
-      if (status === 'Approved') {
-        const leaseStartDate = application.startDate
-          ? new Date(application.startDate)
-          : new Date();
-        const leaseEndDate = application.endDate
-          ? new Date(application.endDate)
-          : new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-
-        // Kiểm tra xem dự án đã có Lease còn hạn trùng khoảng thời gian không
-        const activeLease = await tx.lease.findFirst({
-          where: {
-            propertyId: application.propertyId,
-            startDate: { lte: leaseEndDate },
-            endDate: { gte: leaseStartDate },
+    const result = await this.prisma.$transaction(
+      async (tx) => {
+        const application = await tx.application.findUnique({
+          where: { id: Number(applicationId) },
+          include: {
+            property: true,
+            tenant: true,
           },
         });
 
-        if (activeLease) {
-          throw new BadRequestException({
-            code: `CONFLICT_LEASE`,
-            message: `Đang có người thuê trong khoaảng thời gian này !`,
+        if (!application) {
+          throw new NotFoundException({
+            code: `NOT_FOUND`,
+            message: `Không tìm thấy đơn đăng ký !`,
           });
         }
 
-        // Tính tiền thuê tự động từ ngày bắt đầu -> ngày kết thúc dựa trên giá thuê
-        const pricePerDay = application.property.pricePerDay || 0;
-        const { totalRent } = calculateTotalRent(
-          leaseStartDate,
-          leaseEndDate,
-          pricePerDay,
-        );
+        if (status === 'Approved') {
+          const leaseStartDate = application.startDate
+            ? new Date(application.startDate)
+            : new Date();
 
-        // Tạo Lease mới với thuộc tính status: 'Draft'
-        const newLease = await tx.lease.create({
-          data: {
-            startDate: leaseStartDate,
-            endDate: leaseEndDate,
-            rent: totalRent > 0 ? totalRent : pricePerDay,
-            deposit: application.property.securityDeposit,
-            propertyId: application.propertyId,
-            tenantCognitoId: application.tenantCognitoId,
-            status: 'Draft',
-          },
-        });
+          // Mặc định thuê 1 tháng kể từ ngày bắt đầu
+          const leaseEndDate = new Date(leaseStartDate);
+          leaseEndDate.setMonth(leaseEndDate.getMonth() + 1);
 
-        // Kết nối Tenant với Property
-        await tx.property.update({
-          where: { id: application.propertyId },
-          data: {
-            tenants: {
-              connect: {
-                cognitoId: application.tenantCognitoId,
+          // Kiểm tra xem dự án đã có Lease còn hạn trùng khoảng thời gian không
+          const activeLease = await tx.lease.findFirst({
+            where: {
+              propertyId: application.propertyId,
+              startDate: { lte: leaseEndDate },
+              endDate: { gte: leaseStartDate },
+            },
+          });
+
+          if (activeLease) {
+            throw new BadRequestException({
+              code: `CONFLICT_LEASE`,
+              message: `Đang có người thuê trong khoaảng thời gian này !`,
+            });
+          }
+
+          // Tính tiền thuê tự động
+          const totalRent =
+            (application.property.pricePerMonth || 0) +
+            (application.property.applicationFee || 0) +
+            (application.property.securityDeposit || 0);
+
+          // Tạo Lease mới với thuộc tính status: 'Draft'
+          const newLease = await tx.lease.create({
+            data: {
+              startDate: leaseStartDate,
+              endDate: leaseEndDate,
+              rent:
+                totalRent > 0 ? totalRent : application.property.pricePerMonth,
+              deposit: application.property.securityDeposit,
+              propertyId: application.propertyId,
+              tenantCognitoId: application.tenantCognitoId,
+              status: 'Draft',
+            },
+          });
+
+          // Kết nối Tenant với Property
+          await tx.property.update({
+            where: { id: application.propertyId },
+            data: {
+              tenants: {
+                connect: {
+                  cognitoId: application.tenantCognitoId,
+                },
               },
             },
-          },
-        });
+          });
 
-        // Cập nhật Application với leaseId
-        return tx.application.update({
-          where: { id: Number(applicationId) },
-          data: {
-            status,
-            leaseId: newLease.id,
-          },
-          include: {
-            property: true,
-            tenant: true,
-            lease: true,
-          },
-        });
-      } else {
-        return tx.application.update({
-          where: { id: Number(applicationId) },
-          data: { status },
-          include: {
-            property: true,
-            tenant: true,
-            lease: true,
-          },
-        });
-      }
-    });
+          // Cập nhật Application với leaseId
+          return tx.application.update({
+            where: { id: Number(applicationId) },
+            data: {
+              status,
+              leaseId: newLease.id,
+            },
+            include: {
+              property: true,
+              tenant: true,
+              lease: true,
+            },
+          });
+        } else {
+          return tx.application.update({
+            where: { id: Number(applicationId) },
+            data: { status },
+            include: {
+              property: true,
+              tenant: true,
+              lease: true,
+            },
+          });
+        }
+      },
+      { maxWait: 10000, timeout: 15000 },
+    );
 
     // Bắn thông báo cho Tenant khi Approved / Denied
     if (status === 'Approved' || status === 'Denied') {

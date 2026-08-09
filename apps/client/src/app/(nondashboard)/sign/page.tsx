@@ -200,25 +200,50 @@ function SigningContent() {
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 my-4">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-primary-900 to-indigo-950 text-white rounded-3xl p-6 md:p-8 shadow-xl mb-8 relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
-            <ShieldCheck className="w-4 h-4" /> Xác thực chữ ký điện tử an toàn (E-Sign)
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                <ShieldCheck className="h-4 w-4" />
+                Đã xác thực chữ ký điện tử
+              </div>
+
+              <span className="text-sm text-slate-500">
+                Audit Trail SHA-256
+              </span>
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Hợp đồng thuê
+              </h1>
+
+              <p className="mt-1 text-lg text-slate-700">
+                {lease.property?.name}
+              </p>
+            </div>
+
+            <p className="max-w-3xl text-sm leading-6 text-slate-500">
+              Vui lòng kiểm tra toàn bộ nội dung hợp đồng trước khi ký điện tử.
+              Sau khi hoàn tất, chữ ký cùng thông tin xác thực sẽ được ghi vào
+              tài liệu PDF và không thể chỉnh sửa.
+            </p>
           </div>
+
           {timeLeft && (
-            <div className="flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Thời gian còn lại: {timeLeft}</span>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-amber-700">
+                <Clock className="h-4 w-4" />
+                Thời gian còn lại
+              </div>
+
+              <div className="mt-1 text-2xl font-bold text-amber-900">
+                {timeLeft}
+              </div>
             </div>
           )}
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-          Hợp đồng thuê: {lease.property?.name}
-        </h1>
-        <p className="text-sm text-gray-300 mt-2 max-w-3xl">
-          Vui lòng kiểm tra file PDF bên dưới, ký tên trực tuyến (vẽ chữ ký hoặc tải ảnh) để hoàn tất thủ tục pháp lý.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

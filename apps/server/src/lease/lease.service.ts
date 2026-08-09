@@ -10,12 +10,19 @@ import { PrismaService } from '../prisma.service';
 import { NotifyService } from '../notify/notify.service';
 import { UpdateLeaseContentDto } from './dto/update-lease-content.dto';
 import { LeaseStatus, PaymentStatus } from '../generated/prisma/enums';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as jwt from 'jsonwebtoken';
-import { calculateTotalRent } from '../common/utils/calculate-rent';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import * as crypto from 'crypto';
 import { SignContractDto } from './dto/sign-contract.dto';
+import fontkit from '@pdf-lib/fontkit';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class LeaseService {
@@ -45,12 +52,12 @@ export class LeaseService {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return leases;
+    return await this.formatLeasesWithPresignedUrl(leases);
   }
 
   // 1. Lấy danh sách hợp đồng thuộc quản lý của Manager
   async findManagerLeases(managerCognitoId: string) {
-    return await this.prisma.lease.findMany({
+    const leases = await this.prisma.lease.findMany({
       where: {
         property: {
           managerCognitoId,
@@ -68,6 +75,7 @@ export class LeaseService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    return await this.formatLeasesWithPresignedUrl(leases);
   }
 
   // 2. Chi tiết hợp đồng
@@ -90,7 +98,7 @@ export class LeaseService {
     if (!lease) {
       throw new NotFoundException(`Không tìm thấy hợp đồng #${id}`);
     }
-    return lease;
+    return await this.formatLeaseWithPresignedUrl(lease);
   }
 
   // 3. Manager cập nhật nội dung HĐ (trước khi gửi)
@@ -125,12 +133,10 @@ export class LeaseService {
 
     let computedRent = dto.rent;
     if (computedRent === undefined && (dto.startDate || dto.endDate)) {
-      const pricePerDay = lease.property.pricePerDay || 0;
-      const { totalRent } = calculateTotalRent(
-        newStartDate,
-        newEndDate,
-        pricePerDay,
-      );
+      const totalRent =
+        (lease.property.pricePerMonth || 0) +
+        lease.property.applicationFee +
+        lease.property.securityDeposit;
       if (totalRent > 0) {
         computedRent = totalRent;
       }
@@ -143,6 +149,8 @@ export class LeaseService {
         endDate: newEndDate,
         rent: computedRent !== undefined ? computedRent : undefined,
         deposit: dto.deposit !== undefined ? dto.deposit : undefined,
+        managerSignedAt: null,
+        managerSignedIp: null,
       },
       include: {
         tenant: true,
@@ -171,32 +179,21 @@ export class LeaseService {
       throw new NotFoundException(`Không tìm thấy hợp đồng #${id}`);
     }
 
+    // Kiểm tra quyền sở hữu hợp đồng
     if (lease.property.managerCognitoId !== managerCognitoId) {
       throw new ForbiddenException('Bạn không có quyền gửi hợp đồng này');
+    }
+
+    // Bắt buộc Manager phải xem và ký trước khi gửi hợp đồng cho Tenant
+    if (!lease.managerSignedAt) {
+      throw new BadRequestException(
+        'Quản lý phải xem và ký hợp đồng trước khi gửi cho Bên thuê.',
+      );
     }
 
     const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
     const s3Key = `contracts/${lease.application?.id || lease.id}/contract.pdf`;
     const pdfUrl = `https://${s3Bucket}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${s3Key}`;
-
-    // Sinh PDF Hợp đồng thực tế bằng pdf-lib & Upload S3
-    try {
-      const pdfBuffer = await this.createInitialContractPdf(lease);
-      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-        await this.s3Client.send(
-          new PutObjectCommand({
-            Bucket: s3Bucket,
-            Key: s3Key,
-            Body: pdfBuffer,
-            ContentType: 'application/pdf',
-          }),
-        );
-      }
-    } catch (err) {
-      this.logger.warn(
-        `Upload S3 hợp đồng cảnh báo: ${(err as Error).message}`,
-      );
-    }
 
     // Cập nhật trạng thái hợp đồng thành Pending_signature
     const updatedLease = await this.prisma.lease.update({
@@ -219,7 +216,7 @@ export class LeaseService {
       { expiresIn: '15m' },
     );
 
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const clientUrl = process.env.CLIENT_URL!;
     const signUrl = `${clientUrl}/sign?token=${token}`;
 
     // Gửi email và thông báo
@@ -232,9 +229,88 @@ export class LeaseService {
     });
 
     return {
-      lease: updatedLease,
+      lease: await this.formatLeaseWithPresignedUrl(updatedLease),
       signUrl,
     };
+  }
+
+  // 4b. Manager ký hợp đồng
+  async signManagerContract(
+    id: number,
+    managerCognitoId: string,
+    signatureBase64: string | undefined,
+    ipAddress: string = '127.0.0.1',
+  ) {
+    const lease = await this.prisma.lease.findUnique({
+      where: { id },
+      include: {
+        property: {
+          include: {
+            manager: true,
+            location: true,
+          },
+        },
+        tenant: true,
+        application: true,
+      },
+    });
+
+    if (!lease) {
+      throw new NotFoundException(`Không tìm thấy hợp đồng #${id}`);
+    }
+
+    if (lease.property.managerCognitoId !== managerCognitoId) {
+      throw new ForbiddenException('Bạn không có quyền ký hợp đồng này');
+    }
+
+    // 1. Tạo PDF gốc
+    const originalPdfBuffer = await this.createInitialContractPdf(lease);
+
+    // 2. Nhúng chữ ký Quản lý
+    const { signedPdfBuffer } = await this.embedManagerSignatureAndAudit(
+      originalPdfBuffer,
+      signatureBase64,
+      lease.property?.manager?.name || 'Manager',
+      lease.property?.manager?.email || 'N/A',
+      ipAddress,
+    );
+
+    // 3. Upload bản PDF đã ký của Manager lên S3
+    const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
+    const s3Key = `contracts/${lease.application?.id || lease.id}/contract.pdf`;
+    const pdfUrl = `https://${s3Bucket}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${s3Key}`;
+
+    try {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: s3Bucket,
+          Key: s3Key,
+          Body: signedPdfBuffer,
+          ContentType: 'application/pdf',
+        }),
+      );
+      this.logger.log(`Manager đã ký và upload PDF hợp đồng lên S3: ${s3Key}`);
+    } catch (err) {
+      this.logger.error(
+        `Upload S3 PDF hợp đồng Manager ký THẤT BẠI: ${(err as Error).message}`,
+        (err as Error).stack,
+      );
+      throw new BadRequestException(
+        `Không thể upload PDF hợp đồng Manager ký lên S3: ${(err as Error).message}`,
+      );
+    }
+
+    // 4. Cập nhật Lease trong DB
+    const updatedLease = await this.prisma.lease.update({
+      where: { id },
+      data: {
+        managerSignedAt: new Date(),
+        managerSignedIp: ipAddress,
+        leaseAgreementUrl: pdfUrl,
+      },
+    });
+
+    return await this.formatLeaseWithPresignedUrl(updatedLease);
   }
 
   // 5. Giải mã Token ký cho trang Public Sign của Tenant
@@ -264,7 +340,7 @@ export class LeaseService {
       }
 
       return {
-        lease,
+        lease: await this.formatLeaseWithPresignedUrl(lease),
         expiresAt: new Date(decoded.exp * 1000).toISOString(),
       };
     } catch {
@@ -310,8 +386,27 @@ export class LeaseService {
       );
     }
 
-    // 1. Tạo PDF gốc hoặc nạp từ buffer
-    const originalPdfBuffer = await this.createInitialContractPdf(lease);
+    // 1. Nạp PDF contract.pdf đã có chữ ký Manager từ S3 (nếu có)
+    let originalPdfBuffer: Buffer;
+    const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
+    const originalKey = `contracts/${lease.application?.id || lease.id}/contract.pdf`;
+
+    try {
+      const getObjResponse = await this.s3Client.send(
+        new GetObjectCommand({
+          Bucket: s3Bucket,
+          Key: originalKey,
+        }),
+      );
+      const byteArray = await getObjResponse.Body?.transformToByteArray();
+      if (byteArray) {
+        originalPdfBuffer = Buffer.from(byteArray);
+      } else {
+        originalPdfBuffer = await this.createInitialContractPdf(lease);
+      }
+    } catch {
+      originalPdfBuffer = await this.createInitialContractPdf(lease);
+    }
 
     // 2. Nhúng chữ ký (nếu có) và vết audit (IP, SHA-256 Hash, Timestamp) vào PDF bằng pdf-lib & crypto
     const { signedPdfBuffer, hash } = await this.embedSignatureAndAudit(
@@ -323,108 +418,193 @@ export class LeaseService {
     );
 
     // 3. Upload bản PDF đã ký lên S3
-    const s3Bucket = process.env.AWS_S3_BUCKET_NAME || 'real-estate-app-bucket';
     const s3Key = `contracts/${lease.application?.id || lease.id}/signed_contract.pdf`;
     const signedPdfUrl = `https://${s3Bucket}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${s3Key}`;
 
     try {
-      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-        await this.s3Client.send(
-          new PutObjectCommand({
-            Bucket: s3Bucket,
-            Key: s3Key,
-            Body: signedPdfBuffer,
-            ContentType: 'application/pdf',
-          }),
-        );
-      }
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: s3Bucket,
+          Key: s3Key,
+          Body: signedPdfBuffer,
+          ContentType: 'application/pdf',
+        }),
+      );
+      this.logger.log(`Đã upload PDF hợp đồng đã ký lên S3: ${s3Key}`);
     } catch (err) {
-      this.logger.warn(
-        `Upload S3 PDF đã ký cảnh báo: ${(err as Error).message}`,
+      this.logger.error(
+        `Upload S3 PDF hợp đồng đã ký THẤT BẠI: ${(err as Error).message}`,
+        (err as Error).stack,
+      );
+      throw new BadRequestException(
+        `Không thể upload PDF hợp đồng đã ký lên S3: ${(err as Error).message}`,
       );
     }
 
-    return await this.prisma.$transaction(async (tx) => {
-      // 1. Cập nhật Lease thành Pending_payment & lưu Audit metadata
-      const updatedLease = await tx.lease.update({
-        where: { id: leaseId },
-        data: {
-          status: LeaseStatus.Pending_payment,
-          tenantSignedAt: new Date(),
-          tenantSignedIp: ipAddress,
-          leaseAgreementUrl: signedPdfUrl,
-        },
-      });
-
-      // 2. Đánh dấu Property đã được thuê (Rented)
-      await tx.property.update({
-        where: { id: lease.propertyId },
-        data: {
-          status: 'Rented',
-        },
-      });
-
-      // 3. Tự động Denied các đơn ứng tuyển khác đang ở trạng thái Pending cho dự án này
-      await tx.application.updateMany({
-        where: {
-          propertyId: lease.propertyId,
-          status: 'Pending',
-          id: { not: lease.application?.id || 0 },
-        },
-        data: {
-          status: 'Denied',
-        },
-      });
-
-      // 4. Tạo khoản thanh toán cọc/tiền thuê mẫu mặc định (nếu chưa có)
-      const initialAmount = (lease.deposit || 0) + (lease.rent || 0);
-      if (initialAmount > 0) {
-        const existingPayments = await tx.payment.findFirst({
-          where: { leaseId },
+    const updatedLease = await this.prisma.$transaction(
+      async (tx) => {
+        // 1. Cập nhật Lease thành Pending_payment & lưu Audit metadata
+        const leaseUpdated = await tx.lease.update({
+          where: { id: leaseId },
+          data: {
+            status: LeaseStatus.Pending_payment,
+            tenantSignedAt: new Date(),
+            tenantSignedIp: ipAddress,
+            leaseAgreementUrl: signedPdfUrl,
+          },
         });
 
-        if (!existingPayments) {
-          await tx.payment.create({
-            data: {
-              leaseId,
-              amountDue: initialAmount,
-              amountPaid: 0,
-              dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày sau
-              paymentDate: new Date(),
-              paymentStatus: PaymentStatus.Pending,
-            },
+        // 2. Đánh dấu Property đã được thuê (Rented)
+        await tx.property.update({
+          where: { id: lease.propertyId },
+          data: {
+            status: 'Rented',
+          },
+        });
+
+        // 3. Tự động Denied các đơn ứng tuyển khác đang ở trạng thái Pending cho dự án này
+        await tx.application.updateMany({
+          where: {
+            propertyId: lease.propertyId,
+            status: 'Pending',
+            id: { not: lease.application?.id || 0 },
+          },
+          data: {
+            status: 'Denied',
+          },
+        });
+
+        // 4. Tạo khoản thanh toán cọc/tiền thuê mẫu mặc định (nếu chưa có)
+        const initialAmount = (lease.deposit || 0) + (lease.rent || 0);
+        if (initialAmount > 0) {
+          const existingPayments = await tx.payment.findFirst({
+            where: { leaseId },
           });
+
+          if (!existingPayments) {
+            await tx.payment.create({
+              data: {
+                leaseId,
+                amountDue: initialAmount,
+                amountPaid: 0,
+                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày sau
+                paymentDate: new Date(),
+                paymentStatus: PaymentStatus.Pending,
+              },
+            });
+          }
         }
-      }
 
-      // 5. Thông báo cho Manager kèm SHA-256 hash log
-      void this.notifyService.notifyContractSigned({
-        managerCognitoId: lease.property.managerCognitoId,
-        tenantName: lease.tenant.name,
-        propertyName: lease.property.name,
-        applicationId: lease.application?.id || lease.id,
-      });
+        return leaseUpdated;
+      },
+      { maxWait: 10000, timeout: 15000 },
+    );
 
-      this.logger.log(
-        `Ký hợp đồng thành công! Lease #${leaseId}, Signer IP: ${ipAddress}, SHA-256: ${hash}`,
-      );
-
-      return updatedLease;
+    // 5. Thông báo cho Manager kèm SHA-256 hash log (Thực hiện ngoài Transaction)
+    void this.notifyService.notifyContractSigned({
+      managerCognitoId: lease.property.managerCognitoId,
+      tenantName: lease.tenant.name,
+      propertyName: lease.property.name,
+      applicationId: lease.application?.id || lease.id,
     });
+
+    this.logger.log(
+      `Ký hợp đồng thành công! Lease #${leaseId}, Signer IP: ${ipAddress}, SHA-256: ${hash}`,
+    );
+
+    return await this.formatLeaseWithPresignedUrl(updatedLease);
   }
 
   // --- Helper Methods ---
 
+  private async getPresignedPdfUrl(
+    urlOrKey: string | null | undefined,
+  ): Promise<string | null> {
+    if (!urlOrKey) return null;
+
+    if (urlOrKey.includes('X-Amz-Signature=')) return urlOrKey;
+
+    let s3Key = urlOrKey;
+    if (urlOrKey.startsWith('http://') || urlOrKey.startsWith('https://')) {
+      try {
+        const parsed = new URL(urlOrKey);
+        s3Key = parsed.pathname.startsWith('/')
+          ? parsed.pathname.slice(1)
+          : parsed.pathname;
+      } catch {
+        s3Key = urlOrKey;
+      }
+    }
+
+    const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
+
+    try {
+      const command = new GetObjectCommand({
+        Bucket: s3Bucket,
+        Key: s3Key,
+      });
+      return await getSignedUrl(this.s3Client as any, command, {
+        expiresIn: 3600,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Lỗi tạo Presigned URL cho key "${s3Key}": ${(err as Error).message}`,
+      );
+      return urlOrKey;
+    }
+  }
+
+  private async formatLeaseWithPresignedUrl<
+    T extends { leaseAgreementUrl?: string | null },
+  >(lease: T): Promise<T> {
+    if (!lease || !lease.leaseAgreementUrl) return lease;
+    const presignedUrl = await this.getPresignedPdfUrl(lease.leaseAgreementUrl);
+    return {
+      ...lease,
+      leaseAgreementUrl: presignedUrl,
+    };
+  }
+
+  private async formatLeasesWithPresignedUrl<
+    T extends { leaseAgreementUrl?: string | null },
+  >(leases: T[]): Promise<T[]> {
+    if (!leases) return [];
+    return Promise.all(leases.map((l) => this.formatLeaseWithPresignedUrl(l)));
+  }
+
+  private getFontBuffer(
+    fontName: 'NotoSans-Regular.ttf' | 'NotoSans-Bold.ttf',
+  ): Buffer {
+    const fontPaths = [
+      join(__dirname, '../assets/fonts', fontName),
+      join(__dirname, '../../src/assets/fonts', fontName),
+      join(process.cwd(), 'apps/server/src/assets/fonts', fontName),
+      join(process.cwd(), 'src/assets/fonts', fontName),
+    ];
+
+    for (const p of fontPaths) {
+      if (existsSync(p)) {
+        return readFileSync(p);
+      }
+    }
+    throw new Error(`Khôn tìm thấy font file ${fontName}`);
+  }
+
   private async createInitialContractPdf(lease: any): Promise<Buffer> {
     const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
     const page = pdfDoc.addPage([595.28, 841.89]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const font = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Regular.ttf'),
+    );
+    const fontBold = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Bold.ttf'),
+    );
 
     const { width, height } = page.getSize();
     let y = height - 50;
 
-    page.drawText('HOP DONG THUE BAT DONG SAN', {
+    page.drawText('HỢP ĐỒNG THUÊ BẤT ĐỘNG SẢN', {
       x: 50,
       y,
       size: 18,
@@ -433,14 +613,14 @@ export class LeaseService {
     });
     y -= 25;
 
-    page.drawText(`Ma hop dong: #${lease.id}`, {
+    page.drawText(`Mã hợp đồng: #${lease.id}`, {
       x: 50,
       y,
       size: 10,
       font,
       color: rgb(0.4, 0.4, 0.4),
     });
-    page.drawText(`Ngay khoi tao: ${new Date().toLocaleDateString('vi-VN')}`, {
+    page.drawText(`Ngày khởi tạo: ${new Date().toLocaleDateString('vi-VN')}`, {
       x: 350,
       y,
       size: 10,
@@ -457,7 +637,7 @@ export class LeaseService {
     });
     y -= 30;
 
-    page.drawText('1. THONG TIN CAC BEN', {
+    page.drawText('1. THÔNG TIN CÁC BÊN', {
       x: 50,
       y,
       size: 13,
@@ -466,9 +646,9 @@ export class LeaseService {
     });
     y -= 20;
 
-    const managerName = lease.property?.manager?.name || 'Quan ly Bat dong san';
+    const managerName = lease.property?.manager?.name || 'Quản lý bất động sản';
     const managerEmail = lease.property?.manager?.email || 'N/A';
-    page.drawText(`Ben cho thue (Manager): ${managerName} (${managerEmail})`, {
+    page.drawText(`Bên cho thuê (Manager): ${managerName} (${managerEmail})`, {
       x: 60,
       y,
       size: 11,
@@ -476,9 +656,9 @@ export class LeaseService {
     });
     y -= 18;
 
-    const tenantName = lease.tenant?.name || 'Khach thue';
+    const tenantName = lease.tenant?.name || 'Khách thuê';
     const tenantEmail = lease.tenant?.email || 'N/A';
-    page.drawText(`Ben thue (Tenant): ${tenantName} (${tenantEmail})`, {
+    page.drawText(`Bên thuê (Tenant): ${tenantName} (${tenantEmail})`, {
       x: 60,
       y,
       size: 11,
@@ -486,7 +666,7 @@ export class LeaseService {
     });
     y -= 30;
 
-    page.drawText('2. THONG TIN BAT DONG SAN & DIEU KHOAN', {
+    page.drawText('2. THÔNG TIN BẤT ĐỘNG SẢN & ĐIỀU KHOẢN', {
       x: 50,
       y,
       size: 13,
@@ -495,16 +675,16 @@ export class LeaseService {
     });
     y -= 20;
 
-    const propName = lease.property?.name || 'Bat dong san';
+    const propName = lease.property?.name || 'Bất động sản';
     const propAddress = lease.property?.location?.address || 'N/A';
-    page.drawText(`Ten Bat dong san: ${propName}`, {
+    page.drawText(`Tên bất động sản: ${propName}`, {
       x: 60,
       y,
       size: 11,
       font,
     });
     y -= 18;
-    page.drawText(`Dia chi: ${propAddress}`, {
+    page.drawText(`Địa chỉ: ${propAddress}`, {
       x: 60,
       y,
       size: 11,
@@ -514,7 +694,7 @@ export class LeaseService {
 
     const startDateStr = new Date(lease.startDate).toLocaleDateString('vi-VN');
     const endDateStr = new Date(lease.endDate).toLocaleDateString('vi-VN');
-    page.drawText(`Thoi han thue: Tu ${startDateStr} den ${endDateStr}`, {
+    page.drawText(`Thời hạn thuê: Từ ${startDateStr} đến ${endDateStr}`, {
       x: 60,
       y,
       size: 11,
@@ -524,14 +704,14 @@ export class LeaseService {
 
     const rentFormatted = (lease.rent || 0).toLocaleString('vi-VN');
     const depositFormatted = (lease.deposit || 0).toLocaleString('vi-VN');
-    page.drawText(`Tien thue: ${rentFormatted} VND`, {
+    page.drawText(`Tiền thuê: ${rentFormatted} VND`, {
       x: 60,
       y,
       size: 11,
       font: fontBold,
     });
     y -= 18;
-    page.drawText(`Tien coc: ${depositFormatted} VND`, {
+    page.drawText(`Tiền cọc: ${depositFormatted} VND`, {
       x: 60,
       y,
       size: 11,
@@ -539,7 +719,7 @@ export class LeaseService {
     });
     y -= 35;
 
-    page.drawText('3. DIEU KHOAN THOA THUAN & PHAP LY', {
+    page.drawText('3. ĐIỀU KHOẢN THỎA THUẬN & PHÁP LÝ', {
       x: 50,
       y,
       size: 13,
@@ -547,14 +727,7 @@ export class LeaseService {
       color: rgb(0.1, 0.2, 0.5),
     });
     y -= 20;
-    page.drawText('- Ben thue cam ket thanh toan dung han theo quy dinh.', {
-      x: 60,
-      y,
-      size: 10,
-      font,
-    });
-    y -= 15;
-    page.drawText('- Ben cho thue dam bao bat dong san du dieu kien su dung.', {
+    page.drawText('- Bên thuê cam kết đúng hạn theo quy định.', {
       x: 60,
       y,
       size: 10,
@@ -562,7 +735,7 @@ export class LeaseService {
     });
     y -= 15;
     page.drawText(
-      '- Chu ky dien tu tren hop dong nay co gia tri phap ly tuong duong chu ky tay.',
+      '- Bên cho thuê đảm bảo bất động sản đủ điều kiện theo quy định.',
       {
         x: 60,
         y,
@@ -570,30 +743,45 @@ export class LeaseService {
         font,
       },
     );
-    y -= 45;
+    y -= 15;
+    page.drawText(
+      '- Chữ ký điện tử trên hợp đồng này có giá trị như chữ ký tay.',
+      {
+        x: 60,
+        y,
+        size: 10,
+        font,
+      },
+    );
+    y -= 30;
 
-    page.drawText('DAI DIEN BEN CHO THUE', {
-      x: 70,
+    const leftColX = 65;
+    const rightColX = 355;
+
+    page.drawText('ĐẠI DIỆN BÊN CHO THUÊ', {
+      x: leftColX,
       y,
       size: 11,
       font: fontBold,
+      color: rgb(0.1, 0.2, 0.5),
     });
-    page.drawText('DAI DIEN BEN THUE', {
-      x: 370,
+    page.drawText('ĐẠI DIỆN BÊN THUÊ', {
+      x: rightColX,
       y,
       size: 11,
       font: fontBold,
+      color: rgb(0.1, 0.2, 0.5),
     });
     y -= 15;
-    page.drawText('(Da ky dien tu)', {
-      x: 90,
+    page.drawText('(Chữ ký điện tử)', {
+      x: leftColX + 15,
       y,
       size: 9,
       font,
       color: rgb(0.5, 0.5, 0.5),
     });
-    page.drawText('(Cho ky dien tu)', {
-      x: 390,
+    page.drawText('(Chờ bên thuê ký)', {
+      x: rightColX + 15,
       y,
       size: 9,
       font,
@@ -612,12 +800,17 @@ export class LeaseService {
     ipAddress: string,
   ): Promise<{ signedPdfBuffer: Buffer; hash: string }> {
     const pdfDoc = await PDFDocument.load(pdfBuffer);
+    pdfDoc.registerFontkit(fontkit);
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
-    const { width } = lastPage.getSize();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const font = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Regular.ttf'),
+    );
+    const fontBold = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Bold.ttf'),
+    );
 
+    // 1. Nhúng ảnh chữ ký Tenant ngay bên dưới tiêu đề "ĐẠI DIỆN BÊN THUÊ" (Right column)
     if (signatureBase64) {
       try {
         const cleanBase64 = signatureBase64.replace(
@@ -632,58 +825,162 @@ export class LeaseService {
             : await pdfDoc.embedPng(imageBytes);
 
         lastPage.drawImage(signatureImage, {
-          x: 350,
-          y: 70,
+          x: 355,
+          y: 355,
           width: 140,
-          height: 45,
+          height: 55,
         });
       } catch (err) {
-        this.logger.warn(`Loi nhung anh chu ky: ${(err as Error).message}`);
+        this.logger.warn(
+          `Lỗi nhúng ảnh chữ ký Tenant: ${(err as Error).message}`,
+        );
       }
     }
 
-    const auditY = 20;
-
-    lastPage.drawRectangle({
-      x: 40,
-      y: auditY,
-      width: width - 80,
-      height: 35,
-      borderColor: rgb(0.2, 0.5, 0.3),
-      borderWidth: 1,
-      color: rgb(0.95, 0.98, 0.95),
-    });
-
+    // 2. Tính Hash & lưu Audit Trail bên dưới chữ ký Tenant
     const initialBytes = await pdfDoc.save();
     const hash = crypto.createHash('sha256').update(initialBytes).digest('hex');
     const signedAt = new Date().toISOString();
 
-    lastPage.drawText(
-      `[E-SIGN AUDIT TRAIL] Signer: ${tenantName} (${tenantEmail}) | IP: ${ipAddress}`,
-      {
-        x: 50,
-        y: auditY + 20,
-        size: 8,
-        font: fontBold,
-        color: rgb(0.1, 0.4, 0.2),
-      },
-    );
+    const auditBoxY = 300;
 
-    lastPage.drawText(
-      `Signed At: ${signedAt} | SHA-256 Hash: ${hash.substring(0, 36)}...`,
-      {
-        x: 50,
-        y: auditY + 8,
-        size: 7,
-        font,
-        color: rgb(0.2, 0.2, 0.2),
-      },
-    );
+    // Vẽ khung Audit Trail cho Tenant
+    lastPage.drawRectangle({
+      x: 345,
+      y: auditBoxY,
+      width: 195,
+      height: 48,
+      borderColor: rgb(0.2, 0.5, 0.3),
+      borderWidth: 0.8,
+      color: rgb(0.95, 0.98, 0.95),
+    });
+
+    lastPage.drawText(`[TENANT E-SIGN AUDIT]`, {
+      x: 350,
+      y: auditBoxY + 35,
+      size: 7,
+      font: fontBold,
+      color: rgb(0.1, 0.4, 0.2),
+    });
+
+    lastPage.drawText(`Người ký: ${tenantName}`, {
+      x: 350,
+      y: auditBoxY + 24,
+      size: 6.5,
+      font,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+
+    lastPage.drawText(`${signedAt} | IP: ${ipAddress}`, {
+      x: 350,
+      y: auditBoxY + 14,
+      size: 6,
+      font,
+      color: rgb(0.3, 0.3, 0.3),
+    });
+
+    lastPage.drawText(`SHA256: ${hash.substring(0, 22)}...`, {
+      x: 350,
+      y: auditBoxY + 4,
+      size: 5.5,
+      font,
+      color: rgb(0.4, 0.4, 0.4),
+    });
 
     const finalPdfBytes = await pdfDoc.save();
     return {
       signedPdfBuffer: Buffer.from(finalPdfBytes),
       hash,
+    };
+  }
+
+  private async embedManagerSignatureAndAudit(
+    pdfBuffer: Buffer,
+    signatureBase64: string | undefined,
+    managerName: string,
+    managerEmail: string,
+    ipAddress: string,
+  ): Promise<{ signedPdfBuffer: Buffer }> {
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    pdfDoc.registerFontkit(fontkit);
+    const pages = pdfDoc.getPages();
+    const lastPage = pages[pages.length - 1];
+    const font = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Regular.ttf'),
+    );
+    const fontBold = await pdfDoc.embedFont(
+      this.getFontBuffer('NotoSans-Bold.ttf'),
+    );
+
+    // 1. Nhúng ảnh chữ ký Manager ngay bên dưới tiêu đề "ĐẠI DIỆN BÊN CHO THUÊ" (Left column)
+    if (signatureBase64) {
+      try {
+        const cleanBase64 = signatureBase64.replace(
+          /^data:image\/(png|jpg|jpeg);base64,/,
+          '',
+        );
+        const imageBytes = Buffer.from(cleanBase64, 'base64');
+        const signatureImage =
+          signatureBase64.includes('image/jpeg') ||
+          signatureBase64.includes('image/jpg')
+            ? await pdfDoc.embedJpg(imageBytes)
+            : await pdfDoc.embedPng(imageBytes);
+
+        lastPage.drawImage(signatureImage, {
+          x: 65,
+          y: 355,
+          width: 140,
+          height: 55,
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Lỗi nhúng ảnh chữ ký Manager: ${(err as Error).message}`,
+        );
+      }
+    }
+
+    // 2. Lưu Audit Trail bên dưới chữ ký Manager
+    const signedAt = new Date().toISOString();
+    const auditBoxY = 310;
+
+    // Vẽ khung Audit Trail cho Manager
+    lastPage.drawRectangle({
+      x: 55,
+      y: auditBoxY,
+      width: 195,
+      height: 38,
+      borderColor: rgb(0.2, 0.3, 0.6),
+      borderWidth: 0.8,
+      color: rgb(0.94, 0.96, 0.99),
+    });
+
+    lastPage.drawText(`[MANAGER E-SIGN AUDIT]`, {
+      x: 60,
+      y: auditBoxY + 26,
+      size: 7,
+      font: fontBold,
+      color: rgb(0.1, 0.2, 0.5),
+    });
+
+    lastPage.drawText(`Người ký: ${managerName}`, {
+      x: 60,
+      y: auditBoxY + 15,
+      size: 6.5,
+      font,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+
+    lastPage.drawText(`${signedAt} | IP: ${ipAddress}`, {
+      x: 60,
+      y: auditBoxY + 5,
+      size: 6,
+      font,
+      color: rgb(0.3, 0.3, 0.3),
+    });
+
+    const finalPdfBytes = await pdfDoc.save();
+    return {
+      signedPdfBuffer: Buffer.from(finalPdfBytes),
     };
   }
 }

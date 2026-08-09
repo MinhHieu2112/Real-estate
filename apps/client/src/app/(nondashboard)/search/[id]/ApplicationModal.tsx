@@ -26,16 +26,13 @@ const ApplicationModal = ({
     const err = error as any;
 
     if (err.data?.code === "MOVE_IN_DATE_TOO_SOON") {
-        toast.error(
-        `${err.data?.message}`
-        );
-    } else if (err.data?.code === "INVALID_END_DATE")     {
+        toast.error(`${err.data?.message}`);
+    } else {
         toast.error(err.data?.message || "Đăng ký thất bại.");
     }
-   }, [isError, error]);
+  }, [isError, error]);
 
   const defaultStartDate = new Date().toISOString().split("T")[0];
-  const defaultEndDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0];
 
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
@@ -44,7 +41,6 @@ const ApplicationModal = ({
         email: authUser?.userInfo?.email || "",
         phoneNumber: authUser?.userInfo?.phoneNumber || "",
         startDate: defaultStartDate,
-        endDate: defaultEndDate,
         message: "",
     },
   });
@@ -61,7 +57,6 @@ const ApplicationModal = ({
       ...data,
       applicationDate: new Date().toISOString(),
       startDate: new Date(data.startDate).toISOString(),
-      endDate: new Date(data.endDate).toISOString(),
       status: ApplicationStatus.Pending,
       propertyId: propertyId,
       tenantCognitoId: authUser.cognitoInfo.userId,
@@ -95,18 +90,12 @@ const ApplicationModal = ({
                         type="text"
                         placeholder="Nhập số điện thoại"
                     />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       <CustomFormField 
                           name="startDate"
                           label="Ngày chuyển vào"
                           type="date"
                           placeholder="Chọn ngày bắt đầu"
-                      />
-                      <CustomFormField 
-                          name="endDate"
-                          label="Ngày kết thúc hợp đồng"
-                          type="date"
-                          placeholder="Chọn ngày kết thúc"
                       />
                     </div>
                     <CustomFormField 

@@ -4,7 +4,7 @@ export const propertySchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   status: z.string().min(1, "Status is required"),
-  pricePerDay: z.coerce.number().positive().int(),
+  pricePerMonth: z.coerce.number().positive().int(),
   securityDeposit: z.coerce.number().positive().int(),
   applicationFee: z.coerce.number().positive().int(),
   isPetsAllowed: z.boolean(),
@@ -41,19 +41,13 @@ export const editPropertySchema = propertySchema.extend({
 
 export type EditPropertyFormData = z.infer<typeof editPropertySchema>;
 
-export const applicationSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email address"),
-    phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-    startDate: z.string().min(1, "Move-in / Start date is required"),
-    endDate: z.string().min(1, "Lease end date is required"),
-    message: z.string().optional(),
-  })
-  .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
-    message: "Lease end date must be after move-in start date",
-    path: ["endDate"],
-  });
+export const applicationSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  startDate: z.string().min(1, "Move-in / Start date is required"),
+  message: z.string().optional(),
+});
 
 export type ApplicationFormData = z.infer<typeof applicationSchema>;
 

@@ -50,7 +50,7 @@ export interface Property {
   name: string;
   description: string;
   status: PropertyStatus;
-  pricePerDay: number;
+  pricePerMonth: number;
   securityDeposit: number;
   applicationFee: number;
   photoUrls: string[];

@@ -379,6 +379,24 @@ export const api = createApi({
         },
       }),
 
+      signManagerContract: build.mutation<
+        Lease,
+        { id: number; signatureBase64?: string }
+      >({
+        query: ({ id, signatureBase64 }) => ({
+          url: `leases/${id}/sign-manager`,
+          method: "POST",
+          body: { signatureBase64 },
+        }),
+        invalidatesTags: ["Contracts", "Leases"],
+        async onQueryStarted(_, { queryFulfilled }) {
+          await withToast(queryFulfilled, {
+            success: "Ký hợp đồng thành công!",
+            error: "Không thể ký hợp đồng.",
+          });
+        },
+      }),
+
       getSigningPage: build.query<{ lease: Lease; expiresAt: string }, string>({
         query: (token) => `leases/sign/${token}`,
       }),
@@ -598,6 +616,7 @@ export const {
   useGetLeaseDetailQuery,
   useUpdateLeaseContentMutation,
   useSendContractMutation,
+  useSignManagerContractMutation,
   useGetSigningPageQuery,
   useSignContractMutation,
   useGetManagerPaymentsQuery,

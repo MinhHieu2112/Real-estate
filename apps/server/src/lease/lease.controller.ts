@@ -82,4 +82,23 @@ export class LeaseController {
   ) {
     return await this.leaseService.sendContractToTenant(id, req.user.sub);
   }
+
+  @Post(':id/sign-manager')
+  @UseGuards(RolesGuard)
+  @Roles('manager')
+  @ApiOperation({ summary: 'Manager signs contract before sending to tenant' })
+  async signManagerContract(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+    @Body() body: { signatureBase64?: string },
+  ) {
+    const ipAddress =
+      req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    return await this.leaseService.signManagerContract(
+      id,
+      req.user.sub,
+      body.signatureBase64,
+      Array.isArray(ipAddress) ? ipAddress[0] : String(ipAddress),
+    );
+  }
 }
