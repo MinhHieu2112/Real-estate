@@ -2,7 +2,11 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { ChatConversation, Message } from "@shared/types";
-import { useGetMessagesQuery, useMarkAsReadMutation } from "@/state/api";
+import {
+  useGetMessagesQuery,
+  useMarkAsReadMutation,
+  useSendMessageMutation,
+} from "@/state/api";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { ArrowLeft, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +38,7 @@ const ConversationView = ({
   );
 
   const [markAsRead] = useMarkAsReadMutation();
+  const [sendMessage] = useSendMessageMutation();
 
   const peerName = conversation.peer?.name || "Người dùng";
 
@@ -101,28 +106,19 @@ const ConversationView = ({
     setIsSending(true);
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
-      const res = await fetch(`${backendUrl}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId: conversation.id,
-          senderCognitoId: currentUserCognitoId,
-          content,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to send");
-      }
+      await sendMessage({
+        conversationId: conversation.id,
+        senderCognitoId: currentUserCognitoId,
+        content,
+      }).unwrap();
       // Server sẽ broadcast qua WebSocket, không cần thêm vào state thủ công
     } catch {
       toast.error("Không thể gửi tin nhắn. Vui lòng thử lại.");
-      setInputValue(content); // khôi phục nội dung nếu lỗi
+      setInputValue(content);
     } finally {
       setIsSending(false);
     }
-  }, [inputValue, isSending, conversation.id, currentUserCognitoId]);
+  }, [inputValue, isSending, conversation.id, currentUserCognitoId, sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {

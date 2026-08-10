@@ -105,24 +105,6 @@ const Applications = () => {
 
                                     {/* Right Button */}
                                     <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end">
-                                        <Link
-                                            href={`/managers/properties/${application.propertyId}`}
-                                            className="bg-white border border-gray-200 text-gray-700 py-2 px-3.5 
-                                                        rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-gray-50 transition-all shadow-sm"
-                                            scroll={false}
-                                        >
-                                            <Hospital className="w-4 h-4 mr-1.5" />
-                                            Chi tiết dự án
-                                        </Link>
-                                        {application.status === "Approved" && (
-                                            <button
-                                                className="bg-white border border-gray-200 text-gray-700 py-2 px-3.5
-                                                            rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-gray-50 transition-all shadow-sm"
-                                            >
-                                                <Upload className="w-4 h-4 mr-1.5" />
-                                                Gửi hợp đồng
-                                            </button>
-                                        )}
                                         {application.status === "Pending" && (
                                             <>
                                                 <button

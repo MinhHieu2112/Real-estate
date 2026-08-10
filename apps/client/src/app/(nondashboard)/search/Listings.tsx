@@ -44,20 +44,22 @@ const Listings = () => {
     }
   };
 
+  const availableProperties = properties?.filter((property) => property.status === "Available");
+
   if (isLoading) return <>Đang tải...</>
   if (isError || !properties) return <div>Không thể tải danh sách dự án</div>
 
   return (
     <div className="w-full">
         <h3 className="text-sm px-4 font-bold">
-            {properties.length}{" "}
+            {availableProperties?.length ?? 0}{" "}
             <span className="text-gray-700 font-normal">
                 dự án tại {filters.location}
             </span>
         </h3>
         <div className="flex">
             <div className="p-4 w-full">
-                {properties?.map((property) => 
+                {availableProperties?.map((property) => 
                     viewMode === "grid" ? (
                         <PropertyCard 
                             key={property.id}

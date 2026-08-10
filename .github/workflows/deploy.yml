@@ -5,6 +5,8 @@ on:
     branches:
       - master
 
+  workflow_dispatch:
+
 jobs:
   build-and-push:
     name: Build Docker Image on GitHub & Push to Docker Hub
@@ -47,6 +49,7 @@ jobs:
           script_stop: true 
           script: |
             cd ~/Real-estate
+            git checkout master
             git pull origin master
             docker compose pull server
             docker compose up -d server

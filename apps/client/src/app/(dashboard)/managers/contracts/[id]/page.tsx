@@ -452,14 +452,14 @@ const ContractDetailPage = () => {
               <div className="space-y-2 text-xs text-emerald-800">
                 {lease.managerSignedAt && (
                   <p>
-                    ✓ <strong>Quản lý:</strong> Ký lúc{" "}
+                    <strong>Quản lý:</strong> Ký lúc{" "}
                     {new Date(lease.managerSignedAt).toLocaleString("vi-VN")}
                     {lease.managerSignedIp && ` (IP: ${lease.managerSignedIp})`}
                   </p>
                 )}
                 {lease.tenantSignedAt && (
                   <p>
-                    ✓ <strong>Người thuê ({lease.tenant?.name}):</strong> Ký lúc{" "}
+                    <strong>Người thuê ({lease.tenant?.name}):</strong> Ký lúc{" "}
                     {new Date(lease.tenantSignedAt).toLocaleString("vi-VN")} (IP:{" "}
                     {lease.tenantSignedIp || "127.0.0.1"})
                   </p>
