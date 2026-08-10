@@ -3,7 +3,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, PropertyStatus } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma.service';
 import { LocationService } from '../location/location.service';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -231,13 +231,6 @@ export class PropertyService {
 
     if (!existingProperty) {
       throw new NotFoundException('Property not found');
-    }
-
-    if (existingProperty.status === PropertyStatus.Rented) {
-      throw new ConflictException({
-        code: 'Cannot update a property that is currently rented.',
-        message: 'Hiện tại đang có người thuê !',
-      });
     }
 
     const {

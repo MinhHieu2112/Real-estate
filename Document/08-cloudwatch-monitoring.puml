@@ -1,0 +1,58 @@
+@startuml 08-cloudwatch-monitoring
+title 2.3.8 - Quy trình Tích hợp Amazon CloudWatch để Giám sát & Quản lý Hệ thống
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Client as "Người dùng / Client App"
+participant BE as "Backend App\n(NestJS Server)"
+participant Agent as "AWS CloudWatch Agent\n/ Container Log Driver"
+participant CWLogs as "Amazon CloudWatch\n(CloudWatch Logs)"
+participant CWMetrics as "Amazon CloudWatch\n(CloudWatch Metrics & Alarms)"
+actor Admin as "Quản trị viên\n(System Administrator)"
+
+== 1. Ghi nhận Log & Thu thập Metric Hệ thống ==
+
+Client -> BE : Gửi HTTP Requests (API Access, Authentication, Uploads...)
+BE -> BE : Middleware Morgan & NestJS Logger ghi log request/response
+BE -> BE : Xuất log chuẩn ra chuỗi stdout / stderr (Level: log, warn, error)
+
+Agent -> BE : Tự động thu thập log stream từ stdout/stderr của ứng dụng (ECS / App Runner / EC2)
+Agent -> CWLogs : Đưa log events vào CloudWatch Log Groups (/aws/real-estate/backend)
+CWLogs --> Agent : Xác nhận lưu trữ Log Streams
+
+Agent -> CWMetrics : Định kỳ đẩy chỉ số hạ tầng (CPU Usage, Memory Utilization, Network I/O)
+BE -> CWMetrics : Đẩy chỉ số ứng dụng (HTTP 4xx/5xx Errors, API Latency)
+CWMetrics --> Agent : Ghi nhận các Metrics
+
+== 2. Giám sát, Cảnh báo & Xử lý Sự cố (Monitoring & Alerting) ==
+
+Admin -> CWLogs : Truy cập CloudWatch Logs Insights để tra cứu & filter log theo mã lỗi
+CWLogs --> Admin : Hiển thị bảng biểu log chi tiết kèm Timestamp & Stack Trace
+
+Admin -> CWMetrics : Xem Dashboard giám sát hiệu năng hệ thống (System Metrics Dashboard)
+CWMetrics --> Admin : Hiển thị biểu đồ realtime (CPU %, Memory %, Latency ms, Request Count)
+
+== 3. Tự động Cảnh báo khi Xảy ra Sự cố (CloudWatch Alarms) ==
+
+alt Ngưỡng Cảnh báo bị vượt quá (ví dụ: HTTP 5xx Error > 5% hoặc Memory > 85%)
+    CWMetrics -> CWMetrics : CloudWatch Alarm chuyển sang trạng thái [ALARM]
+    CWMetrics -> Admin : Gửi Email / Notification cảnh báo qua Amazon SNS
+    Admin -> CWLogs : Phân tích nguyên nhân sự cố trong Log Stream
+    Admin -> BE : Thực hiện điều chỉnh hạ tầng / Khắc phục lỗi ứng dụng
+else Hệ thống hoạt động bình thường
+    CWMetrics -> CWMetrics : Trạng thái Alarm giữ mức [OK]
+    CWLogs -> CWLogs : Lưu trữ log theo Retention Policy (30/90 ngày)
+end
+
+note over BE, Agent
+  Ghi chú kiến trúc: Trong ứng dụng NestJS, các log được ghi ra stdout/stderr thông qua Logger & Morgan middleware.
+  Khi triển khai trên AWS (App Runner / ECS / EC2), AWS CloudWatch Agent / Log Driver sẽ tự động thu thập
+  toàn bộ log và metric hạ tầng mà không làm ảnh hưởng tới luồng xử lý ứng dụng chính.
+end note
+
+@enduml

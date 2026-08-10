@@ -1,0 +1,88 @@
+@startuml 05-digital-signature-contract
+title 2.3.5 - Quy trình Quản lý Hợp đồng Chữ ký số
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Manager as "Quản lý\n(Manager)"
+actor Tenant as "Khách thuê\n(Tenant)"
+participant FE as "Frontend\n(Next.js App)"
+participant BE as "Backend\n(NestJS API)"
+participant S3 as "Amazon S3\n(Contract Bucket)"
+participant SES as "Notify Service\n(Amazon SES / Push)"
+database DB as "Database\n(PostgreSQL)"
+
+== Bước 1: Manager Khởi tạo & Ký hợp đồng trước ==
+
+Manager -> FE : Cập nhật điều khoản hợp đồng (Ngày bắt đầu, Tiền thuê, Tiền cọc)
+FE -> BE : PUT /leases/:id/content
+BE -> DB : Cập nhật nội dung hợp đồng (Trạng thái: Draft)
+DB --> BE : Lưu thành công
+
+Manager -> FE : Ký tên trên Pad chữ ký & Nhấn "Ký hợp đồng"
+FE -> BE : POST /leases/:id/sign-manager (Chữ ký Base64, IP Client)
+BE -> BE : Tạo file PDF hợp đồng ban đầu (pdf-lib, NotoSans font)
+BE -> BE : Nhúng Chữ ký Manager & Khung Audit Trail [MANAGER E-SIGN AUDIT]\n(Tên, Email, Timestamp, IP)
+BE -> S3 : Upload PDF hợp đồng lên S3 (contracts/{applicationId}/contract.pdf)
+S3 --> BE : Trả về S3 Object Key / URL
+BE -> DB : Cập nhật managerSignedAt, managerSignedIp & leaseAgreementUrl
+DB --> BE : Cập nhật thành công
+BE --> FE : Trả về Hợp đồng đã có chữ ký Quản lý
+
+== Bước 2: Manager Gửi hợp đồng cho Tenant ==
+
+Manager -> FE : Nhấn "Gửi hợp đồng cho Tenant"
+FE -> BE : POST /leases/:id/send
+BE -> DB : Kiểm tra Manager đã ký chưa (managerSignedAt != null)
+alt Chưa ký tên
+    BE --> FE : Trả về lỗi 400 Bad Request ("Yêu cầu Manager ký trước")
+else Đã ký tên
+    BE -> DB : Cập nhật trạng thái Lease: Pending_signature
+    BE -> BE : Tạo Token ký JWT có thời hạn 15 phút (signUrl)
+    BE -> SES : Gửi Email kèm liên kết ký hợp đồng (15m expiration) & Thông báo in-app
+    SES --> Tenant : Gửi Email thông báo có hợp đồng mới cần ký
+    BE --> FE : Trả về signUrl & Hợp đồng Pending_signature
+end
+
+== Bước 3: Tenant Truy cập Trang ký Public & Thực hiện Ký tên ==
+
+Tenant -> FE : Nhấp vào liên kết ký từ Email (/sign?token=...)
+FE -> BE : GET /leases/sign/:token
+BE -> BE : Giải mã & Kiểm tra Token JWT (Expires in 15m)
+alt Token Hết hạn hoặc Không hợp lệ
+    BE --> FE : Trả về lỗi 401 Unauthorized ("Liên kết hết hạn")
+    FE --> Tenant : Thông báo liên kết đã hết hạn (15 phút)
+else Token Hợp lệ
+    BE -> S3 : Tạo Presigned URL cho PDF hợp đồng (GetSignedUrl 1h)
+    S3 --> BE : Trả về Presigned PDF URL
+    BE -> DB : Lấy chi tiết hợp đồng
+    DB --> BE : Trả về Lease Data
+    BE --> FE : Trả về Thông tin hợp đồng + Presigned PDF URL
+    FE --> Tenant : Hiển thị tài liệu PDF hợp đồng & Khung chữ ký số
+end
+
+Tenant -> FE : Vẽ chữ ký & Nhấn "Hoàn tất Ký hợp đồng"
+FE -> BE : POST /leases/sign (Token JWT, Chữ ký Base64, IP Client)
+BE -> S3 : Tải PDF hợp đồng đã có chữ ký Manager từ S3
+S3 --> BE : Trả về PDF Buffer
+BE -> BE : Nhúng Chữ ký Tenant & Khung Audit Trail [TENANT E-SIGN AUDIT]\n(Tên, Timestamp, IP, SHA-256 Checksum Hash)
+BE -> S3 : Upload bản PDF hoàn chỉnh lên S3 (contracts/{id}/signed_contract.pdf)
+S3 --> BE : Upload PDF thành công
+
+BE -> DB : Mở DB Transaction:
+BE -> DB : 1. Cập nhật Lease: status = Pending_payment, tenantSignedAt, tenantSignedIp
+BE -> DB : 2. Cập nhật Property: status = Rented
+BE -> DB : 3. Tự động Từ chối (Denied) các Đơn ứng tuyển khác của BĐS này
+BE -> DB : 4. Tạo bản ghi Thanh toán mặc định (Payment: Pending, Due in 7 days)
+DB --> BE : Commit Transaction thành công
+
+BE -> SES : Gửi thông báo hợp đồng đã ký cho Manager (kèm SHA-256 Log)
+SES --> Manager : Gửi Email thông báo Hợp đồng đã hoàn tất ký
+BE --> FE : Trả về Lease chi tiết đã hoàn tất ký số
+FE --> Tenant : Hiển thị màn hình thành công & Hướng dẫn thanh toán cọc
+
+@enduml

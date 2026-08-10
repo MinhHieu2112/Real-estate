@@ -1,0 +1,43 @@
+@startuml 04-manager-management
+title 2.3.4 - Quy trình Quản lý Manager (Người quản lý BĐS)
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Manager as "Quản lý\n(Manager)"
+participant FE as "Frontend\n(Next.js Dashboard)"
+participant BE as "Backend\n(NestJS API)"
+database DB as "Database\n(PostgreSQL / PostGIS)"
+
+== 1. Xem & Cập nhật Thông tin Quản lý ==
+
+Manager -> FE : Truy cập trang Hồ sơ Quản lý
+FE -> BE : GET /managers/:cognitoId (Header Authorization)
+BE -> DB : Tìm thông tin Manager theo cognitoId
+DB --> BE : Trả về thông tin Manager Profile
+BE --> FE : Trả về HTTP 200 OK + Manager Data
+FE --> Manager : Hiển thị tên, email, số điện thoại người quản lý
+
+Manager -> FE : Cập nhật Số điện thoại / Họ tên & Nhấn "Lưu"
+FE -> BE : PATCH /managers/:cognitoId (Body UpdateManagerDto)
+BE -> DB : Cập nhật bảng Manager
+DB --> BE : Trả về dữ liệu Manager đã cập nhật
+BE --> FE : Trả về HTTP 200 OK
+FE --> Manager : Thông báo cập nhật thông tin thành công
+
+== 2. Quản lý Danh sách Bất động sản Thuộc quyền Quản lý ==
+
+Manager -> FE : Truy cập Dashboard "Bất động sản của tôi"
+FE -> BE : GET /managers/:cognitoId/properties
+BE -> DB : Truy vấn tất cả Property thuộc managerCognitoId (kèm Location)
+BE -> DB : Lấy chuỗi tọa độ PostGIS ST_AsText(coordinates) từ bảng Location
+DB --> BE : Trả về danh sách Property & Raw WKT Location
+BE -> BE : Parse chuỗi WKT sang GeoJSON (Longitude, Latitude)
+BE --> FE : Trả về danh sách BĐS quản lý kèm trạng thái (Available / Rented) & Tọa độ
+FE --> Manager : Hiển thị bảng điều khiển BĐS, tổng số lượng & Vị trí trên bản đồ
+
+@enduml

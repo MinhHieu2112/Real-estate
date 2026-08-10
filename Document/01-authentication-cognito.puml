@@ -1,0 +1,60 @@
+@startuml 01-authentication-cognito
+title 2.3.1 - Quy trình Xác thực Người dùng bằng Amazon Cognito
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor User as "Người dùng\n(Tenant / Manager)"
+participant FE as "Frontend\n(Next.js / Amplify)"
+participant Cognito as "Amazon Cognito\n(User Pool)"
+participant BE as "Backend\n(NestJS API)"
+database DB as "Database\n(PostgreSQL)"
+
+== Luồng Đăng ký tài khoản (Sign Up) ==
+
+User -> FE : Điền thông tin đăng ký\n(Email, Password, Role)
+FE -> Cognito : Gọi signUp() với custom:role (tenant/manager)
+Cognito --> FE : Trả về kết quả khởi tạo & Yêu cầu xác thực Email
+Cognito -> User : Gửi mã OTP xác thực qua Email
+User -> FE : Nhập mã OTP xác thực
+FE -> Cognito : Gửi mã xác nhận (confirmSignUp)
+Cognito --> FE : Xác nhận tài khoản đã kích hoạt (cognitoId)
+FE -> BE : Gọi API tạo Profile (POST /tenants hoặc POST /managers)
+BE -> DB : Lưu thông tin User Profile với cognitoId
+DB --> BE : Lưu thành công
+BE --> FE : Trả về thông tin Profile
+FE --> User : Thông báo đăng ký thành công
+
+== Luồng Đăng nhập & Ủy quyền (Sign In & Authorization) ==
+
+User -> FE : Nhập Email & Password
+FE -> Cognito : Gọi signIn(Email, Password)
+
+alt Đăng nhập thành công
+    Cognito --> FE : Trả về JWT Tokens (Access Token, ID Token) chứa cognitoId & custom:role
+    FE -> FE : Lưu Token vào Session/State & Chuyển hướng Dashboard
+    FE --> User : Hiển thị giao diện Dashboard tương ứng
+    
+    User -> FE : Thao tác yêu cầu dữ liệu bảo mật
+    FE -> BE : Gửi HTTP Request kèm Header [Authorization: Bearer JWT]
+    BE -> BE : JwtAuthGuard xác thực chữ ký JWT bằng cognitoJwtVerifier
+    
+    alt JWT Token Hợp lệ
+        BE -> DB : Truy vấn dữ liệu theo cognitoId & role
+        DB --> BE : Trả về dữ liệu
+        BE --> FE : Trả về HTTP 200 OK + Data
+        FE --> User : Hiển thị kết quả trên giao diện
+    else Token Không hợp lệ / Hết hạn
+        BE --> FE : Trả về HTTP 401 Unauthorized
+        FE --> User : Thông báo phiên làm việc hết hạn & Yêu cầu đăng nhập lại
+    end
+else Đăng nhập thất bại
+    Cognito --> FE : Trả về lỗi sai tài khoản / mật khẩu
+    FE --> User : Hiển thị thông báo lỗi đăng nhập
+end
+
+@enduml

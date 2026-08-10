@@ -1,0 +1,87 @@
+@startuml 02-property-management
+title 2.3.2 - Quy trình Quản lý Bất động sản
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Manager as "Quản lý\n(Manager)"
+participant FE as "Frontend\n(Next.js)"
+participant BE as "Backend\n(NestJS)"
+participant Location as "Amazon Location Service\n(GeoPlaces)"
+participant S3 as "Amazon S3\n(Image Bucket)"
+database DB as "Database\n(PostgreSQL / PostGIS)"
+
+== 1. Tìm kiếm & Hiển thị Danh sách Bất động sản ==
+
+actor Tenant as "Khách thuê\n(Tenant)"
+Tenant -> FE : Tìm kiếm BĐS theo từ khóa / Bộ lọc vị trí
+FE -> BE : GET /properties?locationText=...&bbox=...
+alt Tìm kiếm theo Địa danh (locationText)
+    BE -> Location : Tìm tọa độ / Bounding Box (SearchTextCommand)
+    Location --> BE : Trả về Tọa độ vị trí (Longitude, Latitude, BBox)
+end
+BE -> DB : Truy vấn danh sách BĐS bằng khoảng cách PostGIS & BBox
+DB --> BE : Trả về danh sách Property + Location + Presigned Photo URLs
+BE --> FE : Trả về dữ liệu BĐS
+FE --> Tenant : Hiển thị BĐS trên bản đồ và danh sách card
+
+== 2. Tạo mới Bất động sản ==
+
+Manager -> FE : Nhập thông tin BĐS (Tên, Địa chỉ, Giá, Tiện ích) & Chọn các tệp hình ảnh
+FE -> BE : POST /properties (multipart/form-data kèm JWT Header)
+BE -> BE : Kiểm tra quyền Manager & Kiểm tra trùng tên BĐS
+BE -> DB : Truy vấn kiểm tra BĐS đã tồn tại
+
+alt Tên BĐS đã tồn tại
+    BE --> FE : Trả về lỗi 409 Conflict
+    FE --> Manager : Hiển thị thông báo "BĐS đã tồn tại"
+else Tên BĐS hợp lệ
+    BE -> Location : Lấy tọa độ từ địa chỉ (GeocodeCommand)
+    Location --> BE : Trả về Tọa độ (Longitude, Latitude)
+    
+    BE -> DB : Lưu Location mới với tọa độ PostGIS (ST_SetSRID)
+    DB --> BE : Trả về Location ID
+    
+    BE -> DB : Tạo bản ghi Property mới (LocationId, ManagerId, Status: Available)
+    DB --> BE : Trả về Property ID
+    
+    opt Có danh sách file hình ảnh tải lên
+        BE -> BE : Nén & tối ưu ảnh bằng Sharp (Max 1200px, quality 80, JPEG)
+        BE -> S3 : Upload ảnh song song (Upload với p-limit concurrency)
+        S3 --> BE : Trả về danh sách S3 Object URLs
+        BE -> DB : Cập nhật danh sách photoUrls vào bảng Property
+        DB --> BE : Cập nhật thành công
+    end
+    
+    BE --> FE : Trả về HTTP 201 Created + Chi tiết BĐS
+    FE --> Manager : Hiển thị thông báo tạo thành công & Cập nhật danh sách BĐS
+end
+
+== 3. Cập nhật Bất động sản ==
+
+Manager -> FE : Thay đổi thông tin BĐS / Tải thêm hoặc xóa hình ảnh
+FE -> BE : PATCH /properties/:id (Form-data)
+BE -> DB : Kiểm tra sự tồn tại của BĐS & Quyền sở hữu của Manager
+
+opt Có thay đổi địa chỉ
+    BE -> Location : Geocode lại địa chỉ mới
+    Location --> BE : Trả về tọa độ mới
+    BE -> DB : Cập nhật bảng Location
+end
+
+opt Có hình ảnh mới bổ sung
+    BE -> BE : Nén ảnh bằng Sharp
+    BE -> S3 : Upload hình ảnh mới lên S3
+    S3 --> BE : Trả về S3 URLs mới
+end
+
+BE -> DB : Cập nhật thông tin Property & photoUrls mới
+DB --> BE : Cập nhật thành công
+BE --> FE : Trả về HTTP 200 OK + Data BĐS mới
+FE --> Manager : Hiển thị thông báo cập nhật thành công
+
+@enduml

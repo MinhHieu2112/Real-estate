@@ -1,0 +1,57 @@
+@startuml 06-image-storage-s3
+title 2.3.6 - Quy trình Lưu trữ Hình ảnh với Amazon S3
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Manager as "Quản lý\n(Manager)"
+participant FE as "Frontend\n(Next.js)"
+participant BE as "Backend\n(NestJS API)"
+participant Sharp as "Sharp Image Processor\n(Memory)"
+participant S3 as "Amazon S3\n(S3 Bucket)"
+database DB as "Database\n(PostgreSQL)"
+
+== 1. Tải ảnh Bất động sản lên Amazon S3 ==
+
+Manager -> FE : Chọn danh sách hình ảnh (JPEG/PNG, tối đa 10 ảnh) & Gửi Form BĐS
+FE -> BE : POST /properties (multipart/form-data)
+BE -> BE : Multer Middleware nhận danh sách file buffers trong memory
+
+BE -> Sharp : Xử lý nén ảnh tự động (processImage)
+loop Cho từng file ảnh
+    Sharp -> Sharp : Resize tối đa 1200x1200px (Fit inside)
+    Sharp -> Sharp : Chuyển đổi định dạng JPEG (Quality 80%)
+end
+Sharp --> BE : Trả về các file JPEG Buffer đã tối ưu kích thước
+
+BE -> BE : Thiết lập đường dẫn khóa S3 Key:\nproperties/{managerCognitoId}/{propertyId}/{filename}.jpg
+BE -> S3 : Tải ảnh song song bằng AWS SDK Upload (@aws-sdk/lib-storage)\nsử dụng p-limit (Tối đa 10 luồng đồng thời)
+
+alt Upload S3 Thành công
+    S3 --> BE : Trả về S3 Object Location URL (https://bucket.s3.region.amazonaws.com/...)
+    BE -> DB : Cập nhật mảng photoUrls vào bảng Property
+    DB --> BE : Trả về bản ghi Property đã lưu mảng S3 URLs
+    BE --> FE : Trả về HTTP 201 Created + Danh sách S3 Image URLs
+    FE --> Manager : Hiển thị gallery ảnh BĐS trên ứng dụng
+else Upload S3 Thất bại
+    S3 --> BE : Trả về lỗi kết nối / IAM Authorization Error
+    BE --> FE : Trả về HTTP 400 Bad Request ("Failed to upload file to S3")
+    FE --> Manager : Hiển thị thông báo lỗi tải ảnh
+end
+
+== 2. Hiển thị & Truy xuất Hình ảnh từ S3 ==
+
+actor Tenant as "Khách thuê\n(Tenant)"
+Tenant -> FE : Xem chi tiết Bất động sản
+FE -> BE : GET /properties/:id
+BE -> DB : Truy vấn BĐS & lấy mảng photoUrls từ DB
+DB --> BE : Trả về danh sách S3 URLs
+BE --> FE : Trả về thông tin BĐS + S3 Image URLs
+FE -> S3 : Trình duyệt gửi HTTP GET trực tiếp tới S3 URLs để lấy hình ảnh
+S3 --> FE : Trả về file ảnh JPEG hiển thị trên giao diện
+
+@enduml

@@ -1,0 +1,69 @@
+@startuml 07-location-amazon-location
+title 2.3.7 - Quy trình Tích hợp Bản đồ với Amazon Location Service
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor User as "Người dùng\n(Tenant / Manager)"
+participant FE as "Frontend\n(Next.js / MapLibre)"
+participant BE as "Backend\n(NestJS API)"
+participant GeoPlaces as "Amazon Location Service\n(GeoPlaces Client)"
+participant GeoRoutes as "Amazon Location Service\n(GeoRoutes Client)"
+database DB as "Database\n(PostgreSQL / PostGIS)"
+
+== 1. Gợi ý Tự động Địa chỉ (Address Autocomplete) ==
+
+User -> FE : Nhập từ khóa địa chỉ (ví dụ: "Nguyễn Văn Cừ")
+FE -> BE : GET /location/autocomplete?query=Nguyễn Văn Cừ
+BE -> GeoPlaces : AutocompleteCommand(QueryText, Filter: IncludeCountries=['VNM'])
+GeoPlaces --> BE : Trả về danh sách 5 gợi ý địa điểm tốt nhất
+BE --> FE : Trả về gợi ý địa chỉ (Title, PlaceId)
+FE --> User : Hiển thị dropdown gợi ý địa chỉ dưới ô tìm kiếm
+
+== 2. Chuyển đổi Địa chỉ sang Tọa độ (Geocoding & Spatial Storage) ==
+
+User -> FE : Xác nhận địa chỉ khi tạo Bất động sản
+FE -> BE : POST /properties (Địa chỉ, Thành phố, Quốc gia)
+BE -> GeoPlaces : GeocodeCommand(QueryText: "Địa chỉ, Thành phố", Filter: 'VNM')
+alt Geocode thành công
+    GeoPlaces --> BE : Trả về Tọa độ Position [Longitude, Latitude]
+else Geocode thất bại / Lỗi kết nối
+    GeoPlaces --> BE : Không tìm thấy hoặc Lỗi API
+    BE -> BE : Sử dụng Tọa độ Mặc định (HCM Fallback: 106.6297, 10.8231)
+end
+
+BE -> DB : Khởi tạo vị trí PostGIS:\nINSERT INTO Location VALUES (..., ST_SetSRID(ST_MakePoint(lng, lat), 4326))
+DB --> BE : Lưu thành công bản ghi Location
+BE --> FE : Trả về BĐS kèm Tọa độ bản đồ
+
+== 3. Tìm kiếm BĐS Theo Vùng / Khoảng cách (Spatial Distance Filtering) ==
+
+User -> FE : Kéo thả bản đồ / Nhập ô tìm kiếm địa điểm
+FE -> BE : GET /properties?locationText=TP.HCM
+BE -> GeoPlaces : SearchTextCommand(QueryText, BiasPosition: HCM)
+GeoPlaces --> BE : Trả về Bounding Box (BBox: [West, South, East, North])
+BE -> DB : Truy vấn SQL PostGIS ST_Distance từ điểm trung tâm BBox & Lọc theo SRID 4326
+DB --> BE : Trả về các BĐS nằm trong khu vực tìm kiếm
+BE --> FE : Trả về danh sách BĐS + Tọa độ GeoJSON
+FE --> User : Hiển thị Marker BĐS trên bản đồ MapLibre GL
+
+== 4. Tính toán Tuyến đường & Chỉ đường (Routing & Directions) ==
+
+User -> FE : Chọn điểm xuất phát & Phương tiện di chuyển (Car / Pedestrian)
+FE -> BE : GET /location/directions?originLat=...&destinationLat=...&travelMode=Car
+BE -> GeoRoutes : CalculateRoutesCommand(Origin, Destination, TravelMode, Simple format)
+alt Tính toán Tuyến đường thành công
+    GeoRoutes --> BE : Trả về Route Geometry LineString, Distance (meters), Duration (seconds)
+    BE -> BE : Chuẩn hóa mảng Geometry [Lng, Lat]
+else Lỗi AccessDenied / Không tìm thấy tuyến đường
+    GeoRoutes --> BE : Trả về Lỗi / Rỗng
+    BE -> BE : Tạo đường thẳng nối trực tiếp 2 điểm (Fallback Polyline)
+end
+BE --> FE : Trả về GeoJSON Polyline + Khoảng cách + Thời gian di chuyển
+FE --> User : Vẽ đường đi (Route Polyline) màu xanh trên Bản đồ MapLibre
+
+@enduml

@@ -1,0 +1,59 @@
+@startuml 03-tenant-management
+title 2.3.3 - Quy trình Quản lý Tenant (Khách thuê)
+
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam DatabaseBackgroundColor #EFEFEF
+skinparam ParticipantBackgroundColor #E3F2FD
+skinparam ActorBackgroundColor #FFF3E0
+
+actor Tenant as "Khách thuê\n(Tenant)"
+participant FE as "Frontend\n(Next.js Client)"
+participant BE as "Backend\n(NestJS API)"
+database DB as "Database\n(PostgreSQL)"
+
+== 1. Xem & Cập nhật Hồ sơ Cá nhân (Tenant Profile) ==
+
+Tenant -> FE : Truy cập trang Thông tin cá nhân
+FE -> BE : GET /tenants/:cognitoId (Header Authorization)
+BE -> DB : Tìm thông tin Tenant theo cognitoId (kèm danh sách Favorites)
+DB --> BE : Trả về dữ liệu Hồ sơ Tenant
+BE --> FE : Trả về HTTP 200 OK + Tenant Data
+FE --> Tenant : Hiển thị thông tin cá nhân (Họ tên, Email, Số điện thoại)
+
+Tenant -> FE : Chỉnh sửa Họ tên / Số điện thoại & Nhấn "Lưu"
+FE -> BE : PATCH /tenants/:cognitoId (Body UpdateTenantDto)
+BE -> DB : Kiểm tra sự tồn tại của Tenant & Cập nhật thông tin
+DB --> BE : Trả về Tenant đã cập nhật
+BE --> FE : Trả về HTTP 200 OK + Updated Tenant Data
+FE --> Tenant : Hiển thị thông báo cập nhật hồ sơ thành công
+
+== 2. Quản lý Danh sách Bất động sản Yêu thích (Favorite Properties) ==
+
+Tenant -> FE : Nhấn biểu tượng "Thả tim" (Thêm Yêu thích) trên BĐS
+FE -> BE : POST /tenants/:cognitoId/favorites/:propertyId
+BE -> DB : Tìm Tenant & Liên kết Property vào danh sách favorites
+DB --> BE : Cập nhật kết nối thành công
+BE --> FE : Trả về thông tin Tenant & Favorites mới
+FE --> Tenant : Cập nhật trạng thái tim đỏ trên UI
+
+Tenant -> FE : Nhấn bỏ "Thả tim" (Xóa Yêu thích)
+FE -> BE : DELETE /tenants/:cognitoId/favorites/:propertyId
+BE -> DB : Ngắt kết nối Property khỏi danh sách favorites
+DB --> BE : Cập nhật ngắt kết nối thành công
+BE --> FE : Trả về danh sách Favorites mới
+FE --> Tenant : Cập nhật UI bỏ tim đỏ
+
+== 3. Xem Danh sách Nơi ở Hiện tại (Current Residences) ==
+
+Tenant -> FE : Truy cập trang "Nơi ở của tôi" (My Residences)
+FE -> BE : GET /tenants/:cognitoId/current-residences
+BE -> DB : Truy vấn các Property đang có Lease hoạt động với Tenant
+BE -> DB : Truy vấn tọa độ vị trí Location bằng PostGIS (ST_AsText)
+DB --> BE : Trả về danh sách BĐS & Chuỗi tọa độ WKT
+BE -> BE : Chuyển đổi WKT sang GeoJSON (Longitude, Latitude)
+BE --> FE : Trả về danh sách Nơi ở hiện tại kèm vị trí bản đồ
+FE --> Tenant : Hiển thị danh sách căn hộ đang thuê & Vị trí trên bản đồ
+
+@enduml
