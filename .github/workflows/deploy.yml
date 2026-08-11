@@ -50,7 +50,8 @@ jobs:
           script: |
             cd ~/Real-estate
             git checkout master
-            git pull origin master
+            git fetch origin master
+            git reset --hard origin/master
             docker compose pull server
             docker compose up -d server
             docker image prune -f
