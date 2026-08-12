@@ -18,7 +18,6 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
@@ -184,15 +183,6 @@ function SigningContent() {
             </a>
           </div>
         )}
-
-        <div className="mt-8">
-          <Link
-            href="/tenants/applications"
-            className="px-6 py-3 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 transition-all shadow-md"
-          >
-            Quản lý đơn thuê của tôi
-          </Link>
-        </div>
       </div>
     );
   }

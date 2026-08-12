@@ -185,7 +185,7 @@ const ManagerContractsPage = () => {
                         disabled={isSending}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 disabled:opacity-50 transition-colors"
                       >
-                        <Send className="w-3.5 h-3.5" /> Gửi lại
+                        <Send className="w-3.5 h-3.5" /> 
                       </button>
                     )}
 
@@ -266,7 +266,7 @@ const ManagerContractsPage = () => {
                         disabled={isSending}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
                       >
-                        <Send className="w-3.5 h-3.5" /> Gửi lại
+                        <Send className="w-3.5 h-3.5" /> 
                       </button>
                     )}
 

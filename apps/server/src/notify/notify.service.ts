@@ -9,29 +9,39 @@ import { PrismaService } from '../prisma.service';
 import { NotifyGateway } from './notify.gateway';
 import { CreateNotificationDto } from './dto/create-notify.dto';
 import { NotificationType } from '../generated/prisma/enums';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class NotifyService {
   private readonly logger = new Logger(NotifyService.name);
-  private readonly sesClient = new SESClient({
-    region: process.env.AWS_REGION,
-  });
+  private mailer: nodemailer.Transporter;
 
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => NotifyGateway))
     private readonly notifyGateway: NotifyGateway,
-  ) {}
+  ) {
+    // 🛠️ Khởi tạo Transporter sử dụng linh hoạt MAIL_HOST và MAIL_PORT từ .env
+    this.mailer = nodemailer.createTransport({
+      host: process.env.MAIL_HOST || 'smtp.gmail.com',
+      port: Number(process.env.MAIL_PORT) || 587,
+      secure: process.env.MAIL_PORT === '465', // true nếu port là 465 (SSL)
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+  }
 
-  private async sendSesEmail(params: {
+  private async sendEmail(params: {
     toEmail: string;
     subject: string;
     content: string;
   }) {
-    const senderEmail = process.env.AWS_SES_SENDER_EMAIL || '';
-    if (!senderEmail) {
-      this.logger.error('SES_SENDER_EMAIL is not configured');
+    const fromEmail = process.env.MAIL_USER;
+
+    if (!fromEmail) {
+      this.logger.error('MAIL_USER is not configured');
       return;
     }
 
@@ -53,37 +63,21 @@ export class NotifyService {
       `;
 
     try {
-      await this.sesClient.send(
-        new SendEmailCommand({
-          Source: senderEmail,
-          Destination: {
-            ToAddresses: [params.toEmail],
-          },
-          Message: {
-            Subject: {
-              Data: params.subject,
-              Charset: 'UTF-8',
-            },
-            Body: {
-              Html: {
-                Data: htmlBody,
-                Charset: 'UTF-8',
-              },
-              Text: {
-                Data: params.content,
-                Charset: 'UTF-8',
-              },
-            },
-          },
-        }),
-      );
+      await this.mailer.sendMail({
+        from: `"Real Estate System" <${fromEmail}>`,
+        to: params.toEmail,
+        subject: params.subject,
+        html: htmlBody,
+      });
     } catch (error) {
-      this.logger.error('Error sending SES email:', error);
+      this.logger.error('Error sending email via SMTP:', error);
     }
   }
 
-  // 1. Tạo thông báo: Lưu DB + WebSocket (realtime) + SNS (email/SMS)
-  async createNotification(dto: CreateNotificationDto): Promise<any> {
+  // 1. Tạo thông báo: Lưu DB + WebSocket (realtime) + Email
+  async createNotification(
+    dto: CreateNotificationDto & { customHtmlEmail?: string },
+  ): Promise<any> {
     const notification = await this.prisma.notification.upsert({
       where: {
         receiverCognitoId_applicationId_type: {
@@ -105,15 +99,17 @@ export class NotifyService {
       },
     });
 
+    // Bắn realtime qua Socket
     this.notifyGateway.sendNotificationToUser(
       dto.receiverCognitoId,
       notification,
     );
 
-    void this.sendSesEmail({
+    // Gửi email (Ưu tiên customHtmlEmail nếu có, không thì dùng content mặc định)
+    void this.sendEmail({
       toEmail: dto.receiverEmail || '',
       subject: dto.title,
-      content: dto.content,
+      content: dto.customHtmlEmail || dto.content,
     });
 
     return notification;
@@ -160,7 +156,7 @@ export class NotifyService {
     });
   }
 
-  // 4. Thông báo Tenant: Hợp đồng đã được gửi
+  // 4. Thông báo Tenant: Hợp đồng đã được gửi (Đã fix lỗi gửi trùng email)
   async notifyContractSent(data: {
     tenantCognitoId: string;
     tenantEmail?: string;
@@ -183,24 +179,16 @@ export class NotifyService {
       </div>
     `;
 
-    const notification = await this.createNotification({
+    // Truyền customHtmlEmail vào để createNotification chỉ gửi DUY NHẤT 1 EMAIL HTML đẹp
+    return await this.createNotification({
       receiverCognitoId: data.tenantCognitoId,
       receiverEmail: data.tenantEmail,
       type: NotificationType.Contract_sent,
       title: 'Hợp đồng thuê đã sẵn sàng để ký',
       content: `Hợp đồng thuê dự án "${data.propertyName}" đã được gửi. Vui lòng kiểm tra và ký trực tuyến.`,
       applicationId: data.applicationId,
+      customHtmlEmail: htmlContent,
     });
-
-    if (data.tenantEmail) {
-      void this.sendSesEmail({
-        toEmail: data.tenantEmail,
-        subject: `[Hợp đồng] Mời bạn ký hợp đồng thuê dự án ${data.propertyName}`,
-        content: htmlContent,
-      });
-    }
-
-    return notification;
   }
 
   // 5. Thông báo Manager: Tenant đã ký hợp đồng

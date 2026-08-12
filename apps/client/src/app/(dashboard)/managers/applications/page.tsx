@@ -124,14 +124,6 @@ const Applications = () => {
                                                 </button>
                                             </>
                                         )}
-                                        {application.status === "Denied" && (
-                                            <button
-                                            className="bg-gray-900 text-white py-2 px-3.5 rounded-lg text-xs font-semibold flex items-center
-                                            justify-center hover:bg-gray-800 transition-all shadow-sm"
-                                            >
-                                                Liên hệ người dùng
-                                            </button>
-                                        )}
                                     </div>
                             </div>
                         </ApplicationCard>
