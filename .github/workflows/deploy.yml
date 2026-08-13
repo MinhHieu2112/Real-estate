@@ -53,5 +53,5 @@ jobs:
             git fetch origin master
             git reset --hard origin/master
             docker compose pull server
-            docker compose up -d server
+            docker compose up -d --force-recreate server
             docker image prune -f
