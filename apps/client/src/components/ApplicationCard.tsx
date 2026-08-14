@@ -86,7 +86,8 @@ const ApplicationCard = ({
                   ? new Date(application.lease.nextPaymentDate).toLocaleDateString('vi-VN')
                   : application.lease?.status === "Active"
                   ? "Không xác định"
-                  : "Chưa có hợp đồng"}
+                  : "Chưa có hợp đồng"
+                }
               </span>
             </div>
           </div>

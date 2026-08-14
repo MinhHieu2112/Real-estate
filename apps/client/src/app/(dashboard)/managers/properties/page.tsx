@@ -6,6 +6,7 @@ import Loading from '@/components/Loading';
 import { useGetAuthUserQuery, useGetManagerPropertiesQuery } from '@/state/api';
 import React from 'react'
 import Image from 'next/image';
+import { FileText } from 'lucide-react';
 const Properties = () => {
   const { data: authUser } = useGetAuthUserQuery();
   const { 
@@ -39,17 +40,13 @@ const Properties = () => {
             ))}
         </div>
         {(!managerProperties || managerProperties.length === 0) && (
-            <div className="flex flex-col items-center">
-                <Image
-                    src="/not-found.png"
-                    alt="Không có dự án"
-                    width={600}
-                    height={600}
-                />
-                <p className="text-gray-500 text-xl mt-8">
-                    Bạn chưa có dự án nào
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="font-medium text-base">Chưa có dự án nào</p>
+                <p className="text-sm text-gray-400 mt-1">
+                    Dự án được tạo sẽ hiển thị ngay tại đây.
                 </p>
-            </div>
+          </div>
         )}
     </div>
   )

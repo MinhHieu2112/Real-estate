@@ -4,7 +4,7 @@ import ApplicationCard from '@/components/ApplicationCard';
 import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetApplicationsQuery, useGetAuthUserQuery } from '@/state/api';
-import { CircleCheckBig, Clock, Signature, XCircle } from 'lucide-react';
+import { CircleCheckBig, Clock, FileText, Signature, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
 import { toast } from 'sonner';
@@ -59,15 +59,11 @@ const Applications = () => {
                 </ApplicationCard>
             ))}
             {applications?.length === 0 && (
-                <div className="flex flex-col items-center">
-                    <Image
-                        src="/not-found.png"
-                        alt="Không tìm thấy"
-                        width={500}
-                        height={500}
-                    />
-                    <p className="text-gray-500 text-xl mt-8">
-                        Bạn chưa có đơn đăng ký nào
+                <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+                    <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <p className="font-medium text-base">Bạn chưa có đơn đăng ký nào.</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                        Mọi đơn đăng ký sẽ hiển thị tại đây.
                     </p>
                 </div>
                 )}

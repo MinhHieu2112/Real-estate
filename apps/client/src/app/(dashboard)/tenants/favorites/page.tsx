@@ -4,6 +4,7 @@ import Card from '@/components/Card';
 import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetAuthUserQuery, useGetPropertiesQuery, useGetTenantQuery } from '@/state/api';
+import { FileText } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
 
@@ -46,15 +47,11 @@ const Favorites = () => {
         ))}
       </div>
         {(!favoriteProperties || favoriteProperties.length === 0) && (
-          <div className="flex flex-col items-center">
-            <Image
-                src="/not-found.png"
-                alt="Không tìm thấy"
-                width={500}
-                height={500}
-            />
-            <p className="text-gray-500 text-xl mt-8">
-                Bạn chưa có đơn đăng ký nào
+          <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+            <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+            <p className="font-medium text-base">Bạn chưa có dự án yêu thích nào.</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Mọi dự án bạn thích sẽ hiển thị tại đây.
             </p>
           </div>
         )}

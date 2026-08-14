@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetApplicationsQuery, useGetAuthUserQuery, useUpdateApplicationStatusMutation } from '@/state/api'
-import { CircleCheckBig, File } from 'lucide-react';
+import { CircleCheckBig, File, FileText } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react'
 
@@ -132,17 +132,13 @@ const Applications = () => {
             ))}
         </Tabs>
         {(!filteredApplications || filteredApplications.length === 0) && (
-            <div className="flex flex-col items-center">
-                <Image
-                    src="/not-found.png"
-                    alt="Không tìm thấy"
-                    width={500}
-                    height={500}
-                />
-                <p className="text-gray-500 text-xl mt-8">
-                    Bạn chưa có đơn đăng ký nào
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="font-medium text-base">Chưa có đơn đăng ký nào</p>
+                <p className="text-sm text-gray-400 mt-1">
+                    Đơn đăng ký từ khách hàng sẽ hiển thị ngay tại đây.
                 </p>
-            </div>
+          </div>
         )}
     </div>
   )

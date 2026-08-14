@@ -49,9 +49,6 @@ jobs:
           script_stop: true 
           script: |
             cd ~/Real-estate
-            git checkout master
-            git fetch origin master
-            git reset --hard origin/master
             docker compose pull server
             docker compose up -d --force-recreate server
             docker image prune -f

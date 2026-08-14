@@ -137,10 +137,10 @@ const ManagerContractsPage = () => {
 
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900 truncate text-sm">
-                      {lease.tenant?.name || "N/A"}
+                      {lease.application?.name || "N/A"}
                     </p>
                     <p className="text-xs text-gray-400 truncate mt-0.5">
-                      {lease.tenant?.email}
+                      {lease.application?.email}
                     </p>
                   </div>
 

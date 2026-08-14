@@ -4,6 +4,7 @@ import Card from '@/components/Card';
 import Header from '@/components/Header';
 import Loading from '@/components/Loading';
 import { useGetAuthUserQuery, useGetCurrentResidencesQuery, useGetTenantQuery } from '@/state/api'
+import { FileText } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
 
@@ -45,15 +46,13 @@ const Residences = () => {
             ))}
         </div>
         {(!currentResidences || currentResidences.length === 0) && (
-            <div className="flex flex-col items-center">
-                <Image
-                    src="/not-found.png"
-                    alt="Không tìm thấy"
-                    width={500}
-                    height={500}
-                />
-                <p className="text-gray-500">Không có nơi ở hiện tại nào</p>
-            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <p className="font-medium text-base">Chưa có dự án đang thuê</p>
+                <p className="text-sm text-gray-400 mt-1">
+                    Vui lòng tham khảo thêm.
+                </p>
+          </div>
         )}
     </div>
   )

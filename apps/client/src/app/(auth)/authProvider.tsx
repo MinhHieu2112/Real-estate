@@ -47,14 +47,14 @@ const components = {
                         onClick={toForgotPassword}
                         className="text-sm text-primary hover:underline bg-transparent border-none p-0 text-left"
                         >
-                            Forgot your password?
+                            Quên mật khẩu?
                     </button>
                     <p className="text-muted-foreground text-sm">
-                        Don&apos;t have an account?{" "}
+                        Chưa có tài khoản?{" "}
                         <button
                             onClick={toSignUp}
                             className="text-sm text-primary hover:underline bg-transparent border-none p-0">
-                                Sign up here
+                                Đăng ký ngay
                         </button>
                     </p>
                 </View>
@@ -76,8 +76,8 @@ const components = {
                         hasError={!!validationErrors?.["custom:role"]}
                         isRequired
                     >
-                        <Radio value="tenant">Tenant</Radio>
-                        <Radio value="manager">Manager</Radio>
+                        <Radio value="tenant">Người thuê</Radio>
+                        <Radio value="manager">Chủ thuê</Radio>
                     </RadioGroupField>
                 </>
             )
@@ -88,11 +88,11 @@ const components = {
             return (
                 <View className="mt-4 mb-7">
                     <p className="text-muted-foreground text-sm">
-                        Already have an account?{" "}
+                        Đã có tài khoản?{" "}
                         <button
                             onClick={toSignIn}
                             className="text-primary hover:underline bg-transparent border-none p-0">
-                                Login here
+                                Đăng nhập
                         </button>
                     </p>
                 </View>
@@ -104,12 +104,12 @@ const components = {
 const formFields = {
     signIn: {
         username: {
-            placeholder: "Enter your email",
+            placeholder: "Nhập email",
             label: "Email",
             isRequired: true
         },
         password: {
-            placeholder: "Enter your password",
+            placeholder: "Nhập mật khẩu",
             label: "Password",
             isRequired: true
         }
@@ -117,44 +117,44 @@ const formFields = {
     signUp: {
         username: {
             order: 1,
-            placeholder: "Choose a username",
+            placeholder: "Nhập tên",
             label: "Username",
             isRequired: true
         },
         email: {
             order: 2,
-            placeholder: "Enter your email",
+            placeholder: "Nhập email",
             label: "Email",
             isRequired: true
         },
         password: {
             order: 3,
-            placeholder: "Enter your password",
+            placeholder: "Nhập mật khẩu",
             label: "Password",
             isRequired: true
         },
         confirm_password: {
             order: 4,
-            placeholder: "Confirm your password",
+            placeholder: "Nhập lại mật khẩu",
             label: "Confirm Password",
             isRequired: true
         }
     },
     forgotPassword: {
         username: {
-            placeholder: "Enter your email",
+            placeholder: "Nhập email",
             label: "Email",
             isRequired: true
         },
     },
     confirmResetPassword: {
         password: {
-            placeholder: "Enter your password",
+            placeholder: "Nhập mật khẩu",
             label: "Password",
             isRequired: true
         },
         confirm_password: {
-            placeholder: "Confirm your password",
+            placeholder: "Nhập lại mật khẩu",
             label: "Confirm Password",
             isRequired: true
         }
