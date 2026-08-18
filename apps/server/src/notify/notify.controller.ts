@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Patch,
+  Delete,
   Param,
   ParseIntPipe,
   BadRequestException,
@@ -34,5 +35,22 @@ export class NotifyController {
       throw new BadRequestException('User not found in token');
     }
     return this.notifyService.markAllAsRead(user.sub);
+  }
+
+  @Delete('all')
+  @Delete()
+  async deleteAllNotifications(@CurrentUser() user: CognitoUser) {
+    if (!user?.sub) {
+      throw new BadRequestException('User not found in token');
+    }
+    return this.notifyService.deleteAllNotifications(user.sub);
+  }
+
+  @Delete(':id')
+  async deleteNotification(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CognitoUser,
+  ) {
+    return this.notifyService.deleteNotification(id, user.sub);
   }
 }

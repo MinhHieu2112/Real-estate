@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   Inject,
@@ -217,5 +218,77 @@ export class MessageService {
     });
 
     return { updatedCount: result.count };
+  }
+
+  // Xóa tin nhắn (chỉ cho phép chính người gửi xóa)
+  async deleteMessage(id: number, userCognitoId: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id },
+    });
+
+    if (!message) {
+      throw new NotFoundException(`Message #${id} not found`);
+    }
+
+    if (message.senderCognitoId !== userCognitoId) {
+      throw new ForbiddenException('You can only delete your own messages');
+    }
+
+    const conversationId = message.conversationId;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.message.delete({
+        where: { id },
+      });
+
+      const latestMessage = await tx.message.findFirst({
+        where: { conversationId },
+        orderBy: { id: 'desc' },
+      });
+
+      await tx.conversation.update({
+        where: { id: conversationId },
+        data: {
+          lastMessage: latestMessage ? latestMessage.content : null,
+          lastMessageAt: latestMessage ? latestMessage.createdAt : null,
+        },
+      });
+    });
+
+    this.messageGateway.broadcastMessageDeleted({
+      messageId: id,
+      conversationId,
+    });
+
+    return { id, conversationId };
+  }
+
+  // Xóa toàn bộ cuộc trò chuyện (và toàn bộ tin nhắn)
+  async deleteConversation(conversationId: number, userCognitoId: string) {
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException(`Conversation #${conversationId} not found`);
+    }
+
+    const isMember =
+      conversation.tenantCognitoId === userCognitoId ||
+      conversation.managerCognitoId === userCognitoId;
+
+    if (!isMember) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this conversation',
+      );
+    }
+
+    await this.prisma.conversation.delete({
+      where: { id: conversationId },
+    });
+
+    this.messageGateway.broadcastConversationDeleted({ conversationId });
+
+    return { conversationId };
   }
 }

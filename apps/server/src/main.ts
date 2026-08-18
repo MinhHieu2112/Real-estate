@@ -15,7 +15,6 @@ async function bootstrap() {
   const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
     : ['http://localhost:3000'];
-
   app.enableCors({
     origin: (origin, callback) => {
       // 1. Cho phép Server-to-Server request (Postman, cURL, Mobile native app - không có header origin)

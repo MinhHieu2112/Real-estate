@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 let chatSocket: Socket | null = null;
 let notifySocket: Socket | null = null;
@@ -32,6 +33,14 @@ export const getNotifySocket = (cognitoId: string): Socket => {
     notifySocket = io(`${getBackendUrl()}/notify`, {
       query: { cognitoId },
       transports: ["websocket", "polling"],
+    });
+
+    // Thêm auth token động trước khi connect
+    fetchAuthSession().then((session) => {
+      const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString();
+      if (token && notifySocket) {
+        notifySocket.auth = { token };
+      }
     });
   }
   return notifySocket;

@@ -22,9 +22,17 @@ export class PrismaService
       ? { rejectUnauthorized: true, ca: fs.readFileSync(caFilePath) }
       : { rejectUnauthorized: false };
 
+    const isLocal =
+      !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+
     const pool = new Pool({
       connectionString,
       ssl,
+      max: isLocal ? 5 : 20,
+      connectionTimeoutMillis: isLocal ? 15_000 : 5_000,
+      idleTimeoutMillis: isLocal ? 60_000 : 30_000,
+      query_timeout: isLocal ? 30_000 : 10_000,
+      statement_timeout: isLocal ? 30_000 : 10_000,
     });
     const adapter = new PrismaPg(pool);
     super({

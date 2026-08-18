@@ -1,13 +1,16 @@
 "use client";
 
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Notification } from "@shared/types";
 import {
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
+  useDeleteNotificationMutation,
+  useDeleteAllNotificationsMutation,
 } from "@/state/api";
+import { toast } from "sonner";
 
 interface NotifyProps {
   notifications: Notification[];
@@ -17,8 +20,29 @@ interface NotifyProps {
 const Notify = ({ notifications, userId }: NotifyProps) => {
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();
+  const [deleteNotification] = useDeleteNotificationMutation();
+  const [deleteAllNotifications] = useDeleteAllNotificationsMutation();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleDeleteSingle = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    try {
+      await deleteNotification(id).unwrap();
+      toast.success("Đã xóa thông báo");
+    } catch {
+      toast.error("Không thể xóa thông báo");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    try {
+      await deleteAllNotifications().unwrap();
+      toast.success("Đã xóa tất cả thông báo");
+    } catch {
+      toast.error("Không thể xóa tất cả thông báo");
+    }
+  };
 
   if (notifications.length === 0) {
     return (
@@ -30,30 +54,41 @@ const Notify = ({ notifications, userId }: NotifyProps) => {
 
   return (
     <div>
-      {unreadCount > 0 && (
-        <div className="px-4 py-2 flex justify-end">
+      <div className="px-4 py-2 flex items-center justify-between border-b text-xs">
+        {unreadCount > 0 ? (
           <button
             onClick={() => markAllAsRead(userId)}
-            className="flex items-center gap-1 text-xs text-primary-600 hover:underline"
+            className="flex items-center gap-1 text-primary-600 hover:underline font-medium"
           >
             <Check className="w-3 h-3" />
             Đánh dấu tất cả đã đọc
           </button>
-        </div>
-      )}
+        ) : (
+          <span className="text-gray-400">Tất cả đã đọc</span>
+        )}
+
+        <button
+          onClick={handleDeleteAll}
+          className="flex items-center gap-1 text-red-500 hover:underline font-medium ml-auto"
+        >
+          <Trash2 className="w-3 h-3" />
+          Xóa tất cả
+        </button>
+      </div>
+
       <div className="divide-y max-h-96 overflow-y-auto">
         {notifications.map((item) => (
-          <button
+          <div
             key={item.id}
             onClick={() => !item.isRead && markAsRead(item.id)}
-            className={`w-full px-4 py-3 flex gap-3 text-left hover:bg-gray-50 transition-colors ${
+            className={`group w-full px-4 py-3 flex gap-3 text-left hover:bg-gray-50 transition-colors cursor-pointer relative ${
               item.isRead ? "" : "bg-primary-50"
             }`}
           >
             <div className="mt-1 shrink-0">
               <Bell className="w-5 h-5 text-primary-600" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pr-6">
               <p className="font-semibold text-sm text-zinc-700 truncate">
                 {item.title}
               </p>
@@ -67,10 +102,20 @@ const Notify = ({ notifications, userId }: NotifyProps) => {
                 })}
               </p>
             </div>
-            {!item.isRead && (
-              <div className="w-2 h-2 mt-2 bg-blue-500 rounded-full shrink-0" />
-            )}
-          </button>
+
+            <div className="flex flex-col items-end justify-between shrink-0">
+              <button
+                onClick={(e) => handleDeleteSingle(e, item.id)}
+                title="Xóa thông báo"
+                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-opacity rounded hover:bg-gray-200/50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+              {!item.isRead && (
+                <div className="w-2 h-2 mb-1 bg-blue-500 rounded-full shrink-0" />
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </div>

@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Query,
   ParseIntPipe,
@@ -66,5 +67,21 @@ export class MessageController {
       conversationId,
       userCognitoId: user.sub || body.userCognitoId,
     });
+  }
+
+  @Delete('conversations/:conversationId')
+  deleteConversation(
+    @Param('conversationId', ParseIntPipe) conversationId: number,
+    @CurrentUser() user: CognitoUser,
+  ) {
+    return this.messageService.deleteConversation(conversationId, user.sub);
+  }
+
+  @Delete(':id')
+  deleteMessage(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CognitoUser,
+  ) {
+    return this.messageService.deleteMessage(id, user.sub);
   }
 }

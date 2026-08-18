@@ -93,4 +93,22 @@ export class MessageGateway
         .emit('newMessage', message);
     }
   }
+
+  // Broadcast deleted message event to all clients in the conversation room
+  broadcastMessageDeleted(data: { messageId: number; conversationId: number }) {
+    if (this.server) {
+      this.server
+        .to(`conv:${data.conversationId}`)
+        .emit('messageDeleted', data);
+    }
+  }
+
+  // Broadcast deleted conversation event to all clients in the conversation room
+  broadcastConversationDeleted(data: { conversationId: number }) {
+    if (this.server) {
+      this.server
+        .to(`conv:${data.conversationId}`)
+        .emit('conversationDeleted', data);
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
   Inject,
   forwardRef,
   Logger,
@@ -253,6 +254,34 @@ export class NotifyService {
     return await this.prisma.notification.updateMany({
       where: { receiverCognitoId, isRead: false },
       data: { isRead: true },
+    });
+  }
+
+  // 10. Xóa 1 thông báo (kiểm tra quyền sở hữu)
+  async deleteNotification(id: number, userCognitoId: string): Promise<any> {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+
+    if (!notification) {
+      throw new NotFoundException(`Notification #${id} not found`);
+    }
+
+    if (notification.receiverCognitoId !== userCognitoId) {
+      throw new ForbiddenException(
+        'You can only delete your own notifications',
+      );
+    }
+
+    return await this.prisma.notification.delete({
+      where: { id },
+    });
+  }
+
+  // 11. Xóa tất cả thông báo của người dùng
+  async deleteAllNotifications(receiverCognitoId: string): Promise<any> {
+    return await this.prisma.notification.deleteMany({
+      where: { receiverCognitoId },
     });
   }
 }
